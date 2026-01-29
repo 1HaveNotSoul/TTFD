@@ -44,10 +44,13 @@ async def on_ready():
         status=discord.Status.online
     )
     
-    # Синхронизируем slash команды
+    # Синхронизируем slash команды (если есть)
     try:
         synced = await bot.tree.sync()
-        print(f"✅ Синхронизировано {len(synced)} slash команд")
+        if len(synced) > 0:
+            print(f"✅ Синхронизировано {len(synced)} slash команд")
+        else:
+            print("ℹ️ Slash команды отключены (используются только ! команды)")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
     
@@ -292,26 +295,7 @@ async def help_command(ctx):
     await ctx.send(embed=embed)
 
 # ==================== SLASH КОМАНДЫ ====================
-
-@bot.tree.command(name="ping", description="Проверка задержки бота")
-async def slash_ping(interaction: discord.Interaction):
-    """Slash команда: ping"""
-    latency = round(bot.latency * 1000)
-    await interaction.response.send_message(f"🏓 Понг! Задержка: **{latency}ms**")
-
-@bot.tree.command(name="profile", description="Посмотреть профиль")
-async def slash_profile(interaction: discord.Interaction):
-    """Slash команда: profile"""
-    user = db.get_user(str(interaction.user.id))
-    rank = db.get_rank_info(user['rank_id'])
-    
-    await interaction.response.send_message(
-        f"👤 **Профиль**\n"
-        f"🏆 Ранг: {rank['name']}\n"
-        f"⭐ Опыт: {user['xp']} XP\n"
-        f"💰 Монеты: {user['coins']}\n"
-        f"🖱️ Кликов: {user['clicks']}"
-    )
+# Slash команды убраны чтобы избежать дублирования с обычными командами
 
 # ==================== ЗАПУСК ====================
 

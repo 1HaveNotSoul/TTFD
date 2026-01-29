@@ -1,12 +1,12 @@
+# Переменные окружения (ВАЖНО!)
+.env
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -23,11 +23,10 @@ wheels/
 .installed.cfg
 *.egg
 
-# Данные
-.env
-*.json
-user_data.json
-accounts.json
+# Virtual Environment
+venv/
+ENV/
+env/
 
 # IDE
 .vscode/
@@ -42,4 +41,12 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.bak
