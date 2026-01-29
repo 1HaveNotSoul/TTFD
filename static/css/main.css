@@ -423,3 +423,69 @@ audio {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(102, 126, 234, 0.7);
 }
+
+
+/* Online Members List */
+.online-list { 
+    max-height: 400px; 
+    overflow-y: auto; 
+}
+
+.online-member {
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 10px;
+    background: #f8f9fa; 
+    border-radius: 8px; 
+    margin-bottom: 8px;
+    cursor: pointer; 
+    transition: all 0.3s;
+}
+
+.online-member:hover {
+    background: #e9ecef; 
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.online-member img { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+}
+
+.member-status { 
+    width: 10px; 
+    height: 10px; 
+    border-radius: 50%; 
+}
+
+.member-status.online { 
+    background: #4caf50; 
+}
+
+.member-status.idle { 
+    background: #ffa500; 
+}
+
+.member-status.dnd { 
+    background: #f44336; 
+}
+
+/* Quick Links */
+.quick-links a {
+    display: block;
+    padding: 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+    transition: transform 0.3s;
+}
+
+.quick-links a:hover {
+    transform: translateY(-2px);
+}

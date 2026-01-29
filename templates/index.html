@@ -4,38 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Bot - Панель управления</title>
-    <link rel="stylesheet" href="/static/css/main.css?v=2.0">
-    <style>
-        .online-list { max-height: 400px; overflow-y: auto; }
-        .online-member {
-            display: flex; align-items: center; gap: 10px; padding: 10px;
-            background: #f8f9fa; border-radius: 8px; margin-bottom: 8px;
-            cursor: pointer; transition: all 0.3s;
-        }
-        .online-member:hover {
-            background: #e9ecef; transform: translateX(5px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .online-member img { width: 40px; height: 40px; border-radius: 50%; }
-        .member-status { width: 10px; height: 10px; border-radius: 50%; }
-        .member-status.online { background: #4caf50; }
-        .member-status.idle { background: #ffa500; }
-        .member-status.dnd { background: #f44336; }
-        .quick-links a {
-            display: block;
-            padding: 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 10px;
-            transition: transform 0.3s;
-        }
-        .quick-links a:hover {
-            transform: translateY(-2px);
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/main.css?v=2.1">
 </head>
 <body>
     <div class="container">
@@ -107,8 +76,8 @@
                     return;
                 }
                 list.innerHTML = data.members.map(m => `
-                    <div class="online-member" onclick="openProfile('${m.id}', '${m.name}')" title="Нажми чтобы открыть профиль">
-                        <img src="${m.avatar}" alt="${m.name}">
+                    <div class="online-member" onclick="openProfile('${m.id}', '${m.display_name}')" title="Нажми чтобы открыть профиль">
+                        <img src="${m.avatar}" alt="${m.display_name}">
                         <div style="flex: 1;">
                             <div style="font-weight: bold;">${m.display_name}</div>
                             <div style="font-size: 0.9em; color: #666;">${m.activity || 'Нет активности'}</div>
