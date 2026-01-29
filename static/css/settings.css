@@ -35,6 +35,18 @@
     padding: 25px;
     border-radius: 12px;
     border: 2px solid rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-section form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.settings-section .upload-area {
+    flex: 1;
 }
 
 .settings-section.full-width {
@@ -115,20 +127,23 @@
     position: relative;
     border: 3px dashed rgba(102, 126, 234, 0.3);
     border-radius: 12px;
-    padding: 40px 20px;
+    padding: 30px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
     background: white;
-    min-height: 180px;
+    min-height: 200px;
+    max-height: 280px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
+    overflow: hidden;
 }
 
 .upload-area.large {
     min-height: 250px;
+    max-height: 350px;
 }
 
 .upload-area:hover {
@@ -148,21 +163,21 @@
 }
 
 .upload-icon {
-    font-size: 3.5em;
-    margin-bottom: 15px;
+    font-size: 3em;
+    margin-bottom: 12px;
     opacity: 0.6;
 }
 
 .upload-placeholder p {
-    font-size: 1em;
+    font-size: 0.95em;
     color: #667eea;
     font-weight: 600;
-    margin: 10px 0 5px 0;
+    margin: 8px 0 5px 0;
 }
 
 .upload-placeholder small {
     color: #999;
-    font-size: 0.85em;
+    font-size: 0.8em;
     display: block;
 }
 
@@ -188,8 +203,10 @@
 
 /* === PREVIEW IMAGES === */
 .preview-image {
-    max-width: 180px;
-    max-height: 180px;
+    max-width: 140px;
+    max-height: 140px;
+    width: 140px;
+    height: 140px;
     border-radius: 12px;
     object-fit: cover;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -197,7 +214,7 @@
 
 .preview-image-wide {
     max-width: 100%;
-    max-height: 220px;
+    max-height: 180px;
     border-radius: 12px;
     object-fit: cover;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -205,14 +222,14 @@
 
 .preview-video {
     max-width: 100%;
-    max-height: 280px;
+    max-height: 250px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .preview-audio {
     width: 100%;
-    max-width: 350px;
+    max-width: 300px;
     margin: 10px auto;
 }
 
@@ -332,50 +349,57 @@
 
 /* === BUTTONS === */
 .btn {
-    padding: 12px 24px;
+    padding: 14px 28px;
     border: none;
     border-radius: 8px;
     font-size: 1em;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
     text-align: center;
     display: inline-block;
+    width: 100%;
+    margin-top: 12px;
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .btn-secondary {
     background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.5);
 }
 
 .btn-danger {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .btn-danger:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);
 }
 
 .btn-small {
     padding: 10px 18px;
     font-size: 0.9em;
+    width: auto;
+    margin-top: 0;
 }
 
 .btn:disabled {
