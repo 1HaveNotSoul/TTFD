@@ -22,6 +22,11 @@ PORT = os.getenv('PORT')  # Render автоматически устанавли
 WEB_PORT = int(PORT) if PORT else int(os.getenv('WEB_PORT', 5000))
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
+# Discord OAuth настройки
+DISCORD_CLIENT_ID = os.getenv('DISCORD_CLIENT_ID')
+DISCORD_CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET')
+DISCORD_REDIRECT_URI = os.getenv('DISCORD_REDIRECT_URI', 'http://localhost:5000/auth/discord/callback')
+
 # Проверка обязательных настроек
 if not DISCORD_TOKEN:
     print("❌ DISCORD_TOKEN не установлен!")
@@ -33,3 +38,7 @@ if not DISCORD_TOKEN:
 
 if GUILD_ID == 0:
     print("⚠️ GUILD_ID не установлен, некоторые функции могут не работать")
+
+if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET:
+    print("⚠️ Discord OAuth не настроен (DISCORD_CLIENT_ID или DISCORD_CLIENT_SECRET отсутствуют)")
+    print("💡 OAuth авторизация будет недоступна")

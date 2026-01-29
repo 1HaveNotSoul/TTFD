@@ -301,3 +301,33 @@ def run_web():
 
 if __name__ == "__main__":
     run_web()
+
+
+# ==================== DISCORD OAUTH ====================
+
+from discord_oauth import get_oauth_url, handle_oauth_callback
+
+@app.route('/auth/discord')
+def auth_discord():
+    """Начать авторизацию через Discord"""
+    oauth_url = get_oauth_url()
+    if not oauth_url:
+        flash('Discord OAuth не настроен', 'error')
+        return redirect(url_for('login'))
+    return redirect(oauth_url)
+
+@app.route('/auth/discord/callback')
+def auth_discord_callback():
+    """Обработать callback от Discord"""
+    result = handle_oauth_callback(db)
+    
+    if result['success']:
+        session['token'] = result['token']
+        if result['is_new']:
+            flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
+        else:
+            flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
+        return redirect(url_for('index'))
+    else:
+        flash(f'Ошибка авторизации: {result["error"]}', 'error')
+        return redirect(url_for('login'))
