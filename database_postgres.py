@@ -1,11 +1,17 @@
 # База данных PostgreSQL для постоянного хранения
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import hashlib
 import secrets
 import json
+
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    PSYCOPG2_AVAILABLE = True
+except ImportError:
+    PSYCOPG2_AVAILABLE = False
+    print("⚠️ psycopg2 не установлен, PostgreSQL недоступен")
 
 # Ранги (те же самые)
 RANKS = [
@@ -33,14 +39,18 @@ RANKS = [
 
 class PostgresDatabase:
     def __init__(self):
+        if not PSYCOPG2_AVAILABLE:
+            raise ImportError("psycopg2 не установлен")
+        
         self.database_url = os.getenv('DATABASE_URL')
-        if self.database_url:
-            # Render использует postgres://, но psycopg2 требует postgresql://
-            if self.database_url.startswith('postgres://'):
-                self.database_url = self.database_url.replace('postgres://', 'postgresql://', 1)
-            self.init_tables()
-        else:
-            print("⚠️ DATABASE_URL не установлен, используется JSON файл")
+        if not self.database_url:
+            raise ValueError("DATABASE_URL не установлен")
+        
+        # Render использует postgres://, но psycopg2 требует postgresql://
+        if self.database_url.startswith('postgres://'):
+            self.database_url = self.database_url.replace('postgres://', 'postgresql://', 1)
+        
+        self.init_tables()
     
     def get_connection(self):
         """Получить подключение к БД"""
@@ -322,8 +332,13 @@ class PostgresDatabase:
         return {'success': False, 'error': 'Неверный логин или пароль'}
 
 # Создаём экземпляр
-db = PostgresDatabase() if os.getenv('DATABASE_URL') else None
-
-# Если нет PostgreSQL, используем старую JSON версию
-if db is None:
+try:
+    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+        db = PostgresDatabase()
+        print("✅ Используется PostgreSQL")
+    else:
+        raise ValueError("PostgreSQL не настроен")
+except Exception as e:
+    print(f"⚠️ PostgreSQL недоступен: {e}")
+    print("⚠️ Используется JSON файл")
     from database import db
