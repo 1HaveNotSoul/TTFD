@@ -41,29 +41,38 @@ def is_admin(user_id):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Команда /start - главное меню"""
-    user = update.effective_user
-    
-    keyboard = [
-        [InlineKeyboardButton("👤 Мой профиль", callback_data='profile')],
-        [InlineKeyboardButton("📊 Статистика", callback_data='stats')],
-        [InlineKeyboardButton("🎫 Создать тикет", callback_data='create_ticket')],
-        [InlineKeyboardButton("📋 Мои тикеты", callback_data='my_tickets')],
-    ]
-    
-    # Админ кнопки
-    if is_admin(user.id):
-        keyboard.append([InlineKeyboardButton("🔧 Админ-панель", callback_data='admin_panel')])
-    
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    text = f"👋 Привет, {user.first_name}!\n\n"
-    text += "🎮 Добро пожаловать в TTFD Bot!\n\n"
-    text += "Выбери действие:"
-    
-    if update.message:
-        await update.message.reply_text(text, reply_markup=reply_markup)
-    else:
-        await update.callback_query.message.edit_text(text, reply_markup=reply_markup)
+    try:
+        print(f"📥 Получена команда /start от {update.effective_user.id}")
+        user = update.effective_user
+        
+        keyboard = [
+            [InlineKeyboardButton("👤 Мой профиль", callback_data='profile')],
+            [InlineKeyboardButton("📊 Статистика", callback_data='stats')],
+            [InlineKeyboardButton("🎫 Создать тикет", callback_data='create_ticket')],
+            [InlineKeyboardButton("📋 Мои тикеты", callback_data='my_tickets')],
+        ]
+        
+        # Админ кнопки
+        if is_admin(user.id):
+            keyboard.append([InlineKeyboardButton("🔧 Админ-панель", callback_data='admin_panel')])
+            print(f"✅ Пользователь {user.id} - админ")
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        text = f"👋 Привет, {user.first_name}!\n\n"
+        text += "🎮 Добро пожаловать в TTFD Bot!\n\n"
+        text += "Выбери действие:"
+        
+        if update.message:
+            await update.message.reply_text(text, reply_markup=reply_markup)
+            print(f"✅ Отправлен ответ пользователю {user.id}")
+        else:
+            await update.callback_query.message.edit_text(text, reply_markup=reply_markup)
+            print(f"✅ Обновлено сообщение для {user.id}")
+    except Exception as e:
+        print(f"❌ Ошибка в start: {e}")
+        import traceback
+        traceback.print_exc()
 
 # ==================== ПРОФИЛЬ ====================
 
@@ -507,28 +516,49 @@ async def handle_text_commands(update: Update, context: ContextTypes.DEFAULT_TYP
 
 def run_telegram_bot():
     """Запустить Telegram бота"""
+    print("=" * 50)
+    print("🤖 Запуск Telegram бота...")
+    print("=" * 50)
+    
     if not TELEGRAM_TOKEN:
         print("❌ TELEGRAM_BOT_TOKEN не установлен!")
+        print("   Установи переменную окружения TELEGRAM_BOT_TOKEN")
         return
     
+    print(f"✅ Токен найден: {TELEGRAM_TOKEN[:10]}...")
+    print(f"✅ Админы: {ADMIN_IDS}")
+    
     load_tickets()
+    print(f"✅ Загружено тикетов: {len(tickets)}")
     
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
-    
-    # Команды
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-    
-    # Кнопки
-    app.add_handler(CallbackQueryHandler(button_handler))
-    
-    # Сообщения (для тикетов и команд)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: 
-        handle_ticket_message(u, c) if c.user_data.get('waiting_for_ticket') else handle_text_commands(u, c)
-    ))
-    
-    print("✅ Telegram бот запущен!")
-    app.run_polling()
+    try:
+        app = Application.builder().token(TELEGRAM_TOKEN).build()
+        
+        # Команды
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(CommandHandler("help", help_command))
+        print("✅ Команды зарегистрированы")
+        
+        # Кнопки
+        app.add_handler(CallbackQueryHandler(button_handler))
+        print("✅ Обработчик кнопок зарегистрирован")
+        
+        # Сообщения (для тикетов и команд)
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: 
+            handle_ticket_message(u, c) if c.user_data.get('waiting_for_ticket') else handle_text_commands(u, c)
+        ))
+        print("✅ Обработчик сообщений зарегистрирован")
+        
+        print("=" * 50)
+        print("✅ Telegram бот запущен и готов к работе!")
+        print("   Отправь /start боту в Telegram")
+        print("=" * 50)
+        
+        app.run_polling(drop_pending_updates=True)
+    except Exception as e:
+        print(f"❌ Ошибка запуска Telegram бота: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     run_telegram_bot()
