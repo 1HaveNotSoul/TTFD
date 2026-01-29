@@ -130,10 +130,8 @@ def ranks():
 def users():
     """Список всех пользователей"""
     try:
-        # Получаем всех пользователей
-        all_users = list(db.accounts.get('accounts', {}).values())
-        # Сортируем по дате создания (новые первые)
-        all_users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        # Получаем всех пользователей через универсальный метод
+        all_users = db.get_all_accounts()
         
         current_user = None
         if 'token' in session:
@@ -450,8 +448,9 @@ def api_user_by_discord(discord_id):
     try:
         print(f"🔍 Поиск аккаунта для Discord ID: {discord_id}")
         
-        # Ищем аккаунт с этим Discord ID
-        for acc in db.accounts.get('accounts', {}).values():
+        # Ищем аккаунт с этим Discord ID через универсальный метод
+        all_accounts = db.get_all_accounts()
+        for acc in all_accounts:
             if str(acc.get('discord_id')) == str(discord_id):
                 print(f"✅ Найден аккаунт: {acc.get('username')}")
                 return jsonify({

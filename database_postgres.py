@@ -330,6 +330,19 @@ class PostgresDatabase:
         """Получить все ранги"""
         return RANKS
     
+    def get_all_accounts(self):
+        """Получить все аккаунты"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT * FROM accounts ORDER BY created_at DESC")
+        accounts = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        
+        return [dict(acc) for acc in accounts]
+    
     # Методы для аккаунтов (аналогично JSON версии)
     def create_account(self, email, username, password, display_name):
         """Создать аккаунт"""

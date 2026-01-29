@@ -356,6 +356,13 @@ class Database:
     def get_all_ranks(self):
         """Получить все ранги"""
         return RANKS
+    
+    def get_all_accounts(self):
+        """Получить все аккаунты"""
+        all_accounts = list(self.accounts.get('accounts', {}).values())
+        # Сортируем по дате создания (новые первые)
+        all_accounts.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        return all_accounts
 
 # Глобальный экземпляр базы данных
 db = Database()
