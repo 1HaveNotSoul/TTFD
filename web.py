@@ -226,10 +226,11 @@ def api_click():
     # Даём 1 XP за клик
     xp_result = db.add_xp(user_id, 1)
     
-    # Обновляем прогресс заданий
+    # Обновляем прогресс заданий на основе общего количества кликов
     for task in user['daily_tasks']:
         if not task['completed'] and 'клик' in task['name'].lower():
-            task['progress'] = min(task['progress'] + 1, task['target'])
+            # Используем общее количество кликов как прогресс
+            task['progress'] = min(user['clicks'], task['target'])
     
     db.save_data()
     db.data['global_stats']['total_clicks'] += 1

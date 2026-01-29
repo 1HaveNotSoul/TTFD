@@ -103,7 +103,16 @@ async def on_member_join(member):
 async def update_online_members():
     """Обновление списка онлайн пользователей"""
     try:
-        guild = bot.get_guild(config.GUILD_ID)
+        # Пытаемся получить гильдию по ID, если он установлен
+        guild = None
+        if config.GUILD_ID and config.GUILD_ID > 0:
+            guild = bot.get_guild(config.GUILD_ID)
+        
+        # Если не нашли по ID, берём первую доступную гильдию
+        if not guild and len(bot.guilds) > 0:
+            guild = bot.guilds[0]
+            print(f"ℹ️ Используется сервер: {guild.name} (ID: {guild.id})")
+        
         if guild:
             online_members = []
             for member in guild.members:
@@ -120,8 +129,14 @@ async def update_online_members():
             # Обновляем данные для веб-сайта
             import web
             web.bot_data['online_members'] = online_members
+            web.bot_data['guild_name'] = guild.name
+            web.bot_data['guild_id'] = guild.id
+        else:
+            print("⚠️ Не найдено ни одного сервера")
     except Exception as e:
         print(f"❌ Ошибка обновления онлайна: {e}")
+        import traceback
+        traceback.print_exc()
 
 # ==================== КОМАНДЫ ====================
 

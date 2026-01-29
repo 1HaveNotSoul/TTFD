@@ -276,6 +276,10 @@ class Database:
         
         for task in user['daily_tasks']:
             if task['id'] == task_id and not task['completed']:
+                # Проверяем, выполнено ли задание
+                if task['progress'] < task['target']:
+                    return {'success': False, 'error': 'Задание ещё не выполнено'}
+                
                 task['completed'] = True
                 user['tasks_completed'] += 1
                 user['xp'] += task['reward_xp']
