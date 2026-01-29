@@ -316,6 +316,7 @@ async def help_command(ctx):
         ("!rank", "Твой текущий ранг"),
         ("!top", "Таблица лидеров"),
         ("!daily", "Ежедневная награда"),
+        ("!link", "Ссылка на сайт"),
         ("!ticket", "Создать тикет поддержки"),
         ("!close", "Закрыть тикет (только в канале тикета)"),
         ("!clear <число>", "Очистить сообщения (только для модераторов)"),
@@ -326,6 +327,43 @@ async def help_command(ctx):
         embed.add_field(name=cmd, value=desc, inline=False)
     
     embed.set_footer(text="🎮 Играй в кликер на сайте и получай ранги!")
+    await ctx.send(embed=embed)
+
+@bot.command(name='link')
+async def link_command(ctx):
+    """Ссылка на сайт"""
+    embed = discord.Embed(
+        title="🌐 Сайт TTFD",
+        description="Играй в игры и зарабатывай ранги!",
+        color=discord.Color.blue(),
+        url="https://ttfd.onrender.com/"
+    )
+    
+    embed.add_field(
+        name="🎮 Игры",
+        value="[Все игры](https://ttfd.onrender.com/games)\n"
+              "[Змейка](https://ttfd.onrender.com/snake)\n"
+              "[Кликер](https://ttfd.onrender.com/game)",
+        inline=True
+    )
+    
+    embed.add_field(
+        name="📊 Статистика",
+        value="[Таблица лидеров](https://ttfd.onrender.com/leaderboard)\n"
+              "[Ранги](https://ttfd.onrender.com/ranks)",
+        inline=True
+    )
+    
+    embed.add_field(
+        name="👤 Аккаунт",
+        value="[Вход](https://ttfd.onrender.com/login)\n"
+              "[Регистрация](https://ttfd.onrender.com/register)",
+        inline=True
+    )
+    
+    embed.set_footer(text="✨ Войди через Discord одним кликом!")
+    embed.set_thumbnail(url=bot.user.display_avatar.url)
+    
     await ctx.send(embed=embed)
 
 # ==================== ТИКЕТ-СИСТЕМА ====================
