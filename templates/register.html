@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - TTFD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .form-container {
+            background: white; border-radius: 20px; padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 450px; width: 100%;
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { font-size: 2.5em; color: #667eea; margin-bottom: 5px; }
+        .logo p { color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 1em; transition: border-color 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .btn {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px; font-size: 1.1em;
+            font-weight: bold; cursor: pointer; transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .link { text-align: center; margin-top: 20px; color: #666; }
+        .link a { color: #667eea; text-decoration: none; font-weight: bold; }
+        .link a:hover { text-decoration: underline; }
+        .error { background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="logo">
+            <h1>TTFD</h1>
+            <p>Создай свой аккаунт</p>
+        </div>
+        
+        <div id="message"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="your@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Логин</label>
+                <input type="text" id="username" required placeholder="username" minlength="3">
+            </div>
+            
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" id="display_name" required placeholder="Как тебя называть">
+            </div>
+            
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="password" required placeholder="••••••••" minlength="6">
+            </div>
+            
+            <div class="form-group">
+                <label>Повтори пароль</label>
+                <input type="password" id="password2" required placeholder="••••••••" minlength="6">
+            </div>
+            
+            <button type="submit" class="btn">Зарегистрироваться</button>
+        </form>
+        
+        <div class="link">
+            Уже есть аккаунт? <a href="/login">Войти</a>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const display_name = document.getElementById('display_name').value;
+            const password = document.getElementById('password').value;
+            const password2 = document.getElementById('password2').value;
+            
+            if (password !== password2) {
+                showMessage('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, username, display_name, password})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Регистрация успешна! Перенаправление...', 'success');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка регистрации', 'error');
+            }
+        });
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.className = type;
+            msg.textContent = text;
+        }
+    </script>
+</body>
+</html>

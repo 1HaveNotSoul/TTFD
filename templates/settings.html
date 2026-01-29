@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки - TTFD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav a {
+            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+        }
+        .nav a:hover { transform: translateY(-2px); }
+        .card {
+            background: white; border-radius: 15px; padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px;
+        }
+        .card h2 { color: #667eea; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 1em; font-family: inherit;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .color-picker { display: flex; gap: 10px; align-items: center; }
+        .color-picker input[type="color"] {
+            width: 60px; height: 40px; border: none; border-radius: 8px; cursor: pointer;
+        }
+        .btn {
+            padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px; font-size: 1em;
+            font-weight: bold; cursor: pointer; transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .message { padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .message.success { background: #e8f5e9; color: #2e7d32; }
+        .message.error { background: #ffebee; color: #c62828; }
+        .profile-link {
+            background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;
+            text-align: center;
+        }
+        .profile-link a { color: #667eea; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Настройки профиля</h1>
+        </div>
+        
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/profile/{{ current_user.username }}">Мой профиль</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/logout">Выход</a>
+        </div>
+
+        <div class="profile-link">
+            Твоя ссылка: <a href="https://TTFD.com/profile/{{ current_user.username }}" target="_blank">
+                https://TTFD.com/profile/{{ current_user.username }}
+            </a>
+        </div>
+
+        <div id="message"></div>
+
+        <!-- Основные настройки -->
+        <div class="card">
+            <h2>Основная информация</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Отображаемое имя</label>
+                    <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" value="{{ current_user.email }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Логин (нельзя изменить)</label>
+                    <input type="text" value="{{ current_user.username }}" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>О себе</label>
+                    <textarea id="bio" placeholder="Расскажи о себе...">{{ current_user.profile.bio }}</textarea>
+                </div>
+                
+                <button type="submit" class="btn">Сохранить</button>
+            </form>
+        </div>
+
+        <!-- Внешний вид -->
+        <div class="card">
+            <h2>Внешний вид профиля</h2>
+            <form id="designForm">
+                <div class="form-group">
+                    <label>URL аватара</label>
+                    <input type="url" id="avatar_url" value="{{ current_user.profile.avatar_url }}" 
+                           placeholder="https://example.com/avatar.jpg">
+                </div>
+                
+                <div class="form-group">
+                    <label>Цвет фона</label>
+                    <div class="color-picker">
+                        <input type="color" id="background_color" value="{{ current_user.profile.background_color }}">
+                        <input type="text" id="background_color_text" value="{{ current_user.profile.background_color }}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Цвет текста</label>
+                    <div class="color-picker">
+                        <input type="color" id="text_color" value="{{ current_user.profile.text_color }}">
+                        <input type="text" id="text_color_text" value="{{ current_user.profile.text_color }}">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">Сохранить дизайн</button>
+            </form>
+        </div>
+
+        <!-- Музыка -->
+        <div class="card">
+            <h2>🎵 Музыка профиля</h2>
+            <form id="musicForm">
+                <div class="form-group">
+                    <label>URL музыки (MP3)</label>
+                    <input type="url" id="music_url" value="{{ current_user.profile.music_url }}" 
+                           placeholder="https://example.com/music.mp3">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Музыка будет автоматически проигрываться при посещении твоего профиля
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn">Сохранить музыку</button>
+            </form>
+        </div>
+
+        <!-- Discord -->
+        <div class="card">
+            <h2>🎮 Привязка Discord</h2>
+            <form id="discordForm">
+                <div class="form-group">
+                    <label>Discord ID</label>
+                    <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" 
+                           placeholder="Твой Discord ID">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Как узнать: Настройки → Расширенные → Режим разработчика → ПКМ на себя → Копировать ID
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn">Привязать Discord</button>
+            </form>
+        </div>
+
+        <!-- Смена пароля -->
+        <div class="card">
+            <h2>🔒 Смена пароля</h2>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label>Старый пароль</label>
+                    <input type="password" id="old_password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Новый пароль</label>
+                    <input type="password" id="new_password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label>Повтори новый пароль</label>
+                    <input type="password" id="new_password2" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn btn-danger">Сменить пароль</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Синхронизация color picker
+        document.getElementById('background_color').addEventListener('input', (e) => {
+            document.getElementById('background_color_text').value = e.target.value;
+        });
+        document.getElementById('text_color').addEventListener('input', (e) => {
+            document.getElementById('text_color_text').value = e.target.value;
+        });
+
+        // Обновление профиля
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                display_name: document.getElementById('display_name').value,
+                email: document.getElementById('email').value,
+                bio: document.getElementById('bio').value
+            };
+            await updateProfile(data);
+        });
+
+        // Обновление дизайна
+        document.getElementById('designForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                avatar_url: document.getElementById('avatar_url').value,
+                background_color: document.getElementById('background_color').value,
+                text_color: document.getElementById('text_color').value
+            };
+            await updateProfile(data);
+        });
+
+        // Обновление музыки
+        document.getElementById('musicForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                music_url: document.getElementById('music_url').value
+            };
+            await updateProfile(data);
+        });
+
+        // Привязка Discord
+        document.getElementById('discordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const discord_id = document.getElementById('discord_id').value;
+            
+            try {
+                const response = await fetch('/api/link_discord', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({discord_id})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Discord успешно привязан!', 'success');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка привязки Discord', 'error');
+            }
+        });
+
+        // Смена пароля
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const old_password = document.getElementById('old_password').value;
+            const new_password = document.getElementById('new_password').value;
+            const new_password2 = document.getElementById('new_password2').value;
+            
+            if (new_password !== new_password2) {
+                showMessage('Новые пароли не совпадают', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/change_password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({old_password, new_password})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Пароль успешно изменён!', 'success');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка смены пароля', 'error');
+            }
+        });
+
+        async function updateProfile(data) {
+            try {
+                const response = await fetch('/api/update_profile', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Профиль обновлён!', 'success');
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка обновления профиля', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.className = 'message ' + type;
+            msg.textContent = text;
+            window.scrollTo(0, 0);
+            setTimeout(() => msg.className = '', 5000);
+        }
+    </script>
+</body>
+</html>

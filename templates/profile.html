@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ account.display_name }} - TTFD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: {{ account.profile.background_color }};
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .nav {
+            display: flex; gap: 10px; justify-content: center; margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+        }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .profile-header {
+            background: white; border-radius: 20px; padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px;
+            text-align: center;
+        }
+        .avatar {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 20px; display: flex; align-items: center;
+            justify-content: center; font-size: 4em; color: white;
+        }
+        .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .display-name {
+            font-size: 2.5em; font-weight: bold;
+            color: {{ account.profile.text_color }}; margin-bottom: 10px;
+        }
+        .username { color: #666; font-size: 1.2em; margin-bottom: 20px; }
+        .bio {
+            color: #666; font-size: 1.1em; line-height: 1.6;
+            max-width: 600px; margin: 0 auto 20px;
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-top: 30px;
+        }
+        .stat-box {
+            background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;
+        }
+        .stat-value { font-size: 2em; font-weight: bold; color: #667eea; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .music-player {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px;
+            text-align: center;
+        }
+        .music-player h3 { color: #667eea; margin-bottom: 15px; }
+        audio { width: 100%; max-width: 500px; }
+        .rank-badge {
+            display: inline-block; padding: 10px 20px; border-radius: 20px;
+            color: white; font-weight: bold; margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/leaderboard">🏆 Лидеры</a>
+            <a href="/ranks">📊 Ранги</a>
+            {% if current_user %}
+                {% if current_user.username == account.username %}
+                    <a href="/settings">⚙️ Настройки</a>
+                {% endif %}
+                <a href="/profile/{{ current_user.username }}">Мой профиль</a>
+                <a href="/logout">Выход</a>
+            {% else %}
+                <a href="/login">Вход</a>
+                <a href="/register">Регистрация</a>
+            {% endif %}
+        </div>
+
+        {% if account.profile.music_url %}
+        <div class="music-player">
+            <h3>🎵 Музыка профиля</h3>
+            <audio controls autoplay loop>
+                <source src="{{ account.profile.music_url }}" type="audio/mpeg">
+                Ваш браузер не поддерживает аудио.
+            </audio>
+        </div>
+        {% endif %}
+
+        <div class="profile-header">
+            <div class="avatar">
+                {% if account.profile.avatar_url %}
+                    <img src="{{ account.profile.avatar_url }}" alt="Avatar">
+                {% else %}
+                    {{ account.display_name[0].upper() }}
+                {% endif %}
+            </div>
+            
+            <div class="display-name">{{ account.display_name }}</div>
+            <div class="username">@{{ account.username }}</div>
+            
+            {% if account.bio %}
+            <div class="bio">{{ account.profile.bio }}</div>
+            {% endif %}
+            
+            {% if game_data %}
+                {% set rank = ranks[game_data.rank_id - 1] %}
+                <div class="rank-badge" style="background: {{ rank.color }};">
+                    🏆 {{ rank.name }}
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">{{ game_data.xp }}</div>
+                        <div class="stat-label">⭐ Опыт</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">{{ game_data.coins }}</div>
+                        <div class="stat-label">💰 Монеты</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">{{ game_data.clicks }}</div>
+                        <div class="stat-label">🖱️ Кликов</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">{{ game_data.tasks_completed }}</div>
+                        <div class="stat-label">✅ Заданий</div>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color: #999; margin-top: 20px;">
+                    Discord не привязан. Привяжи в настройках для отображения игровой статистики.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

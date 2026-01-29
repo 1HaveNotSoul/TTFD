@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все ранги</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+        .nav a {
+            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+        }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .ranks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .rank-card {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        .rank-card:hover { transform: translateY(-5px); }
+        .rank-header {
+            padding: 15px; border-radius: 10px; margin-bottom: 15px;
+            color: white; text-align: center;
+        }
+        .rank-name { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
+        .rank-id { font-size: 0.9em; opacity: 0.9; }
+        .rank-info { color: #666; }
+        .rank-info div { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .rank-info div:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Все ранги</h1>
+            <p>20 уровней прогрессии</p>
+        </div>
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/leaderboard">🏆 Лидеры</a>
+            <a href="/ranks">📊 Ранги</a>
+        </div>
+        <div class="ranks-grid">
+            {% for rank in ranks %}
+            <div class="rank-card">
+                <div class="rank-header" style="background: linear-gradient(135deg, {{ rank.color }} 0%, {{ rank.color }}dd 100%);">
+                    <div class="rank-name">{{ rank.name }}</div>
+                    <div class="rank-id">Ранг {{ rank.id }}</div>
+                </div>
+                <div class="rank-info">
+                    <div><strong>⭐ Требуется XP:</strong> {{ rank.required_xp }}</div>
+                    <div><strong>💰 Награда:</strong> {{ rank.reward_coins }} монет</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

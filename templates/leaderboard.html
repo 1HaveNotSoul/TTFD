@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица лидеров</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+        .nav a {
+            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+        }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .leader {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        .leader:hover { transform: translateX(5px); }
+        .leader.top1 { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); }
+        .leader.top2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); }
+        .leader.top3 { background: linear-gradient(135deg, #cd7f32 0%, #e8a87c 100%); }
+        .rank-number {
+            font-size: 2em; font-weight: bold; min-width: 50px; text-align: center;
+        }
+        .leader-info { flex: 1; }
+        .leader-name { font-size: 1.3em; font-weight: bold; margin-bottom: 5px; }
+        .leader-stats { font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Таблица лидеров</h1>
+            <p>Топ игроков по опыту</p>
+        </div>
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/leaderboard">🏆 Лидеры</a>
+            <a href="/ranks">📊 Ранги</a>
+        </div>
+        <div class="card">
+            {% for leader in leaders %}
+            <div class="leader {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">
+                <div class="rank-number">
+                    {% if loop.index == 1 %}🥇
+                    {% elif loop.index == 2 %}🥈
+                    {% elif loop.index == 3 %}🥉
+                    {% else %}{{ loop.index }}.{% endif %}
+                </div>
+                <div class="leader-info">
+                    <div class="leader-name">{{ leader.username }}</div>
+                    <div class="leader-stats">
+                        🏆 {{ ranks[leader.rank_id - 1].name }} | 
+                        ⭐ {{ leader.xp }} XP | 
+                        💰 {{ leader.coins }} монет | 
+                        🖱️ {{ leader.clicks }} кликов
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кликер - TTFD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        
+        .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav a {
+            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+        }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        .game-grid { display: grid; grid-template-columns: 1fr 400px 350px; gap: 20px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .clicker-section { text-align: center; }
+        
+        .click-button {
+            width: 250px; height: 250px; border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none; font-size: 4em; cursor: pointer;
+            transition: all 0.1s; box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+            margin: 30px 0;
+        }
+        .click-button:hover { transform: scale(1.05); }
+        .click-button:active { transform: scale(0.95); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 15px; border-radius: 10px; text-align: center;
+        }
+        .stat-value { font-size: 2em; font-weight: bold; margin-top: 5px; }
+        
+        .rank-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;
+        }
+        .rank-name { font-size: 2em; font-weight: bold; margin-bottom: 10px; }
+        .progress-bar { background: rgba(255,255,255,0.3); height: 20px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        .progress-fill { background: white; height: 100%; transition: width 0.3s; }
+        
+        .tasks-section h2 { margin-bottom: 15px; color: #333; }
+        .task { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .task.completed { opacity: 0.6; border-left-color: #4caf50; }
+        .task-progress { background: #e0e0e0; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .task-progress-fill { background: #667eea; height: 100%; transition: width 0.3s; }
+        .task.completed .task-progress-fill { background: #4caf50; }
+        
+        .complete-btn { background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9em; }
+        .complete-btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .user-id-input { width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 5px; font-size: 1em; margin-bottom: 15px; }
+        
+        .notification {
+            position: fixed; top: 20px; right: 20px; background: white; padding: 20px; border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); transform: translateX(400px); transition: transform 0.3s; z-index: 1000;
+        }
+        .notification.show { transform: translateX(0); }
+        .rank-up-notification { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; font-size: 1.2em; font-weight: bold; }
+        
+        @media (max-width: 1200px) { .game-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Кликер</h1>
+            <p>Кликай, выполняй задания и получай ранги!</p>
+        </div>
+        
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/leaderboard">🏆 Лидеры</a>
+            <a href="/ranks">📊 Ранги</a>
+            {% if current_user %}
+                <a href="/profile/{{ current_user.username }}">Мой профиль</a>
+                <a href="/settings">⚙️ Настройки</a>
+                <a href="/logout">Выход</a>
+            {% else %}
+                <a href="/login">Вход</a>
+                <a href="/register">Регистрация</a>
+            {% endif %}
+        </div>
+        
+        <div class="game-grid">
+            <div class="card clicker-section">
+                <h2>Твой Discord ID:</h2>
+                <input type="text" id="userId" class="user-id-input" placeholder="Введи свой Discord ID">
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+                    Как узнать ID: Настройки → Расширенные → Режим разработчика → ПКМ на себя → Копировать ID
+                </p>
+                <button class="click-button" id="clickBtn" onclick="handleClick()">👆</button>
+                <div class="stats-grid">
+                    <div class="stat-box"><div>🖱️ Кликов</div><div class="stat-value" id="clicks">0</div></div>
+                    <div class="stat-box"><div>⭐ Опыт</div><div class="stat-value" id="xp">0</div></div>
+                    <div class="stat-box"><div>💰 Монеты</div><div class="stat-value" id="coins">0</div></div>
+                    <div class="stat-box"><div>✅ Заданий</div><div class="stat-value" id="tasksCompleted">0</div></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="rank-display" id="rankDisplay">
+                    <div class="rank-name" id="rankName">Новичок</div>
+                    <div id="rankXp">0 / 100 XP</div>
+                    <div class="progress-bar"><div class="progress-fill" id="rankProgress" style="width: 0%"></div></div>
+                </div>
+                <h3 style="margin-bottom: 15px;">📊 Следующие ранги:</h3>
+                <div id="nextRanks" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+            
+            <div class="card tasks-section">
+                <h2>📋 Задания</h2>
+                <div id="tasksList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"><div id="notificationText"></div></div>
+
+    <script>
+        let userId = localStorage.getItem('userId') || '';
+        let userData = null;
+        let allRanks = [];
+        if (userId) { document.getElementById('userId').value = userId; loadUserData(); }
+        document.getElementById('userId').addEventListener('change', function() {
+            userId = this.value; localStorage.setItem('userId', userId);
+            if (userId) { loadUserData(); }
+        });
+        async function loadUserData() {
+            if (!userId) { showNotification('❌ Введи свой Discord ID!'); return; }
+            try {
+                const response = await fetch(`/api/user/${userId}`);
+                const data = await response.json();
+                userData = data.user;
+                updateUI(); loadTasks(); loadRanks();
+            } catch (error) { console.error('Ошибка загрузки данных:', error); }
+        }
+        async function handleClick() {
+            if (!userId) { showNotification('❌ Введи свой Discord ID!'); return; }
+            try {
+                const response = await fetch('/api/click', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    userData.clicks = data.clicks; userData.xp = data.xp; userData.coins = data.coins;
+                    updateUI();
+                    const btn = document.getElementById('clickBtn');
+                    btn.style.transform = 'scale(0.95)';
+                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                    if (data.rank_up) { showRankUp(data.new_rank); loadUserData(); }
+                    loadTasks();
+                }
+            } catch (error) { console.error('Ошибка клика:', error); }
+        }
+        function updateUI() {
+            if (!userData) return;
+            document.getElementById('clicks').textContent = userData.clicks;
+            document.getElementById('xp').textContent = userData.xp;
+            document.getElementById('coins').textContent = userData.coins;
+            document.getElementById('tasksCompleted').textContent = userData.tasks_completed;
+        }
+        async function loadTasks() {
+            if (!userId) return;
+            try {
+                const response = await fetch(`/api/tasks/${userId}`);
+                const data = await response.json();
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+                data.tasks.forEach(task => {
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task' + (task.completed ? ' completed' : '');
+                    const progress = Math.min((task.progress / task.target) * 100, 100);
+                    const canComplete = task.progress >= task.target && !task.completed;
+                    taskDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>${task.name}</strong>
+                            <span>${task.completed ? '✅' : `${task.progress}/${task.target}`}</span>
+                        </div>
+                        <div class="task-progress">
+                            <div class="task-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span style="font-size: 0.9em; color: #666;">
+                                Награда: ⭐${task.reward_xp} XP, 💰${task.reward_coins}
+                            </span>
+                            ${!task.completed ? `
+                                <button class="complete-btn" onclick="completeTask(${task.id})" ${!canComplete ? 'disabled' : ''}>
+                                    Забрать
+                                </button>
+                            ` : '<span style="color: #4caf50;">Выполнено!</span>'}
+                        </div>
+                    `;
+                    tasksList.appendChild(taskDiv);
+                });
+            } catch (error) { console.error('Ошибка загрузки заданий:', error); }
+        }
+        async function completeTask(taskId) {
+            if (!userId) return;
+            try {
+                const response = await fetch('/api/complete_task', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, task_id: taskId})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showNotification(`✅ Задание выполнено! +${data.task.reward_xp} XP, +${data.task.reward_coins} монет`);
+                    loadUserData(); loadTasks();
+                }
+            } catch (error) { console.error('Ошибка завершения задания:', error); }
+        }
+        async function loadRanks() {
+            try {
+                const response = await fetch('/api/ranks');
+                const data = await response.json();
+                allRanks = data.ranks;
+                updateRankDisplay();
+            } catch (error) { console.error('Ошибка загрузки рангов:', error); }
+        }
+        function updateRankDisplay() {
+            if (!userData || allRanks.length === 0) return;
+            const currentRank = allRanks[userData.rank_id - 1];
+            const nextRank = userData.rank_id < allRanks.length ? allRanks[userData.rank_id] : null;
+            const rankDisplay = document.getElementById('rankDisplay');
+            rankDisplay.style.background = `linear-gradient(135deg, ${currentRank.color} 0%, ${currentRank.color}dd 100%)`;
+            document.getElementById('rankName').textContent = currentRank.name;
+            if (nextRank) {
+                const progress = ((userData.xp - currentRank.required_xp) / (nextRank.required_xp - currentRank.required_xp)) * 100;
+                document.getElementById('rankXp').textContent = `${userData.xp} / ${nextRank.required_xp} XP`;
+                document.getElementById('rankProgress').style.width = Math.min(progress, 100) + '%';
+            } else {
+                document.getElementById('rankXp').textContent = `${userData.xp} XP (Максимальный ранг!)`;
+                document.getElementById('rankProgress').style.width = '100%';
+            }
+            const nextRanksDiv = document.getElementById('nextRanks');
+            nextRanksDiv.innerHTML = '';
+            for (let i = userData.rank_id; i < Math.min(userData.rank_id + 5, allRanks.length); i++) {
+                const rank = allRanks[i];
+                const div = document.createElement('div');
+                div.style.cssText = `padding: 10px; margin-bottom: 8px; border-radius: 8px; background: ${rank.color}22; border-left: 4px solid ${rank.color};`;
+                div.innerHTML = `<strong style="color: ${rank.color}">${rank.name}</strong><br>
+                    <span style="font-size: 0.9em; color: #666;">${rank.required_xp} XP | Награда: 💰${rank.reward_coins}</span>`;
+                nextRanksDiv.appendChild(div);
+            }
+        }
+        function showRankUp(rank) {
+            const notification = document.getElementById('notification');
+            notification.className = 'notification rank-up-notification show';
+            notification.innerHTML = `<div style="text-align: center;">
+                <div style="font-size: 2em; margin-bottom: 10px;">🎉</div>
+                <div>ПОВЫШЕНИЕ РАНГА!</div>
+                <div style="font-size: 1.5em; margin-top: 10px;">${rank.name}</div>
+                <div style="margin-top: 10px;">+${rank.reward_coins} монет</div>
+            </div>`;
+            setTimeout(() => { notification.classList.remove('show'); }, 5000);
+        }
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.className = 'notification show';
+            notification.innerHTML = `<div>${text}</div>`;
+            setTimeout(() => { notification.classList.remove('show'); }, 3000);
+        }
+        setInterval(() => { if (userId) { loadUserData(); } }, 5000);
+    </script>
+</body>
+</html>
