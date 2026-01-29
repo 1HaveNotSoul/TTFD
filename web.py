@@ -44,6 +44,16 @@ bot_data = {
     'online_members': [],
 }
 
+@app.route('/landing')
+def landing():
+    """Modern landing page"""
+    return render_template('landing.html')
+
+@app.route('/landing-pro')
+def landing_pro():
+    """Modern landing page PRO with advanced features"""
+    return render_template('landing_pro.html')
+
 @app.route('/')
 def index():
     """Главная страница"""

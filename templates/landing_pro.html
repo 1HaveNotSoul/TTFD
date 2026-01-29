@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTFD - Tokyo Ghoul Community</title>
+    <meta name="description" content="Join TTFD - The ultimate Tokyo Ghoul Discord community with events, games, and more!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5865f2;
+            --secondary: #8a2be2;
+            --bg-dark: #0b0f14;
+            --card-bg: rgba(20, 24, 35, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background with Video */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, rgba(11, 15, 20, 0.9) 0%, rgba(26, 31, 46, 0.9) 50%, rgba(11, 15, 20, 0.9) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        .background-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.15) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+
+        /* Container */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glass Card */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            animation: cardFadeIn 1s ease-out;
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.5);
+            overflow: hidden;
+            position: relative;
+            animation: avatarGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes avatarGlow {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(88, 101, 242, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(88, 101, 242, 0.8);
+                transform: scale(1.02);
+            }
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: #23a55a;
+            border: 3px solid var(--card-bg);
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Title with Gradient */
+        .title {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            animation: titleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Typing Animation Tagline */
+        .tagline {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 32px;
+            font-weight: 400;
+            min-height: 24px;
+        }
+
+        .typing-text {
+            border-right: 2px solid var(--primary);
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { border-color: transparent; }
+            50% { border-color: var(--primary); }
+        }
+
+        /* Online Counter */
+        .online-counter {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 12px 20px;
+            background: rgba(35, 165, 90, 0.1);
+            border: 1px solid rgba(35, 165, 90, 0.3);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #23a55a;
+            animation: counterPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes counterPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #23a55a;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Badges */
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .badge:hover {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: rgba(88, 101, 242, 0.5);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* Buttons */
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            color: var(--text-primary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(88, 101, 242, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn:hover {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: rgba(88, 101, 242, 0.6);
+            box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.6);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        /* Social Icons */
+        .socials {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .social-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: rgba(88, 101, 242, 0.6);
+            transform: translateY(-4px) rotate(5deg);
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* Music Toggle */
+        .music-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .music-toggle:hover {
+            background: rgba(88, 101, 242, 0.2);
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .music-toggle i {
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        .music-toggle.playing {
+            animation: musicPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes musicPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Copy notification */
+        .copy-notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card {
+                padding: 36px 24px;
+            }
+
+            .title {
+                font-size: 36px;
+            }
+
+            .avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .badges {
+                gap: 8px;
+            }
+
+            .badge {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .music-toggle {
+                bottom: 16px;
+                right: 16px;
+                width: 48px;
+                height: 48px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(88, 101, 242, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Background -->
+    <div class="background">
+        <!-- Optional: Add video background -->
+        <!-- <video autoplay muted loop playsinline>
+            <source src="/static/video/bg.mp4" type="video/mp4">
+        </video> -->
+    </div>
+    <div class="background-overlay"></div>
+    
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="card">
+            <!-- Avatar -->
+            <div class="avatar">
+                <img src="https://cdn.discordapp.com/icons/YOUR_SERVER_ID/YOUR_ICON.png" alt="TTFD" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%235865f2%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2250%22 font-size=%2240%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-family=%22Inter%22%3ETTFD%3C/text%3E%3C/svg%3E'">
+            </div>
+
+            <!-- Title -->
+            <h1 class="title">TTFD</h1>
+
+            <!-- Tagline with Typing Effect -->
+            <p class="tagline">
+                <span class="typing-text" id="typingText"></span>
+            </p>
+
+            <!-- Online Counter -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="online-counter">
+                    <span class="online-dot"></span>
+                    <span id="onlineCount">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="badges">
+                <span class="badge">🎮 Community</span>
+                <span class="badge">🎉 Events</span>
+                <span class="badge">💬 Active</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="buttons">
+                <a href="https://discord.gg/YOUR_INVITE" class="btn btn-primary" target="_blank">
+                    <span><i class="fab fa-discord"></i> Join Discord</span>
+                </a>
+                <a href="/login" class="btn">
+                    <span><i class="fas fa-rocket"></i> Getting Started</span>
+                </a>
+                <a href="/games" class="btn">
+                    <span><i class="fas fa-gamepad"></i> Play Games</span>
+                </a>
+                <a href="#" class="btn" onclick="copyDiscord(event)">
+                    <span><i class="fas fa-copy"></i> Copy Invite</span>
+                </a>
+            </div>
+
+            <!-- Social Icons -->
+            <div class="socials">
+                <a href="https://discord.gg/YOUR_INVITE" class="social-icon" target="_blank" title="Discord">
+                    <i class="fab fa-discord"></i>
+                </a>
+                <a href="https://t.me/YOUR_TELEGRAM" class="social-icon" target="_blank" title="Telegram">
+                    <i class="fab fa-telegram"></i>
+                </a>
+                <a href="https://github.com/YOUR_GITHUB" class="social-icon" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://youtube.com/@YOUR_CHANNEL" class="social-icon" target="_blank" title="YouTube">
+                    <i class="fab fa-youtube"></i>
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                © 2026 TTFD • All rights reserved
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Toggle -->
+    <div class="music-toggle" onclick="toggleMusic()" title="Toggle Music">
+        <i class="fas fa-music" id="musicIcon"></i>
+    </div>
+
+    <!-- Copy Notification -->
+    <div class="copy-notification" id="copyNotification">
+        <i class="fas fa-check"></i> Discord invite copied!
+    </div>
+
+    <!-- Audio -->
+    <audio id="bgMusic" loop>
+        <source src="/static/music/bg.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Hide loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hide');
+            }, 500);
+        });
+
+        // Generate particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 60; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Typing animation
+        const phrases = [
+            'Tokyo Ghoul Community',
+            'Join Our Events',
+            'Play Games Together',
+            'Make New Friends'
+        ];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typingSpeed = 100;
+        const deletingSpeed = 50;
+        const pauseTime = 2000;
+
+        function typeText() {
+            const currentPhrase = phrases[phraseIndex];
+            const typingElement = document.getElementById('typingText');
+
+            if (!isDeleting) {
+                typingElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+
+                if (charIndex === currentPhrase.length) {
+                    isDeleting = true;
+                    setTimeout(typeText, pauseTime);
+                    return;
+                }
+            } else {
+                typingElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                }
+            }
+
+            setTimeout(typeText, isDeleting ? deletingSpeed : typingSpeed);
+        }
+
+        // Start typing animation
+        setTimeout(typeText, 500);
+
+        // Fetch online count
+        async function updateOnlineCount() {
+            try {
+                const response = await fetch('/api/bot_status');
+                const data = await response.json();
+                const onlineCount = data.online_members ? data.online_members.length : 0;
+                document.getElementById('onlineCount').textContent = `${onlineCount} members online`;
+            } catch (error) {
+                document.getElementById('onlineCount').textContent = 'Discord Server';
+            }
+        }
+
+        updateOnlineCount();
+        setInterval(updateOnlineCount, 30000); // Update every 30 seconds
+
+        // Music toggle
+        let musicPlaying = false;
+        const bgMusic = document.getElementById('bgMusic');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicToggle = document.querySelector('.music-toggle');
+
+        function toggleMusic() {
+            if (musicPlaying) {
+                bgMusic.pause();
+                musicIcon.className = 'fas fa-music';
+                musicToggle.classList.remove('playing');
+                musicPlaying = false;
+            } else {
+                bgMusic.play().catch(e => console.log('Audio play failed:', e));
+                musicIcon.className = 'fas fa-pause';
+                musicToggle.classList.add('playing');
+                musicPlaying = true;
+            }
+        }
+
+        // Copy Discord invite
+        function copyDiscord(event) {
+            event.preventDefault();
+            const invite = 'https://discord.gg/YOUR_INVITE';
+            navigator.clipboard.writeText(invite).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2500);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Add hover sound effect (optional)
+        const buttons = document.querySelectorAll('.btn, .social-icon');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                // Optional: Add hover sound
+                // new Audio('/static/sounds/hover.mp3').play();
+            });
+        });
+    </script>
+</body>
+</html>
