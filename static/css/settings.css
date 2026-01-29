@@ -127,23 +127,23 @@
     position: relative;
     border: 3px dashed rgba(102, 126, 234, 0.3);
     border-radius: 12px;
-    padding: 30px 20px;
+    padding: 20px 15px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
     background: white;
-    min-height: 200px;
-    max-height: 280px;
+    min-height: 160px;
+    max-height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     overflow: hidden;
 }
 
 .upload-area.large {
-    min-height: 250px;
-    max-height: 350px;
+    min-height: 200px;
+    max-height: 280px;
 }
 
 .upload-area:hover {
@@ -163,21 +163,21 @@
 }
 
 .upload-icon {
-    font-size: 3em;
-    margin-bottom: 12px;
+    font-size: 2.5em;
+    margin-bottom: 8px;
     opacity: 0.6;
 }
 
 .upload-placeholder p {
-    font-size: 0.95em;
+    font-size: 0.9em;
     color: #667eea;
     font-weight: 600;
-    margin: 8px 0 5px 0;
+    margin: 6px 0 4px 0;
 }
 
 .upload-placeholder small {
     color: #999;
-    font-size: 0.8em;
+    font-size: 0.75em;
     display: block;
 }
 
@@ -203,11 +203,11 @@
 
 /* === PREVIEW IMAGES === */
 .preview-image {
-    max-width: 140px;
-    max-height: 140px;
-    width: 140px;
-    height: 140px;
-    border-radius: 12px;
+    max-width: 100px;
+    max-height: 100px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
     object-fit: cover;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -229,8 +229,9 @@
 
 .preview-audio {
     width: 100%;
-    max-width: 300px;
-    margin: 10px auto;
+    max-width: 280px;
+    margin: 5px auto;
+    height: 40px;
 }
 
 /* === FADE IN ANIMATION === */
@@ -349,17 +350,17 @@
 
 /* === BUTTONS === */
 .btn {
-    padding: 14px 28px;
+    padding: 12px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 1em;
+    font-size: 0.95em;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
     text-align: center;
     display: inline-block;
     width: 100%;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .btn-primary {
