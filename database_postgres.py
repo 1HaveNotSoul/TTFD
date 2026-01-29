@@ -122,7 +122,7 @@ class PostgresDatabase:
         """Хешировать пароль"""
         return hashlib.sha256(password.encode()).hexdigest()
     
-    def get_user(self, user_id):
+    def get_user(self, user_id, username=None):
         """Получить пользователя"""
         conn = self.get_connection()
         cur = conn.cursor()
@@ -137,7 +137,15 @@ class PostgresDatabase:
                 INSERT INTO users (id, username, daily_tasks)
                 VALUES (%s, %s, %s)
                 RETURNING *
-            """, (str(user_id), 'Unknown', json.dumps(daily_tasks)))
+            """, (str(user_id), username or 'Unknown', json.dumps(daily_tasks)))
+            user = cur.fetchone()
+            conn.commit()
+        elif username and user['username'] != username:
+            # Обновляем username если он изменился
+            cur.execute("""
+                UPDATE users SET username = %s WHERE id = %s
+                RETURNING *
+            """, (username, str(user_id)))
             user = cur.fetchone()
             conn.commit()
         
@@ -178,9 +186,9 @@ class PostgresDatabase:
         
         return dict(user) if user else None
     
-    def add_xp(self, user_id, amount):
+    def add_xp(self, user_id, amount, username=None):
         """Добавить XP"""
-        user = self.get_user(user_id)
+        user = self.get_user(user_id, username)
         old_rank = user['rank_id']
         new_xp = user['xp'] + amount
         
@@ -249,6 +257,55 @@ class PostgresDatabase:
                 return {'success': True, 'task': task}
         
         return {'success': False, 'error': 'Task not found or already completed'}
+    
+    def can_claim_daily(self, user_id):
+        """Проверить можно ли получить ежедневную награду"""
+        user = self.get_user(user_id)
+        
+        if user.get('last_daily') is None:
+            return True
+        
+        from datetime import datetime
+        last_daily = user['last_daily']
+        now = datetime.now()
+        time_diff = (now - last_daily).total_seconds()
+        
+        # 24 часа = 86400 секунд
+        return time_diff >= 86400
+    
+    def claim_daily(self, user_id):
+        """Получить ежедневную награду"""
+        if not self.can_claim_daily(user_id):
+            user = self.get_user(user_id)
+            from datetime import datetime
+            last_daily = user['last_daily']
+            time_left = 86400 - (datetime.now() - last_daily).total_seconds()
+            hours = int(time_left // 3600)
+            minutes = int((time_left % 3600) // 60)
+            return {
+                'success': False,
+                'error': f'Ты уже получил награду! Следующая через {hours}ч {minutes}м'
+            }
+        
+        user = self.get_user(user_id)
+        reward_xp = 100
+        reward_coins = 50
+        
+        self.add_xp(user_id, reward_xp)
+        
+        # Обновляем last_daily
+        conn = self.get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET last_daily = CURRENT_TIMESTAMP, coins = coins + %s WHERE id = %s", (reward_coins, str(user_id)))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {
+            'success': True,
+            'xp': reward_xp,
+            'coins': reward_coins
+        }
     
     def get_leaderboard(self, limit=10):
         """Получить таблицу лидеров"""

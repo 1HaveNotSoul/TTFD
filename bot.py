@@ -92,8 +92,8 @@ async def on_message(message):
     
     bot.stats['messages_seen'] += 1
     
-    # Даём 1 XP за сообщение
-    db.add_xp(str(message.author.id), 1)
+    # Даём 1 XP за сообщение и обновляем username
+    db.add_xp(str(message.author.id), 1, username=message.author.name)
     
     # Обрабатываем команды
     await bot.process_commands(message)
@@ -106,10 +106,8 @@ async def on_command(ctx):
 @bot.event
 async def on_member_join(member):
     """Событие: новый участник присоединился"""
-    # Создаём пользователя в базе
-    user = db.get_user(str(member.id))
-    user['username'] = member.name
-    db.save_data()
+    # Создаём пользователя в базе с его username
+    db.get_user(str(member.id), username=member.name)
     
     # Приветственное сообщение
     channel = member.guild.system_channel
@@ -278,9 +276,7 @@ async def stats(ctx):
 async def profile(ctx, member: discord.Member = None):
     """Профиль пользователя"""
     member = member or ctx.author
-    user = db.get_user(str(member.id))
-    user['username'] = member.name
-    db.save_data()
+    user = db.get_user(str(member.id), username=member.name)
     
     rank = db.get_rank_info(user['rank_id'])
     
@@ -314,7 +310,7 @@ async def profile(ctx, member: discord.Member = None):
 @bot.command(name='rank')
 async def rank(ctx):
     """Информация о текущем ранге"""
-    user = db.get_user(str(ctx.author.id))
+    user = db.get_user(str(ctx.author.id), username=ctx.author.name)
     rank = db.get_rank_info(user['rank_id'])
     
     embed = discord.Embed(

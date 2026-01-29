@@ -1,8 +1,10 @@
 # Веб-сайт для бота
-from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash, send_from_directory
 from datetime import datetime
+from werkzeug.utils import secure_filename
 import config
 import os
+import uuid
 
 # Пытаемся использовать PostgreSQL, если нет - JSON
 try:
@@ -16,6 +18,19 @@ from functools import wraps
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
+
+# Настройки загрузки файлов
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'mpeg'}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Создаём папки для загрузок
+os.makedirs(os.path.join(UPLOAD_FOLDER, 'avatars'), exist_ok=True)
+os.makedirs(os.path.join(UPLOAD_FOLDER, 'music'), exist_ok=True)
+
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 # Данные бота (будут обновляться из main.py)
 bot_data = {
@@ -183,6 +198,97 @@ def api_change_password():
 
 @app.route('/api/link_discord', methods=['POST'])
 def api_link_discord():
+    """API: привязать Discord ID"""
+    if 'token' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    account = db.get_account_by_token(session['token'])
+    if not account:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    data = request.json
+    result = db.link_discord(account['id'], data.get('discord_id'))
+    return jsonify(result)
+
+@app.route('/api/upload_avatar', methods=['POST'])
+def api_upload_avatar():
+    """API: загрузить аватарку"""
+    if 'token' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    account = db.get_account_by_token(session['token'])
+    if not account:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    if 'avatar' not in request.files:
+        return jsonify({'success': False, 'error': 'Файл не найден'}), 400
+    
+    file = request.files['avatar']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
+    
+    if not allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
+        return jsonify({'success': False, 'error': 'Недопустимый формат файла. Используй PNG, JPG, GIF'}), 400
+    
+    # Генерируем уникальное имя файла
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{account['id']}_{uuid.uuid4().hex[:8]}.{ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, 'avatars', filename)
+    
+    try:
+        file.save(filepath)
+        avatar_url = f"/static/uploads/avatars/{filename}"
+        
+        # Обновляем профиль
+        result = db.update_profile(account['id'], avatar_url=avatar_url)
+        
+        if result['success']:
+            return jsonify({'success': True, 'avatar_url': avatar_url})
+        else:
+            return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Ошибка загрузки: {str(e)}'}), 500
+
+@app.route('/api/upload_music', methods=['POST'])
+def api_upload_music():
+    """API: загрузить музыку"""
+    if 'token' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    account = db.get_account_by_token(session['token'])
+    if not account:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    if 'music' not in request.files:
+        return jsonify({'success': False, 'error': 'Файл не найден'}), 400
+    
+    file = request.files['music']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
+    
+    if not allowed_file(file.filename, ALLOWED_AUDIO_EXTENSIONS):
+        return jsonify({'success': False, 'error': 'Недопустимый формат файла. Используй MP3'}), 400
+    
+    # Генерируем уникальное имя файла
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{account['id']}_{uuid.uuid4().hex[:8]}.{ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, 'music', filename)
+    
+    try:
+        file.save(filepath)
+        music_url = f"/static/uploads/music/{filename}"
+        
+        # Обновляем профиль
+        result = db.update_profile(account['id'], music_url=music_url)
+        
+        if result['success']:
+            return jsonify({'success': True, 'music_url': music_url})
+        else:
+            return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Ошибка загрузки: {str(e)}'}), 500
     """API: привязать Discord ID"""
     if 'token' not in session:
         return jsonify({'success': False, 'error': 'Не авторизован'}), 401
