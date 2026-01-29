@@ -330,6 +330,150 @@ class PostgresDatabase:
         cur.close()
         conn.close()
         return {'success': False, 'error': 'Неверный логин или пароль'}
+    
+    def get_account_by_token(self, token):
+        """Получить аккаунт по токену"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT a.* FROM accounts a
+            JOIN sessions s ON s.account_id = a.id
+            WHERE s.token = %s
+        """, (token,))
+        account = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        return dict(account) if account else None
+    
+    def get_account_by_username(self, username):
+        """Получить аккаунт по username"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT * FROM accounts WHERE username = %s", (username,))
+        account = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        return dict(account) if account else None
+    
+    def update_profile(self, account_id, **kwargs):
+        """Обновить профиль"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        try:
+            # Получаем текущий аккаунт
+            cur.execute("SELECT * FROM accounts WHERE id = %s", (account_id,))
+            account = cur.fetchone()
+            
+            if not account:
+                cur.close()
+                conn.close()
+                return {'success': False, 'error': 'Аккаунт не найден'}
+            
+            # Обновляем основные поля
+            updates = []
+            values = []
+            
+            if 'display_name' in kwargs:
+                updates.append("display_name = %s")
+                values.append(kwargs['display_name'])
+            
+            if 'email' in kwargs:
+                # Проверка уникальности
+                cur.execute("SELECT id FROM accounts WHERE email = %s AND id != %s", (kwargs['email'], account_id))
+                if cur.fetchone():
+                    cur.close()
+                    conn.close()
+                    return {'success': False, 'error': 'Email уже используется'}
+                updates.append("email = %s")
+                values.append(kwargs['email'])
+            
+            # Обновляем профиль
+            profile = dict(account['profile']) if account['profile'] else {}
+            for key in ['bio', 'music_url', 'theme', 'background_color', 'text_color', 'avatar_url']:
+                if key in kwargs:
+                    profile[key] = kwargs[key]
+            
+            updates.append("profile = %s")
+            values.append(json.dumps(profile))
+            
+            if updates:
+                values.append(account_id)
+                query = f"UPDATE accounts SET {', '.join(updates)} WHERE id = %s RETURNING *"
+                cur.execute(query, values)
+                updated_account = cur.fetchone()
+                conn.commit()
+                
+                cur.close()
+                conn.close()
+                
+                return {'success': True, 'account': dict(updated_account)}
+            
+            cur.close()
+            conn.close()
+            return {'success': True, 'account': dict(account)}
+            
+        except Exception as e:
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return {'success': False, 'error': str(e)}
+    
+    def change_password(self, account_id, old_password, new_password):
+        """Сменить пароль"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT password FROM accounts WHERE id = %s", (account_id,))
+        account = cur.fetchone()
+        
+        if not account:
+            cur.close()
+            conn.close()
+            return {'success': False, 'error': 'Аккаунт не найден'}
+        
+        if account['password'] == self.hash_password(old_password):
+            cur.execute("UPDATE accounts SET password = %s WHERE id = %s", (self.hash_password(new_password), account_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return {'success': True}
+        else:
+            cur.close()
+            conn.close()
+            return {'success': False, 'error': 'Неверный старый пароль'}
+    
+    def link_discord(self, account_id, discord_id):
+        """Привязать Discord ID"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("UPDATE accounts SET discord_id = %s WHERE id = %s", (discord_id, account_id))
+        conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        return {'success': True}
+    
+    def logout(self, token):
+        """Выйти"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("DELETE FROM sessions WHERE token = %s", (token,))
+        conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        return {'success': True}
 
 # Создаём экземпляр
 try:
