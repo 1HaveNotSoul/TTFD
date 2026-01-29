@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands, tasks
 import asyncio
+import aiohttp
 from datetime import datetime
 import config
 
@@ -370,8 +371,6 @@ async def link_command(ctx):
 @bot.command(name='slut', aliases=['cat'])
 async def cat_command(ctx):
     """Случайное фото котика"""
-    import aiohttp
-    
     try:
         # Используем The Cat API (бесплатное API для котиков)
         async with aiohttp.ClientSession() as session:
