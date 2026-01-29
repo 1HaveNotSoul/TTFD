@@ -54,6 +54,11 @@ def landing_pro():
     """Modern landing page PRO with advanced features"""
     return render_template('landing_pro.html')
 
+@app.route('/landing-premium')
+def landing_premium():
+    """Premium landing page - guns.lol style"""
+    return render_template('landing_premium.html')
+
 @app.route('/')
 def index():
     """Главная страница"""
