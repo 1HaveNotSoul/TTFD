@@ -326,24 +326,55 @@ from discord_oauth import get_oauth_url, handle_oauth_callback
 @app.route('/auth/discord')
 def auth_discord():
     """Начать авторизацию через Discord"""
-    oauth_url = get_oauth_url()
-    if not oauth_url:
-        flash('Discord OAuth не настроен', 'error')
+    try:
+        oauth_url = get_oauth_url()
+        if not oauth_url:
+            print("❌ Discord OAuth не настроен")
+            flash('Discord OAuth не настроен. Обратитесь к администратору.', 'error')
+            return redirect(url_for('login'))
+        
+        print(f"✅ Редирект на Discord OAuth: {oauth_url[:50]}...")
+        return redirect(oauth_url)
+    except Exception as e:
+        print(f"❌ Ошибка при создании OAuth URL: {e}")
+        flash('Ошибка при подключении к Discord', 'error')
         return redirect(url_for('login'))
-    return redirect(oauth_url)
 
 @app.route('/auth/discord/callback')
 def auth_discord_callback():
     """Обработать callback от Discord"""
-    result = handle_oauth_callback(db)
-    
-    if result['success']:
-        session['token'] = result['token']
-        if result['is_new']:
-            flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
+    try:
+        # Проверяем наличие ошибки от Discord
+        error = request.args.get('error')
+        if error:
+            error_description = request.args.get('error_description', 'Unknown error')
+            print(f"❌ Discord OAuth error: {error} - {error_description}")
+            flash(f'Ошибка Discord: {error_description}', 'error')
+            return redirect(url_for('login'))
+        
+        print("📥 Получен callback от Discord")
+        print(f"   State: {request.args.get('state')[:20]}...")
+        print(f"   Code: {request.args.get('code')[:20] if request.args.get('code') else 'None'}...")
+        
+        result = handle_oauth_callback(db)
+        
+        if result['success']:
+            session['token'] = result['token']
+            if result['is_new']:
+                print(f"✅ Создан новый аккаунт: {result['account']['display_name']}")
+                flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
+            else:
+                print(f"✅ Вход выполнен: {result['account']['display_name']}")
+                flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
+            return redirect(url_for('index'))
         else:
-            flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
-        return redirect(url_for('index'))
-    else:
-        flash(f'Ошибка авторизации: {result["error"]}', 'error')
+            error_msg = result.get('error', 'Unknown error')
+            print(f"❌ OAuth failed: {error_msg}")
+            flash(f'Ошибка авторизации: {error_msg}', 'error')
+            return redirect(url_for('login'))
+    except Exception as e:
+        print(f"❌ Критическая ошибка в OAuth callback: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Произошла ошибка при авторизации', 'error')
         return redirect(url_for('login'))

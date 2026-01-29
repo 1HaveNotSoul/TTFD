@@ -52,6 +52,7 @@
         .link a { color: #667eea; text-decoration: none; font-weight: bold; }
         .link a:hover { text-decoration: underline; }
         .error { background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .success { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -62,6 +63,14 @@
         </div>
         
         <div id="message"></div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         
         <!-- Discord OAuth -->
         <a href="/auth/discord" class="btn btn-discord" style="text-decoration: none;">
