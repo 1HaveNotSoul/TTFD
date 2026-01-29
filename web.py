@@ -3,7 +3,15 @@ from flask import Flask, render_template, jsonify, request, session, redirect, u
 from datetime import datetime
 import config
 import os
-from database import db, RANKS
+
+# Пытаемся использовать PostgreSQL, если нет - JSON
+try:
+    from database_postgres import db, RANKS
+    print("✅ Используется PostgreSQL")
+except Exception as e:
+    from database import db, RANKS
+    print(f"⚠️ Используется JSON файл: {e}")
+
 from functools import wraps
 
 app = Flask(__name__)

@@ -4,7 +4,14 @@ from discord.ext import commands, tasks
 import asyncio
 from datetime import datetime
 import config
-from database import db
+
+# Пытаемся использовать PostgreSQL, если нет - JSON
+try:
+    from database_postgres import db
+    print("✅ Используется PostgreSQL")
+except Exception as e:
+    from database import db
+    print(f"⚠️ Используется JSON файл: {e}")
 
 # Настройка intents
 intents = discord.Intents.default()

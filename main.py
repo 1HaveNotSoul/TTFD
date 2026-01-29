@@ -5,6 +5,14 @@ from datetime import datetime
 import bot as bot_module
 import web
 
+# Импортируем Telegram бэкап
+try:
+    from telegram_bot import auto_backup_to_telegram
+    telegram_enabled = True
+except Exception as e:
+    print(f"⚠️ Telegram бэкап недоступен: {e}")
+    telegram_enabled = False
+
 def update_web_stats():
     """Обновление статистики для веб-сайта"""
     while True:

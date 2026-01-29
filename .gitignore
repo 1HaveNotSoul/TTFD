@@ -1,5 +1,7 @@
 # Переменные окружения (ВАЖНО!)
 .env
+.env.local
+.env.production
 
 # Python
 __pycache__/
