@@ -4,23 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Таблица лидеров</title>
+    <link rel="stylesheet" href="/static/css/main.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; padding: 20px;
-        }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
-        .nav a {
-            background: white; color: #667eea; padding: 12px 24px; border-radius: 8px;
-            text-decoration: none; font-weight: bold; transition: all 0.3s;
-        }
-        .nav a:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .container { max-width: 1000px; }
         .leader {
             display: flex; align-items: center; gap: 15px; padding: 15px;
             background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;
@@ -36,6 +22,12 @@
         .leader-info { flex: 1; }
         .leader-name { font-size: 1.3em; font-weight: bold; margin-bottom: 5px; }
         .leader-stats { font-size: 0.9em; color: #666; }
+        .empty-state {
+            text-align: center; padding: 40px; color: #999;
+        }
+        .empty-state h3 {
+            color: #666; margin: 20px 0 10px;
+        }
     </style>
 </head>
 <body>
@@ -52,11 +44,11 @@
         </div>
         <div class="card">
             {% if leaders|length == 0 %}
-            <div style="text-align: center; padding: 40px; color: #999;">
+            <div class="empty-state">
                 <div style="font-size: 3em; margin-bottom: 20px;">🏆</div>
-                <h3 style="color: #666; margin-bottom: 10px;">Таблица лидеров пуста</h3>
+                <h3>Таблица лидеров пуста</h3>
                 <p>Стань первым! Играй в кликер и попади в топ.</p>
-                <a href="/game" style="display: inline-block; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">🎮 Играть в кликер</a>
+                <a href="/game" class="btn" style="margin-top: 20px;">🎮 Играть в кликер</a>
             </div>
             {% else %}
             {% for leader in leaders %}
