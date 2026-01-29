@@ -33,6 +33,11 @@
         .online-member {
             display: flex; align-items: center; gap: 10px; padding: 10px;
             background: #f8f9fa; border-radius: 8px; margin-bottom: 8px;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .online-member:hover {
+            background: #e9ecef; transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .online-member img { width: 40px; height: 40px; border-radius: 50%; }
         .member-status { width: 10px; height: 10px; border-radius: 50%; }
@@ -111,7 +116,7 @@
                     return;
                 }
                 list.innerHTML = data.members.map(m => `
-                    <div class="online-member">
+                    <div class="online-member" onclick="openProfile('${m.id}', '${m.name}')" title="Нажми чтобы открыть профиль">
                         <img src="${m.avatar}" alt="${m.name}">
                         <div style="flex: 1;">
                             <div style="font-weight: bold;">${m.display_name}</div>
@@ -121,6 +126,25 @@
                     </div>
                 `).join('');
             });
+        }
+        
+        async function openProfile(discordId, displayName) {
+            try {
+                // Пытаемся найти username по Discord ID
+                const response = await fetch(`/api/user_by_discord/${discordId}`);
+                const data = await response.json();
+                
+                if (data.success && data.has_account) {
+                    // Если есть аккаунт, открываем профиль
+                    window.location.href = `/profile/${data.username}`;
+                } else {
+                    // Если аккаунта нет, показываем сообщение
+                    alert(`У ${displayName} пока нет профиля на сайте.\n\nПользователь должен войти через Discord чтобы создать профиль.`);
+                }
+            } catch (error) {
+                console.error('Ошибка открытия профиля:', error);
+                alert('Ошибка при открытии профиля');
+            }
         }
         function formatUptime(seconds) {
             const h = Math.floor(seconds / 3600);

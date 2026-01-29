@@ -95,33 +95,11 @@ def ranks():
 
 # ==================== АУТЕНТИФИКАЦИЯ ====================
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    """Регистрация"""
-    if request.method == 'POST':
-        data = request.json
-        result = db.create_account(
-            email=data.get('email'),
-            username=data.get('username'),
-            password=data.get('password'),
-            display_name=data.get('display_name')
-        )
-        return jsonify(result)
-    
-    return render_template('register.html')
+# Регистрация через почту УДАЛЕНА - используется только Discord OAuth
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    """Вход"""
-    if request.method == 'POST':
-        data = request.json
-        result = db.login(data.get('username'), data.get('password'))
-        
-        if result['success']:
-            session['token'] = result['token']
-        
-        return jsonify(result)
-    
+    """Страница входа - перенаправляет на Discord OAuth"""
     return render_template('login.html')
 
 @app.route('/logout')
@@ -130,6 +108,7 @@ def logout():
     if 'token' in session:
         db.logout(session['token'])
         session.pop('token', None)
+    flash('Вы вышли из аккаунта', 'info')
     return redirect(url_for('index'))
 
 # ==================== ПРОФИЛИ ====================
@@ -180,21 +159,8 @@ def api_update_profile():
 
 @app.route('/api/change_password', methods=['POST'])
 def api_change_password():
-    """API: сменить пароль"""
-    if 'token' not in session:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
-    
-    account = db.get_account_by_token(session['token'])
-    if not account:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
-    
-    data = request.json
-    result = db.change_password(
-        account['id'],
-        data.get('old_password'),
-        data.get('new_password')
-    )
-    return jsonify(result)
+    """API: сменить пароль - ОТКЛЮЧЕНО (используется Discord OAuth)"""
+    return jsonify({'success': False, 'error': 'Смена пароля недоступна при входе через Discord'}), 403
 
 @app.route('/api/link_discord', methods=['POST'])
 def api_link_discord():
@@ -324,10 +290,38 @@ def api_user(user_id):
     if user['rank_id'] < len(RANKS):
         next_rank = RANKS[user['rank_id']]
     
+    # Ищем аккаунт с этим Discord ID
+    account = None
+    for acc in db.accounts.get('accounts', {}).values():
+        if acc.get('discord_id') == user_id:
+            account = acc
+            break
+    
     return jsonify({
         'user': user,
         'rank': rank,
-        'next_rank': next_rank
+        'next_rank': next_rank,
+        'account': account
+    })
+
+@app.route('/api/user_by_discord/<discord_id>')
+def api_user_by_discord(discord_id):
+    """API: получить username по Discord ID"""
+    # Ищем аккаунт с этим Discord ID
+    for acc in db.accounts.get('accounts', {}).values():
+        if str(acc.get('discord_id')) == str(discord_id):
+            return jsonify({
+                'success': True,
+                'username': acc.get('username'),
+                'has_account': True
+            })
+    
+    # Если аккаунта нет, возвращаем Discord данные
+    user = db.get_user(discord_id)
+    return jsonify({
+        'success': True,
+        'username': user.get('username', 'Unknown'),
+        'has_account': False
     })
 
 @app.route('/api/click', methods=['POST'])
