@@ -317,6 +317,7 @@ async def help_command(ctx):
         ("!top", "Таблица лидеров"),
         ("!daily", "Ежедневная награда"),
         ("!link", "Ссылка на сайт"),
+        ("!slut", "Случайное фото котика 🐱"),
         ("!ticket", "Создать тикет поддержки"),
         ("!close", "Закрыть тикет (только в канале тикета)"),
         ("!clear <число>", "Очистить сообщения (только для модераторов)"),
@@ -365,6 +366,34 @@ async def link_command(ctx):
     embed.set_thumbnail(url=bot.user.display_avatar.url)
     
     await ctx.send(embed=embed)
+
+@bot.command(name='slut', aliases=['cat'])
+async def cat_command(ctx):
+    """Случайное фото котика"""
+    import aiohttp
+    
+    try:
+        # Используем The Cat API (бесплатное API для котиков)
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.thecatapi.com/v1/images/search') as response:
+                if response.status == 200:
+                    data = await response.json()
+                    cat_url = data[0]['url']
+                    
+                    embed = discord.Embed(
+                        title="🐱 Случайный котик!",
+                        color=discord.Color.orange(),
+                        timestamp=datetime.now()
+                    )
+                    embed.set_image(url=cat_url)
+                    embed.set_footer(text=f"Запросил: {ctx.author.name}")
+                    
+                    await ctx.send(embed=embed)
+                else:
+                    await ctx.send("❌ Не удалось загрузить котика. Попробуй ещё раз!")
+    except Exception as e:
+        print(f"❌ Ошибка загрузки котика: {e}")
+        await ctx.send("❌ Произошла ошибка при загрузке котика!")
 
 # ==================== ТИКЕТ-СИСТЕМА ====================
 
