@@ -67,38 +67,93 @@
         let userId = localStorage.getItem('userId') || '';
         let userData = null;
         let allRanks = [];
+        let isClicking = false; // Защита от двойных кликов
+        
         if (userId) { document.getElementById('userId').value = userId; loadUserData(); }
         document.getElementById('userId').addEventListener('change', function() {
             userId = this.value; localStorage.setItem('userId', userId);
             if (userId) { loadUserData(); }
         });
         async function loadUserData() {
-            if (!userId) { showNotification('❌ Введи свой Discord ID!'); return; }
+            console.log('📥 Загрузка данных пользователя, userId:', userId);
+            
+            if (!userId) { 
+                showNotification('❌ Введи свой Discord ID!'); 
+                return; 
+            }
+            
             try {
                 const response = await fetch(`/api/user/${userId}`);
+                console.log('📡 Ответ сервера:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('✅ Данные получены:', data);
+                
                 userData = data.user;
-                updateUI(); loadTasks(); loadRanks();
-            } catch (error) { console.error('Ошибка загрузки данных:', error); }
+                updateUI(); 
+                loadTasks(); 
+                loadRanks();
+            } catch (error) { 
+                console.error('❌ Ошибка загрузки данных:', error); 
+                showNotification('❌ Ошибка загрузки данных');
+            }
         }
         async function handleClick() {
-            if (!userId) { showNotification('❌ Введи свой Discord ID!'); return; }
+            if (isClicking) {
+                console.log('⏸️ Клик заблокирован (уже обрабатывается)');
+                return;
+            }
+            
+            if (!userId) { 
+                showNotification('❌ Введи свой Discord ID!'); 
+                return; 
+            }
+            
+            isClicking = true;
+            const btn = document.getElementById('clickBtn');
+            
             try {
+                // Визуальная обратная связь
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                
                 const response = await fetch('/api/click', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({user_id: userId})
                 });
-                const data = await response.json();
-                if (data.success) {
-                    userData.clicks = data.clicks; userData.xp = data.xp; userData.coins = data.coins;
-                    updateUI();
-                    const btn = document.getElementById('clickBtn');
-                    btn.style.transform = 'scale(0.95)';
-                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
-                    if (data.rank_up) { showRankUp(data.new_rank); loadUserData(); }
-                    loadTasks();
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера');
                 }
-            } catch (error) { console.error('Ошибка клика:', error); }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    userData.clicks = data.clicks; 
+                    userData.xp = data.xp; 
+                    userData.coins = data.coins;
+                    updateUI();
+                    
+                    if (data.rank_up) { 
+                        showRankUp(data.new_rank); 
+                        setTimeout(() => loadUserData(), 1000);
+                    }
+                    
+                    loadTasks();
+                } else {
+                    showNotification('❌ Ошибка клика');
+                }
+            } catch (error) { 
+                console.error('❌ Ошибка клика:', error); 
+                showNotification('❌ Ошибка соединения');
+            } finally {
+                isClicking = false;
+            }
         }
         function updateUI() {
             if (!userData) return;

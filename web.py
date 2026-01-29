@@ -335,27 +335,39 @@ def api_user(user_id):
 @app.route('/api/user_by_discord/<discord_id>')
 def api_user_by_discord(discord_id):
     """API: получить username по Discord ID"""
-    # Ищем аккаунт с этим Discord ID
-    for acc in db.accounts.get('accounts', {}).values():
-        if str(acc.get('discord_id')) == str(discord_id):
-            return jsonify({
-                'success': True,
-                'username': acc.get('username'),
-                'has_account': True
-            })
-    
-    # Если аккаунта нет, возвращаем Discord данные
-    user = db.get_user(discord_id)
-    if user:
-        username = user.get('username', 'Unknown')
-    else:
-        username = 'Unknown'
-    
-    return jsonify({
-        'success': True,
-        'username': username,
-        'has_account': False
-    })
+    try:
+        print(f"🔍 Поиск аккаунта для Discord ID: {discord_id}")
+        
+        # Ищем аккаунт с этим Discord ID
+        for acc in db.accounts.get('accounts', {}).values():
+            if str(acc.get('discord_id')) == str(discord_id):
+                print(f"✅ Найден аккаунт: {acc.get('username')}")
+                return jsonify({
+                    'success': True,
+                    'username': acc.get('username'),
+                    'has_account': True
+                })
+        
+        # Если аккаунта нет, возвращаем Discord данные
+        print(f"❌ Аккаунт не найден для Discord ID: {discord_id}")
+        user = db.get_user(discord_id)
+        if user:
+            username = user.get('username', 'Unknown')
+        else:
+            username = 'Unknown'
+        
+        return jsonify({
+            'success': True,
+            'username': username,
+            'has_account': False
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в api_user_by_discord: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'has_account': False
+        }), 500
 
 @app.route('/api/click', methods=['POST'])
 def api_click():

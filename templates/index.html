@@ -98,21 +98,32 @@
         }
         
         async function openProfile(discordId, displayName) {
+            console.log('🔍 Открытие профиля:', discordId, displayName);
+            
             try {
                 // Пытаемся найти username по Discord ID
                 const response = await fetch(`/api/user_by_discord/${discordId}`);
+                console.log('📡 Ответ сервера:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('📦 Данные:', data);
                 
                 if (data.success && data.has_account) {
                     // Если есть аккаунт, открываем профиль
+                    console.log('✅ Открываем профиль:', data.username);
                     window.location.href = `/profile/${data.username}`;
                 } else {
                     // Если аккаунта нет, показываем сообщение
+                    console.log('❌ Аккаунт не найден');
                     alert(`У ${displayName} пока нет профиля на сайте.\n\nПользователь должен войти через Discord чтобы создать профиль.`);
                 }
             } catch (error) {
-                console.error('Ошибка открытия профиля:', error);
-                alert('Ошибка при открытии профиля');
+                console.error('❌ Ошибка открытия профиля:', error);
+                alert(`Ошибка при открытии профиля: ${error.message}`);
             }
         }
         function formatUptime(seconds) {
