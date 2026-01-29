@@ -554,7 +554,20 @@ def run_telegram_bot():
         print("   Отправь /start боту в Telegram")
         print("=" * 50)
         
-        app.run_polling(drop_pending_updates=True)
+        # Используем webhook вместо polling для работы в потоке
+        # Но для простоты просто запускаем в новом event loop
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        async def start_bot():
+            await app.initialize()
+            await app.start()
+            await app.updater.start_polling(drop_pending_updates=True)
+            # Держим бота запущенным
+            await asyncio.Event().wait()
+        
+        loop.run_until_complete(start_bot())
     except Exception as e:
         print(f"❌ Ошибка запуска Telegram бота: {e}")
         import traceback
