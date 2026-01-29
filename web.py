@@ -328,9 +328,14 @@ def api_user_by_discord(discord_id):
     
     # Если аккаунта нет, возвращаем Discord данные
     user = db.get_user(discord_id)
+    if user:
+        username = user.get('username', 'Unknown')
+    else:
+        username = 'Unknown'
+    
     return jsonify({
         'success': True,
-        'username': user.get('username', 'Unknown'),
+        'username': username,
         'has_account': False
     })
 
