@@ -349,51 +349,51 @@
 
     <div class="container">
         <div class="header">
-            <h1>⚙️ Settings</h1>
-            <p>Customize your profile</p>
+            <h1>⚙️ Настройки</h1>
+            <p>Настрой свой профиль</p>
         </div>
 
         <div class="nav">
-            <a href="/">Home</a>
-            <a href="/profile/{{ current_user.username }}">My Profile</a>
-            <a href="/game">🎮 Clicker</a>
-            <a href="/logout">Logout</a>
+            <a href="/">Главная</a>
+            <a href="/profile/{{ current_user.username }}">Мой профиль</a>
+            <a href="/game">🎮 Кликер</a>
+            <a href="/logout">Выход</a>
         </div>
 
         <div id="message" class="message"></div>
 
         <!-- Profile Info -->
         <div class="card">
-            <h2>Profile Information</h2>
+            <h2>Основная информация</h2>
             <form id="profileForm">
                 <div class="form-group">
-                    <label>Display Name</label>
+                    <label>Отображаемое имя</label>
                     <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>Username (cannot be changed)</label>
+                    <label>Логин (нельзя изменить)</label>
                     <input type="text" value="{{ current_user.username }}" disabled>
                 </div>
                 
                 <div class="form-group">
-                    <label>Bio</label>
-                    <textarea id="bio" placeholder="Tell us about yourself...">{{ current_user.profile.bio if current_user.profile else '' }}</textarea>
+                    <label>О себе</label>
+                    <textarea id="bio" placeholder="Расскажи о себе...">{{ current_user.profile.bio if current_user.profile else '' }}</textarea>
                 </div>
                 
-                <button type="submit" class="btn btn-primary"><span>Save Changes</span></button>
+                <button type="submit" class="btn btn-primary"><span>Сохранить</span></button>
             </form>
         </div>
 
         <!-- Avatar -->
         <div class="card">
-            <h2>Avatar</h2>
+            <h2>Аватарка</h2>
             <form id="avatarForm">
                 <div class="form-group">
                     <div class="file-upload">
                         <input type="file" id="avatar_file" accept="image/*">
                         <label class="file-upload-label">
-                            📸 Click to upload image (JPG, PNG, GIF)
+                            📸 Нажми чтобы загрузить изображение (JPG, PNG, GIF)
                         </label>
                     </div>
                     {% if current_user.profile and current_user.profile.avatar_url %}
@@ -403,22 +403,22 @@
                     {% endif %}
                 </div>
                 
-                <button type="submit" class="btn btn-primary"><span>Upload Avatar</span></button>
+                <button type="submit" class="btn btn-primary"><span>Загрузить аватарку</span></button>
             </form>
         </div>
 
         <!-- Music -->
         <div class="card">
-            <h2>🎵 Profile Music</h2>
+            <h2>🎵 Музыка профиля</h2>
             <form id="musicForm">
                 <div class="form-group">
                     <div class="file-upload">
                         <input type="file" id="music_file" accept="audio/mp3,audio/mpeg">
                         <label class="file-upload-label">
-                            🎵 Click to upload MP3 file
+                            🎵 Нажми чтобы загрузить MP3 файл
                         </label>
                     </div>
-                    <small>Music will autoplay when someone visits your profile</small>
+                    <small>Музыка будет автоматически проигрываться при посещении твоего профиля</small>
                     {% if current_user.profile and current_user.profile.music_url %}
                     <div class="preview">
                         <audio controls>
@@ -428,45 +428,45 @@
                     {% endif %}
                 </div>
                 
-                <button type="submit" class="btn btn-primary"><span>Upload Music</span></button>
+                <button type="submit" class="btn btn-primary"><span>Загрузить музыку</span></button>
             </form>
         </div>
 
         <!-- Discord -->
         <div class="card">
-            <h2>🎮 Discord Integration</h2>
+            <h2>🎮 Привязка Discord</h2>
             <form id="discordForm">
                 <div class="form-group">
                     <label>Discord ID</label>
                     <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" 
-                           placeholder="Your Discord ID">
-                    <small>Settings → Advanced → Developer Mode → Right-click yourself → Copy ID</small>
+                           placeholder="Твой Discord ID">
+                    <small>Настройки → Расширенные → Режим разработчика → ПКМ на себя → Копировать ID</small>
                 </div>
                 
-                <button type="submit" class="btn btn-primary"><span>Link Discord</span></button>
+                <button type="submit" class="btn btn-primary"><span>Привязать Discord</span></button>
             </form>
         </div>
 
         <!-- Password -->
         <div class="card">
-            <h2>🔒 Change Password</h2>
+            <h2>🔒 Смена пароля</h2>
             <form id="passwordForm">
                 <div class="form-group">
-                    <label>Old Password</label>
+                    <label>Старый пароль</label>
                     <input type="password" id="old_password" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>New Password</label>
+                    <label>Новый пароль</label>
                     <input type="password" id="new_password" required minlength="6">
                 </div>
                 
                 <div class="form-group">
-                    <label>Confirm New Password</label>
+                    <label>Повтори новый пароль</label>
                     <input type="password" id="new_password2" required minlength="6">
                 </div>
                 
-                <button type="submit" class="btn btn-danger"><span>Change Password</span></button>
+                <button type="submit" class="btn btn-danger"><span>Сменить пароль</span></button>
             </form>
         </div>
     </div>
@@ -488,7 +488,7 @@
             const fileInput = document.getElementById('avatar_file');
             
             if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Please select a file', 'error');
+                showMessage('Выбери файл для загрузки', 'error');
                 return;
             }
             
@@ -503,13 +503,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Avatar uploaded successfully!', 'success');
+                    showMessage('Аватарка загружена!', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showMessage(data.error, 'error');
                 }
             } catch (error) {
-                showMessage('Error uploading avatar', 'error');
+                showMessage('Ошибка загрузки аватарки', 'error');
             }
         });
 
@@ -519,7 +519,7 @@
             const fileInput = document.getElementById('music_file');
             
             if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Please select an MP3 file', 'error');
+                showMessage('Выбери MP3 файл для загрузки', 'error');
                 return;
             }
             
@@ -534,13 +534,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Music uploaded successfully!', 'success');
+                    showMessage('Музыка загружена!', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showMessage(data.error, 'error');
                 }
             } catch (error) {
-                showMessage('Error uploading music', 'error');
+                showMessage('Ошибка загрузки музыки', 'error');
             }
         });
 
@@ -558,12 +558,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Discord linked successfully!', 'success');
+                    showMessage('Discord успешно привязан!', 'success');
                 } else {
                     showMessage(data.error, 'error');
                 }
             } catch (error) {
-                showMessage('Error linking Discord', 'error');
+                showMessage('Ошибка привязки Discord', 'error');
             }
         });
 
@@ -576,7 +576,7 @@
             const new_password2 = document.getElementById('new_password2').value;
             
             if (new_password !== new_password2) {
-                showMessage('Passwords do not match', 'error');
+                showMessage('Новые пароли не совпадают', 'error');
                 return;
             }
             
@@ -589,13 +589,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Password changed successfully!', 'success');
+                    showMessage('Пароль успешно изменён!', 'success');
                     document.getElementById('passwordForm').reset();
                 } else {
                     showMessage(data.error, 'error');
                 }
             } catch (error) {
-                showMessage('Error changing password', 'error');
+                showMessage('Ошибка смены пароля', 'error');
             }
         });
 
@@ -609,12 +609,12 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showMessage('Profile updated!', 'success');
+                    showMessage('Профиль обновлён!', 'success');
                 } else {
                     showMessage(result.error, 'error');
                 }
             } catch (error) {
-                showMessage('Error updating profile', 'error');
+                showMessage('Ошибка обновления профиля', 'error');
             }
         }
 
