@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - TTFD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+        }
+
+        /* Nav */
+        .nav {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav a:hover {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: rgba(88, 101, 242, 0.4);
+            color: #7289da;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(88, 101, 242, 0.3);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(88, 101, 242, 0.5);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+        }
+
+        .form-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover .file-upload-label {
+            border-color: rgba(88, 101, 242, 0.5);
+            background: rgba(88, 101, 242, 0.1);
+            color: #7289da;
+        }
+
+        /* Preview */
+        .preview {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .preview img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(88, 101, 242, 0.3);
+        }
+
+        .preview audio {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5865f2 0%, #7289da 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(88, 101, 242, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(245, 87, 108, 0.6);
+        }
+
+        /* Message */
+        .message {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            color: #81c784;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            color: #e57373;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 640px) {
+            .container {
+                padding: 0;
+            }
+
+            .card {
+                padding: 24px 20px;
+                border-radius: 16px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="grain"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Settings</h1>
+            <p>Customize your profile</p>
+        </div>
+
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/profile/{{ current_user.username }}">My Profile</a>
+            <a href="/game">🎮 Clicker</a>
+            <a href="/logout">Logout</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Profile Info -->
+        <div class="card">
+            <h2>Profile Information</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Username (cannot be changed)</label>
+                    <input type="text" value="{{ current_user.username }}" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="bio" placeholder="Tell us about yourself...">{{ current_user.profile.bio if current_user.profile else '' }}</textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><span>Save Changes</span></button>
+            </form>
+        </div>
+
+        <!-- Avatar -->
+        <div class="card">
+            <h2>Avatar</h2>
+            <form id="avatarForm">
+                <div class="form-group">
+                    <div class="file-upload">
+                        <input type="file" id="avatar_file" accept="image/*">
+                        <label class="file-upload-label">
+                            📸 Click to upload image (JPG, PNG, GIF)
+                        </label>
+                    </div>
+                    {% if current_user.profile and current_user.profile.avatar_url %}
+                    <div class="preview">
+                        <img src="{{ current_user.profile.avatar_url }}" alt="Avatar">
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><span>Upload Avatar</span></button>
+            </form>
+        </div>
+
+        <!-- Music -->
+        <div class="card">
+            <h2>🎵 Profile Music</h2>
+            <form id="musicForm">
+                <div class="form-group">
+                    <div class="file-upload">
+                        <input type="file" id="music_file" accept="audio/mp3,audio/mpeg">
+                        <label class="file-upload-label">
+                            🎵 Click to upload MP3 file
+                        </label>
+                    </div>
+                    <small>Music will autoplay when someone visits your profile</small>
+                    {% if current_user.profile and current_user.profile.music_url %}
+                    <div class="preview">
+                        <audio controls>
+                            <source src="{{ current_user.profile.music_url }}" type="audio/mpeg">
+                        </audio>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><span>Upload Music</span></button>
+            </form>
+        </div>
+
+        <!-- Discord -->
+        <div class="card">
+            <h2>🎮 Discord Integration</h2>
+            <form id="discordForm">
+                <div class="form-group">
+                    <label>Discord ID</label>
+                    <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" 
+                           placeholder="Your Discord ID">
+                    <small>Settings → Advanced → Developer Mode → Right-click yourself → Copy ID</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><span>Link Discord</span></button>
+            </form>
+        </div>
+
+        <!-- Password -->
+        <div class="card">
+            <h2>🔒 Change Password</h2>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label>Old Password</label>
+                    <input type="password" id="old_password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="new_password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="new_password2" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn btn-danger"><span>Change Password</span></button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Profile update
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                display_name: document.getElementById('display_name').value,
+                bio: document.getElementById('bio').value
+            };
+            await updateProfile(data);
+        });
+
+        // Avatar upload
+        document.getElementById('avatarForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('avatar_file');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                showMessage('Please select a file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/api/upload_avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Avatar uploaded successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error uploading avatar', 'error');
+            }
+        });
+
+        // Music upload
+        document.getElementById('musicForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('music_file');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                showMessage('Please select an MP3 file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('music', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/api/upload_music', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Music uploaded successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error uploading music', 'error');
+            }
+        });
+
+        // Discord link
+        document.getElementById('discordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const discord_id = document.getElementById('discord_id').value;
+            
+            try {
+                const response = await fetch('/api/link_discord', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({discord_id})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Discord linked successfully!', 'success');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error linking Discord', 'error');
+            }
+        });
+
+        // Password change
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const old_password = document.getElementById('old_password').value;
+            const new_password = document.getElementById('new_password').value;
+            const new_password2 = document.getElementById('new_password2').value;
+            
+            if (new_password !== new_password2) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/change_password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({old_password, new_password})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Password changed successfully!', 'success');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error changing password', 'error');
+            }
+        });
+
+        async function updateProfile(data) {
+            try {
+                const response = await fetch('/api/update_profile', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Profile updated!', 'success');
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error updating profile', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.className = 'message ' + type + ' show';
+            msg.textContent = text;
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        // File upload label update
+        document.getElementById('avatar_file').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                e.target.previousElementSibling.textContent = '✅ ' + e.target.files[0].name;
+            }
+        });
+
+        document.getElementById('music_file').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                e.target.previousElementSibling.textContent = '✅ ' + e.target.files[0].name;
+            }
+        });
+    </script>
+</body>
+</html>

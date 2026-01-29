@@ -156,6 +156,18 @@ def settings():
     if not current_user:
         return redirect(url_for('login'))
     
+    return render_template('settings_premium.html', current_user=current_user)
+
+@app.route('/settings')
+def settings():
+    """Настройки профиля"""
+    if 'token' not in session:
+        return redirect(url_for('login'))
+    
+    current_user = db.get_account_by_token(session['token'])
+    if not current_user:
+        return redirect(url_for('login'))
+    
     return render_template('settings.html', current_user=current_user)
 
 @app.route('/api/update_profile', methods=['POST'])
