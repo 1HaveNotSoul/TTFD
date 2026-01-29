@@ -21,13 +21,15 @@ app.config['SECRET_KEY'] = config.SECRET_KEY
 
 # Настройки загрузки файлов
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'mpeg'}
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'}
+ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'webm', 'mov', 'avi'}
+ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'mpeg', 'wav', 'ogg', 'flac'}
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 # Создаём папки для загрузок
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'avatars'), exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'music'), exist_ok=True)
+os.makedirs(os.path.join(UPLOAD_FOLDER, 'backgrounds'), exist_ok=True)
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
@@ -120,6 +122,20 @@ def ranks():
     if 'token' in session:
         current_user = db.get_account_by_token(session['token'])
     return render_template('ranks.html', ranks=RANKS, current_user=current_user)
+
+@app.route('/users')
+def users():
+    """Список всех пользователей"""
+    # Получаем всех пользователей
+    all_users = list(db.accounts.get('accounts', {}).values())
+    # Сортируем по дате создания (новые первые)
+    all_users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    current_user = None
+    if 'token' in session:
+        current_user = db.get_account_by_token(session['token'])
+    
+    return render_template('users.html', users=all_users, current_user=current_user)
 
 # ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -279,6 +295,53 @@ def api_upload_music():
         
         if result['success']:
             return jsonify({'success': True, 'music_url': music_url})
+        else:
+            return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Ошибка загрузки: {str(e)}'}), 500
+
+@app.route('/api/upload_background', methods=['POST'])
+def api_upload_background():
+    """API: загрузить background (изображение, видео или GIF)"""
+    if 'token' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    account = db.get_account_by_token(session['token'])
+    if not account:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    if 'background' not in request.files:
+        return jsonify({'success': False, 'error': 'Файл не найден'}), 400
+    
+    file = request.files['background']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
+    
+    # Проверяем формат файла
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    
+    if ext in ALLOWED_IMAGE_EXTENSIONS:
+        file_type = 'image'
+    elif ext in ALLOWED_VIDEO_EXTENSIONS:
+        file_type = 'video'
+    else:
+        allowed = ', '.join(sorted(ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS))
+        return jsonify({'success': False, 'error': f'Недопустимый формат. Используй: {allowed}'}), 400
+    
+    # Генерируем уникальное имя файла
+    filename = f"{account['id']}_{uuid.uuid4().hex[:8]}.{ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, 'backgrounds', filename)
+    
+    try:
+        file.save(filepath)
+        background_url = f"/static/uploads/backgrounds/{filename}"
+        
+        # Обновляем профиль
+        result = db.update_profile(account['id'], background_url=background_url, background_type=file_type)
+        
+        if result['success']:
+            return jsonify({'success': True, 'background_url': background_url, 'background_type': file_type})
         else:
             return jsonify(result)
     except Exception as e:

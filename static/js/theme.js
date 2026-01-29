@@ -1,10 +1,40 @@
 // Theme Manager - Применение пользовательской темы
 (function() {
-    // Получаем цвет из data-атрибута body
+    // Получаем данные из data-атрибутов body
     const userColor = document.body.getAttribute('data-user-color');
+    const backgroundUrl = document.body.getAttribute('data-background-url');
+    const backgroundType = document.body.getAttribute('data-background-type');
     
-    if (userColor && userColor !== '#667eea') {
+    // Применяем background (изображение/видео имеет приоритет над цветом)
+    if (backgroundUrl && backgroundType) {
+        applyBackgroundMedia(backgroundUrl, backgroundType);
+    } else if (userColor && userColor !== '#667eea') {
         applyTheme(userColor);
+    }
+    
+    function applyBackgroundMedia(url, type) {
+        if (type === 'video') {
+            // Создаём видео фон
+            const video = document.createElement('video');
+            video.src = url;
+            video.autoplay = true;
+            video.loop = true;
+            video.muted = true;
+            video.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: -1;
+            `;
+            document.body.insertBefore(video, document.body.firstChild);
+            document.body.style.background = 'transparent';
+        } else {
+            // Применяем изображение как фон
+            document.body.style.background = `url('${url}') center/cover fixed`;
+        }
     }
     
     function applyTheme(color) {

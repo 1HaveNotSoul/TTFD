@@ -160,6 +160,35 @@
                 
                 <button type="submit" class="btn">Сохранить тему</button>
             </form>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
+            
+            <h3 style="margin-bottom: 15px;">🖼️ Фон (изображение/видео/GIF)</h3>
+            <form id="backgroundForm">
+                <div class="form-group">
+                    <div class="file-upload">
+                        <input type="file" id="background_file" accept="image/*,video/*,.gif">
+                        <label class="file-upload-label">
+                            🖼️ Нажми чтобы загрузить<br>
+                            <small>JPG, PNG, GIF, MP4, WEBM (макс. 50MB)</small>
+                        </label>
+                    </div>
+                    <small>Загрузи изображение, GIF или видео для фона. Будет применяться на всех страницах.</small>
+                    {% if current_user.profile and current_user.profile.background_url %}
+                    <div class="preview" style="margin-top: 15px;">
+                        {% if current_user.profile.background_type == 'video' %}
+                        <video style="width: 100%; max-width: 400px; border-radius: 12px;" controls>
+                            <source src="{{ current_user.profile.background_url }}">
+                        </video>
+                        {% else %}
+                        <img src="{{ current_user.profile.background_url }}" style="width: 100%; max-width: 400px; border-radius: 12px;">
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn">Загрузить фон</button>
+            </form>
         </div>
 
         <div class="settings-grid">
@@ -331,6 +360,43 @@
         {% if current_user.profile and current_user.profile.bg_color %}
         applyTheme('{{ current_user.profile.bg_color }}');
         {% endif %}
+
+        // Background upload
+        document.getElementById('backgroundForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('background_file');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                showMessage('Выбери файл для загрузки', 'error');
+                return;
+            }
+            
+            // Check file size (50MB max)
+            if (fileInput.files[0].size > 50 * 1024 * 1024) {
+                showMessage('Файл слишком большой! Максимум 50MB', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('background', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/api/upload_background', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('✅ Фон загружен!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка загрузки фона', 'error');
+            }
+        });
 
         // Avatar upload
         document.getElementById('avatarForm').addEventListener('submit', async (e) => {

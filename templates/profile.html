@@ -6,7 +6,7 @@
     <title>{{ account.display_name }} - TTFD</title>
     <link rel="stylesheet" href="/static/css/main.css?v=3.0">
 </head>
-<body {% if current_user and current_user.profile and current_user.profile.bg_color %}data-user-color="{{ current_user.profile.bg_color }}"{% endif %}>
+<body {% if current_user and current_user.profile %}data-user-color="{{ current_user.profile.bg_color or '#667eea' }}" {% if current_user.profile.background_url %}data-background-url="{{ current_user.profile.background_url }}" data-background-type="{{ current_user.profile.background_type or 'image' }}"{% endif %}{% endif %}>
     <div class="container">
         <div class="nav">
             <a href="/">Главная</a>

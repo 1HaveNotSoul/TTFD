@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👥 Пользователи - TTFD</title>
+    <link rel="stylesheet" href="/static/css/main.css?v=3.0">
+</head>
+<body {% if current_user and current_user.profile %}data-user-color="{{ current_user.profile.bg_color or '#667eea' }}" {% if current_user.profile.background_url %}data-background-url="{{ current_user.profile.background_url }}" data-background-type="{{ current_user.profile.background_type or 'image' }}"{% endif %}{% endif %}>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Все пользователи</h1>
+            <p>Просмотри профили других игроков</p>
+        </div>
+
+        <div class="nav">
+            <a href="/">Главная</a>
+            <a href="/games">🎮 Игры</a>
+            <a href="/leaderboard">🏆 Лидеры</a>
+            <a href="/users">👥 Пользователи</a>
+            {% if current_user %}
+                <a href="/profile/{{ current_user.username }}">Мой профиль</a>
+                <a href="/settings">⚙️ Настройки</a>
+                <a href="/logout">Выход</a>
+            {% else %}
+                <a href="/login">Вход</a>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Всего пользователей: {{ users|length }}</h2>
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по имени..." style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; width: 300px;">
+            </div>
+
+            <div class="users-grid" id="usersList">
+                {% for user in users %}
+                <a href="/profile/{{ user.username }}" class="user-card" data-username="{{ user.username }}" data-display-name="{{ user.display_name }}">
+                    <div class="user-avatar">
+                        {% if user.profile and user.profile.avatar_url %}
+                            <img src="{{ user.profile.avatar_url }}" alt="{{ user.display_name }}">
+                        {% else %}
+                            <div class="avatar-placeholder">{{ user.display_name[0].upper() }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ user.display_name }}</div>
+                        <div class="user-username">@{{ user.username }}</div>
+                        {% if user.profile and user.profile.bio %}
+                        <div class="user-bio">{{ user.profile.bio[:100] }}{% if user.profile.bio|length > 100 %}...{% endif %}</div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+
+            {% if users|length == 0 %}
+            <div class="empty-state">
+                <div style="font-size: 3em; margin-bottom: 20px;">👥</div>
+                <h3>Пока нет пользователей</h3>
+                <p>Стань первым! Зарегистрируйся через Discord.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Поиск пользователей
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const users = document.querySelectorAll('.user-card');
+            
+            users.forEach(user => {
+                const username = user.getAttribute('data-username').toLowerCase();
+                const displayName = user.getAttribute('data-display-name').toLowerCase();
+                
+                if (username.includes(query) || displayName.includes(query)) {
+                    user.style.display = 'flex';
+                } else {
+                    user.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script src="/static/js/theme.js"></script>
+</body>
+</html>
