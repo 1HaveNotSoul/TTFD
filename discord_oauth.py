@@ -103,15 +103,18 @@ def handle_oauth_callback(db):
     if discord_avatar:
         avatar_url = f"https://cdn.discordapp.com/avatars/{discord_id}/{discord_avatar}.png"
     
-    # Проверяем существует ли аккаунт с таким Discord ID
-    # Ищем по discord_id в базе
+    # Проверяем существует ли аккаунт с таким Discord ID или email
     existing_account = None
     try:
         # Для PostgreSQL
         if hasattr(db, 'get_connection'):
             conn = db.get_connection()
             cur = conn.cursor()
-            cur.execute("SELECT * FROM accounts WHERE discord_id = %s", (discord_id,))
+            # Ищем по discord_id ИЛИ по email
+            cur.execute(
+                "SELECT * FROM accounts WHERE discord_id = %s OR email = %s", 
+                (discord_id, discord_email or f"{discord_id}@discord.user")
+            )
             result = cur.fetchone()
             if result:
                 existing_account = dict(result)
@@ -120,14 +123,23 @@ def handle_oauth_callback(db):
         # Для JSON
         else:
             for acc in db.accounts['accounts'].values():
-                if acc.get('discord_id') == discord_id:
+                if acc.get('discord_id') == discord_id or acc.get('email') == (discord_email or f"{discord_id}@discord.user"):
                     existing_account = acc
                     break
     except Exception as e:
         print(f"❌ Ошибка поиска аккаунта: {e}")
     
     if existing_account:
-        # Аккаунт уже существует - логиним
+        # Аккаунт уже существует - обновляем Discord ID если его не было
+        if not existing_account.get('discord_id'):
+            print(f"🔗 Привязываем Discord ID к существующему аккаунту: {existing_account['username']}")
+            db.link_discord(existing_account['id'], discord_id)
+            
+            # Обновляем аватарку если есть
+            if avatar_url:
+                db.update_profile(existing_account['id'], avatar_url=avatar_url)
+        
+        # Логиним пользователя
         token = secrets.token_urlsafe(32)
         
         try:
@@ -153,7 +165,8 @@ def handle_oauth_callback(db):
             'success': True,
             'token': token,
             'account': existing_account,
-            'is_new': False
+            'is_new': False,
+            'was_linked': not existing_account.get('discord_id')
         }
     else:
         # Создаём новый аккаунт

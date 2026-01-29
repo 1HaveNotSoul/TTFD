@@ -363,6 +363,9 @@ def auth_discord_callback():
             if result['is_new']:
                 print(f"✅ Создан новый аккаунт: {result['account']['display_name']}")
                 flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
+            elif result.get('was_linked'):
+                print(f"🔗 Discord привязан к аккаунту: {result['account']['display_name']}")
+                flash(f'Discord успешно привязан! С возвращением, {result["account"]["display_name"]}!', 'success')
             else:
                 print(f"✅ Вход выполнен: {result['account']['display_name']}")
                 flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
