@@ -59,6 +59,11 @@ def landing_premium():
     """Premium landing page - guns.lol style"""
     return render_template('landing_premium.html')
 
+@app.route('/test-design')
+def test_design():
+    """Тестовая страница для проверки дизайна"""
+    return render_template('test_design.html')
+
 @app.route('/')
 def index():
     """Главная страница"""
