@@ -1,25 +1,38 @@
 // Theme Manager - Применение пользовательской темы
 (function() {
+    console.log('🎨 Theme.js загружен');
+    
     // Получаем данные из data-атрибутов body
     const userColor = document.body.getAttribute('data-user-color');
     const backgroundUrl = document.body.getAttribute('data-background-url');
     const backgroundType = document.body.getAttribute('data-background-type');
     
+    console.log('📦 Данные темы:', { userColor, backgroundUrl, backgroundType });
+    
     // Применяем background (изображение/видео имеет приоритет над цветом)
-    if (backgroundUrl && backgroundType) {
+    if (backgroundUrl && backgroundUrl !== '' && backgroundType) {
+        console.log('✅ Применяем background media:', backgroundUrl);
         applyBackgroundMedia(backgroundUrl, backgroundType);
-    } else if (userColor && userColor !== '#667eea') {
+    } else if (userColor && userColor !== '#667eea' && userColor !== '') {
+        console.log('✅ Применяем цвет:', userColor);
         applyTheme(userColor);
+    } else {
+        console.log('ℹ️ Используется стандартный градиент');
     }
     
     function applyBackgroundMedia(url, type) {
+        // Убираем стандартный градиент
+        document.body.style.background = 'none';
+        
         if (type === 'video') {
+            console.log('🎬 Создаём видео фон');
             // Создаём видео фон
             const video = document.createElement('video');
             video.src = url;
             video.autoplay = true;
             video.loop = true;
             video.muted = true;
+            video.playsInline = true;
             video.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -28,12 +41,45 @@
                 height: 100%;
                 object-fit: cover;
                 z-index: -1;
+                pointer-events: none;
             `;
             document.body.insertBefore(video, document.body.firstChild);
-            document.body.style.background = 'transparent';
+            
+            // Добавляем полупрозрачный оверлей для читаемости
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.3);
+                z-index: -1;
+                pointer-events: none;
+            `;
+            document.body.insertBefore(overlay, document.body.children[1]);
         } else {
+            console.log('🖼️ Применяем изображение фон');
             // Применяем изображение как фон
-            document.body.style.background = `url('${url}') center/cover fixed`;
+            document.body.style.backgroundImage = `url('${url}')`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+            document.body.style.backgroundRepeat = 'no-repeat';
+            
+            // Добавляем полупрозрачный оверлей для читаемости
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.2);
+                z-index: -1;
+                pointer-events: none;
+            `;
+            document.body.insertBefore(overlay, document.body.firstChild);
         }
     }
     
@@ -41,6 +87,7 @@
         // Create gradient with user color
         const lighterColor = adjustColor(color, 20);
         document.body.style.background = `linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%)`;
+        document.body.style.backgroundAttachment = 'fixed';
         document.body.style.minHeight = '100vh';
     }
     

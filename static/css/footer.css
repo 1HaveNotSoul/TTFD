@@ -1,0 +1,116 @@
+/* ============================================
+   Footer Styles
+   ============================================ */
+
+.footer {
+    margin-top: 60px;
+    padding: 40px 20px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-section {
+    margin-bottom: 30px;
+}
+
+.footer-section h3 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.footer-section p {
+    color: #666;
+    font-size: 1.1em;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.footer-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.footer-link.discord {
+    background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+    color: white;
+}
+
+.footer-link.discord:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
+}
+
+.footer-link.telegram {
+    background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+    color: white;
+}
+
+.footer-link.telegram:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+}
+
+.link-icon {
+    font-size: 1.5em;
+}
+
+.link-text {
+    font-weight: 700;
+}
+
+.footer-bottom {
+    padding-top: 20px;
+    border-top: 2px solid rgba(0,0,0,0.1);
+    color: #999;
+    font-size: 0.9em;
+}
+
+.footer-bottom p {
+    margin: 0;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .footer {
+        margin-top: 40px;
+        padding: 30px 15px 15px;
+    }
+    
+    .footer-section h3 {
+        font-size: 1.5em;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .footer-link {
+        justify-content: center;
+    }
+}

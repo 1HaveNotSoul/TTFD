@@ -4,600 +4,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚙️ Настройки - TTFD</title>
-    <link rel="stylesheet" href="/static/css/main.css?v=3.0">
-    <style>
-        /* Дополнительные стили для премиум настроек */
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .file-upload {
-            position: relative;
-            display: block;
-            width: 100%;
-        }
-        
-        .file-upload input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            z-index: 2;
-        }
-        
-        .file-upload-label {
-            display: block;
-            padding: 20px;
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px dashed rgba(102, 126, 234, 0.3);
-            border-radius: 12px;
-            text-align: center;
-            color: #667eea;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .file-upload:hover .file-upload-label {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.2);
-        }
-        
-        .preview {
-            margin-top: 16px;
-            text-align: center;
-        }
-        
-        .preview img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .preview audio {
-            width: 100%;
-            max-width: 400px;
-            margin-top: 12px;
-            border-radius: 50px;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-group .btn {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        @media (max-width: 768px) {
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .btn-group .btn {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/main.css?v=4.0">
 </head>
-<body>
-    <div class="container">
+<body {% if current_user and current_user.profile %}data-user-color="{{ current_user.profile.bg_color or '#667eea' }}" {% if current_user.profile.background_url %}data-background-url="{{ current_user.profile.background_url }}" data-background-type="{{ current_user.profile.background_type or 'image' }}"{% endif %}{% endif %}>
+    <div class="container"></div>
         <div class="header">
-            <h1>⚙️ Настройки профиля</h1>
-            <p>Настрой свой профиль как тебе нравится</p>
+            <h1>⚙️ Настройки</h1>
+            <p>Настрой свой профиль и сайт</p>
         </div>
 
         <div class="nav">
             <a href="/">Главная</a>
             <a href="/profile/{{ current_user.username }}">Мой профиль</a>
-            <a href="/game">🎮 Кликер</a>
             <a href="/games">🎮 Игры</a>
+            <a href="/users">👥 Пользователи</a>
             <a href="/logout">Выход</a>
         </div>
 
         <div id="message" class="message"></div>
 
-        <!-- Основная информация и Email в одной строке -->
-        <div class="settings-grid">
-            <div class="card">
-                <h2>👤 Основная информация</h2>
-                <form id="profileForm">
-                    <div class="form-group">
-                        <label>Отображаемое имя</label>
-                        <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Логин (нельзя изменить)</label>
-                        <input type="text" value="{{ current_user.username }}" disabled>
-                    </div>
-                    
-                    <button type="submit" class="btn">Сохранить</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <h2>📝 О себе</h2>
-                <form id="bioForm">
-                    <div class="form-group">
-                        <label>Биография</label>
-                        <textarea id="bio" placeholder="Расскажи о себе...">{{ current_user.profile.bio if current_user.profile else '' }}</textarea>
-                        <small>Максимум 500 символов</small>
-                    </div>
-                    
-                    <button type="submit" class="btn">Сохранить биографию</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Персонализация -->
+        <!-- Основная информация -->
         <div class="card">
-            <h2>🎨 Персонализация</h2>
-            <form id="themeForm">
+            <h2>👤 Основная информация</h2>
+            <form id="profileForm" class="settings-form">
                 <div class="form-group">
-                    <label>Цвет фона сайта</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="color" id="bg_color" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}" style="width: 80px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
-                        <input type="text" id="bg_color_text" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}" placeholder="#667eea" style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace;">
-                        <button type="button" class="btn btn-secondary" onclick="resetColor()">Сбросить</button>
-                    </div>
-                    <small>Выбери свой любимый цвет для градиентного фона</small>
+                    <label>Отображаемое имя</label>
+                    <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
                 </div>
                 
-                <button type="submit" class="btn">Сохранить тему</button>
-            </form>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
-            
-            <h3 style="margin-bottom: 15px;">🖼️ Фон (изображение/видео/GIF)</h3>
-            <form id="backgroundForm">
                 <div class="form-group">
-                    <div class="file-upload">
-                        <input type="file" id="background_file" accept="image/*,video/*,.gif">
-                        <label class="file-upload-label">
-                            🖼️ Нажми чтобы загрузить<br>
-                            <small>JPG, PNG, GIF, MP4, WEBM (макс. 50MB)</small>
-                        </label>
-                    </div>
-                    <small>Загрузи изображение, GIF или видео для фона. Будет применяться на всех страницах.</small>
-                    {% if current_user.profile and current_user.profile.background_url %}
-                    <div class="preview" style="margin-top: 15px;">
-                        {% if current_user.profile.background_type == 'video' %}
-                        <video style="width: 100%; max-width: 400px; border-radius: 12px;" controls>
-                            <source src="{{ current_user.profile.background_url }}">
-                        </video>
-                        {% else %}
-                        <img src="{{ current_user.profile.background_url }}" style="width: 100%; max-width: 400px; border-radius: 12px;">
-                        {% endif %}
-                    </div>
-                    {% endif %}
+                    <label>Логин (нельзя изменить)</label>
+                    <input type="text" value="{{ current_user.username }}" disabled>
                 </div>
                 
-                <button type="submit" class="btn">Загрузить фон</button>
+                <div class="form-group">
+                    <label>О себе</label>
+                    <textarea id="bio" placeholder="Расскажи о себе..." maxlength="500">{{ current_user.profile.bio if current_user.profile else '' }}</textarea>
+                    <small>Максимум 500 символов</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Сохранить</button>
             </form>
         </div>
 
-        <div class="settings-grid">
-        </div>
+        <!-- БЛОК 1: Персонализация профиля -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👤 Персонализация профиля</h2>
+                <p>Настройки, которые видят другие пользователи в твоём профиле</p>
+            </div>
 
-        <!-- Аватарка и Музыка в одной строке -->
-        <div class="settings-grid">
-            <div class="card">
-                <h2>📸 Аватарка</h2>
-                <form id="avatarForm">
-                    <div class="form-group">
-                        <div class="file-upload">
-                            <input type="file" id="avatar_file" accept="image/*">
-                            <label class="file-upload-label">
-                                📸 Нажми чтобы загрузить<br>
+            <div class="settings-grid">
+                <!-- Аватарка -->
+                <div class="settings-section">
+                    <h3>📸 Аватарка</h3>
+                    <form id="avatarForm">
+                        <div class="upload-area" id="avatarUploadArea">
+                            <input type="file" id="avatar_file" accept="image/*" hidden>
+                            <div class="upload-placeholder">
+                                {% if current_user.profile and current_user.profile.avatar_url %}
+                                <img src="{{ current_user.profile.avatar_url }}" alt="Avatar" class="preview-image">
+                                {% else %}
+                                <div class="upload-icon">📸</div>
+                                <p>Нажми чтобы загрузить</p>
                                 <small>JPG, PNG, GIF (макс. 5MB)</small>
-                            </label>
+                                {% endif %}
+                            </div>
+                            <div class="upload-progress" id="avatarProgress">
+                                <div class="progress-bar"></div>
+                            </div>
                         </div>
-                        {% if current_user.profile and current_user.profile.avatar_url %}
-                        <div class="preview">
-                            <img src="{{ current_user.profile.avatar_url }}" alt="Avatar">
+                        <button type="submit" class="btn btn-secondary">Загрузить аватарку</button>
+                    </form>
+                </div>
+
+                <!-- Музыка профиля -->
+                <div class="settings-section">
+                    <h3>🎵 Музыка профиля</h3>
+                    <form id="musicForm">
+                        <div class="upload-area" id="musicUploadArea">
+                            <input type="file" id="music_file" accept="audio/*" hidden>
+                            <div class="upload-placeholder">
+                                {% if current_user.profile and current_user.profile.music_url %}
+                                <audio controls class="preview-audio">
+                                    <source src="{{ current_user.profile.music_url }}" type="audio/mpeg">
+                                </audio>
+                                {% else %}
+                                <div class="upload-icon">🎵</div>
+                                <p>Нажми чтобы загрузить</p>
+                                <small>MP3, WAV, OGG (макс. 10MB)</small>
+                                {% endif %}
+                            </div>
+                            <div class="upload-progress" id="musicProgress">
+                                <div class="progress-bar"></div>
+                            </div>
                         </div>
-                        {% endif %}
+                        <small class="help-text">Музыка будет проигрываться при посещении твоего профиля</small>
+                        <button type="submit" class="btn btn-secondary">Загрузить музыку</button>
+                    </form>
+                </div>
+
+                <!-- Фон профиля -->
+                <div class="settings-section full-width">
+                    <h3>🖼️ Фон профиля</h3>
+                    <p class="section-description">Настрой фон своего профиля - выбери цвет или загрузи изображение</p>
+                    
+                    <div class="profile-bg-controls">
+                        <div class="color-picker-group">
+                            <label>Цвет фона</label>
+                            <div class="color-input-group">
+                                <input type="color" id="profile_bg_color" value="{{ current_user.profile.profile_bg_color if current_user.profile and current_user.profile.profile_bg_color else '#667eea' }}">
+                                <input type="text" id="profile_bg_color_text" value="{{ current_user.profile.profile_bg_color if current_user.profile and current_user.profile.profile_bg_color else '#667eea' }}" placeholder="#667eea">
+                                <button type="button" class="btn btn-small" onclick="resetProfileColor()">Сбросить</button>
+                            </div>
+                        </div>
+
+                        <div class="divider-text">или</div>
+
+                        <form id="profileBgForm">
+                            <div class="upload-area" id="profileBgUploadArea">
+                                <input type="file" id="profile_bg_file" accept="image/*" hidden>
+                                <div class="upload-placeholder">
+                                    {% if current_user.profile and current_user.profile.profile_bg_url %}
+                                    <img src="{{ current_user.profile.profile_bg_url }}" alt="Profile BG" class="preview-image-wide">
+                                    {% else %}
+                                    <div class="upload-icon">🖼️</div>
+                                    <p>Загрузи изображение для фона</p>
+                                    <small>JPG, PNG, GIF (макс. 10MB)</small>
+                                    {% endif %}
+                                </div>
+                                <div class="upload-progress" id="profileBgProgress">
+                                    <div class="progress-bar"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Загрузить фон</button>
+                        </form>
                     </div>
                     
-                    <button type="submit" class="btn">Загрузить аватарку</button>
-                </form>
+                    <button type="button" class="btn btn-primary" onclick="saveProfileBg()">Сохранить фон профиля</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- БЛОК 2: Персонализация сайта -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🎨 Персонализация сайта</h2>
+                <p>Настройки применяются на всех страницах сайта (только для тебя)</p>
             </div>
 
-            <div class="card">
-                <h2>🎵 Музыка профиля</h2>
-                <form id="musicForm">
-                    <div class="form-group">
-                        <div class="file-upload">
-                            <input type="file" id="music_file" accept="audio/mp3,audio/mpeg">
-                            <label class="file-upload-label">
-                                🎵 Нажми чтобы загрузить<br>
-                                <small>MP3 (макс. 10MB)</small>
-                            </label>
+            <div class="settings-section">
+                <h3>🌈 Цвет фона сайта</h3>
+                <form id="themeForm">
+                    <div class="color-picker-group">
+                        <div class="color-input-group">
+                            <input type="color" id="bg_color" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}">
+                            <input type="text" id="bg_color_text" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}" placeholder="#667eea">
+                            <button type="button" class="btn btn-small" onclick="resetColor()">Сбросить</button>
                         </div>
-                        <small>Музыка будет проигрываться при посещении твоего профиля</small>
-                        {% if current_user.profile and current_user.profile.music_url %}
-                        <div class="preview">
-                            <audio controls>
-                                <source src="{{ current_user.profile.music_url }}" type="audio/mpeg">
-                            </audio>
-                        </div>
-                        {% endif %}
+                        <small class="help-text">Выбери свой любимый цвет для градиентного фона</small>
                     </div>
-                    
-                    <button type="submit" class="btn">Загрузить музыку</button>
+                    <button type="submit" class="btn btn-primary">Сохранить цвет</button>
+                </form>
+
+                <div class="divider-text">или</div>
+
+                <h3>🖼️ Фон сайта (изображение/видео/GIF)</h3>
+                <form id="backgroundForm">
+                    <div class="upload-area large" id="backgroundUploadArea">
+                        <input type="file" id="background_file" accept="image/*,video/*" hidden>
+                        <div class="upload-placeholder">
+                            {% if current_user.profile and current_user.profile.background_url %}
+                                {% if current_user.profile.background_type == 'video' %}
+                                <video class="preview-video" controls>
+                                    <source src="{{ current_user.profile.background_url }}">
+                                </video>
+                                {% else %}
+                                <img src="{{ current_user.profile.background_url }}" alt="Background" class="preview-image-wide">
+                                {% endif %}
+                            {% else %}
+                            <div class="upload-icon">🖼️</div>
+                            <p>Загрузи изображение, GIF или видео</p>
+                            <small>JPG, PNG, GIF, MP4, WEBM (макс. 50MB)</small>
+                            {% endif %}
+                        </div>
+                        <div class="upload-progress" id="backgroundProgress">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <small class="help-text">Фон будет применяться на всех страницах сайта</small>
+                    <button type="submit" class="btn btn-primary">Загрузить фон</button>
                 </form>
             </div>
         </div>
 
-        <!-- Discord и Пароль в одной строке -->
+        <!-- Discord и Пароль -->
         <div class="settings-grid">
             <div class="card">
                 <h2>🎮 Привязка Discord</h2>
-                <form id="discordForm">
+                <form id="discordForm" class="settings-form">
                     <div class="form-group">
                         <label>Discord ID</label>
-                        <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" 
-                               placeholder="Твой Discord ID">
+                        <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" placeholder="Твой Discord ID">
                         <small>Настройки → Расширенные → Режим разработчика → ПКМ на себя → Копировать ID</small>
                     </div>
-                    
-                    <button type="submit" class="btn">Привязать Discord</button>
+                    <button type="submit" class="btn btn-primary">Привязать Discord</button>
                 </form>
             </div>
 
             <div class="card">
                 <h2>🔒 Смена пароля</h2>
-                <form id="passwordForm">
+                <form id="passwordForm" class="settings-form">
                     <div class="form-group">
                         <label>Старый пароль</label>
                         <input type="password" id="old_password" required>
                     </div>
-                    
                     <div class="form-group">
                         <label>Новый пароль</label>
                         <input type="password" id="new_password" required minlength="6">
                     </div>
-                    
                     <div class="form-group">
                         <label>Повтори новый пароль</label>
                         <input type="password" id="new_password2" required minlength="6">
                     </div>
-                    
                     <button type="submit" class="btn btn-danger">Сменить пароль</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <script>
-        // Profile update
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                display_name: document.getElementById('display_name').value
-            };
-            await updateProfile(data);
-        });
-
-        // Bio update
-        document.getElementById('bioForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                bio: document.getElementById('bio').value
-            };
-            await updateProfile(data);
-        });
-
-        // Theme update
-        document.getElementById('themeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const bgColor = document.getElementById('bg_color').value;
-            const data = {
-                bg_color: bgColor
-            };
-            const result = await updateProfile(data);
-            if (result) {
-                // Apply immediately
-                applyTheme(bgColor);
-            }
-        });
-
-        // Color picker sync
-        document.getElementById('bg_color').addEventListener('input', function(e) {
-            document.getElementById('bg_color_text').value = e.target.value;
-            // Live preview
-            applyTheme(e.target.value);
-        });
-
-        document.getElementById('bg_color_text').addEventListener('input', function(e) {
-            const color = e.target.value;
-            if (/^#[0-9A-F]{6}$/i.test(color)) {
-                document.getElementById('bg_color').value = color;
-                applyTheme(color);
-            }
-        });
-
-        function resetColor() {
-            const defaultColor = '#667eea';
-            document.getElementById('bg_color').value = defaultColor;
-            document.getElementById('bg_color_text').value = defaultColor;
-            applyTheme(defaultColor);
-        }
-
-        function applyTheme(color) {
-            // Create gradient with user color
-            const lighterColor = adjustColor(color, 20);
-            document.body.style.background = `linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%)`;
-        }
-
-        function adjustColor(color, percent) {
-            const num = parseInt(color.replace("#",""), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
-                (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
-                .toString(16).slice(1);
-        }
-
-        // Apply saved theme on load
-        {% if current_user.profile and current_user.profile.bg_color %}
-        applyTheme('{{ current_user.profile.bg_color }}');
-        {% endif %}
-
-        // Background upload
-        document.getElementById('backgroundForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('background_file');
-            
-            if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Выбери файл для загрузки', 'error');
-                return;
-            }
-            
-            // Check file size (50MB max)
-            if (fileInput.files[0].size > 50 * 1024 * 1024) {
-                showMessage('Файл слишком большой! Максимум 50MB', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('background', fileInput.files[0]);
-            
-            try {
-                const response = await fetch('/api/upload_background', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Фон загружен!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка загрузки фона', 'error');
-            }
-        });
-
-        // Avatar upload
-        document.getElementById('avatarForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('avatar_file');
-            
-            if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Выбери файл для загрузки', 'error');
-                return;
-            }
-            
-            // Check file size (5MB max)
-            if (fileInput.files[0].size > 5 * 1024 * 1024) {
-                showMessage('Файл слишком большой! Максимум 5MB', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('avatar', fileInput.files[0]);
-            
-            try {
-                const response = await fetch('/api/upload_avatar', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Аватарка загружена!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка загрузки аватарки', 'error');
-            }
-        });
-
-        // Music upload
-        document.getElementById('musicForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('music_file');
-            
-            if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Выбери MP3 файл для загрузки', 'error');
-                return;
-            }
-            
-            // Check file size (10MB max)
-            if (fileInput.files[0].size > 10 * 1024 * 1024) {
-                showMessage('Файл слишком большой! Максимум 10MB', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('music', fileInput.files[0]);
-            
-            try {
-                const response = await fetch('/api/upload_music', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Музыка загружена!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка загрузки музыки', 'error');
-            }
-        });
-
-        // Discord link
-        document.getElementById('discordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const discord_id = document.getElementById('discord_id').value;
-            
-            if (!discord_id || discord_id.length < 17) {
-                showMessage('Введи корректный Discord ID', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/link_discord', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({discord_id})
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Discord успешно привязан!', 'success');
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка привязки Discord', 'error');
-            }
-        });
-
-        // Password change
-        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const old_password = document.getElementById('old_password').value;
-            const new_password = document.getElementById('new_password').value;
-            const new_password2 = document.getElementById('new_password2').value;
-            
-            if (new_password !== new_password2) {
-                showMessage('Новые пароли не совпадают', 'error');
-                return;
-            }
-            
-            if (new_password.length < 6) {
-                showMessage('Пароль должен быть минимум 6 символов', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/change_password', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({old_password, new_password})
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Пароль успешно изменён!', 'success');
-                    document.getElementById('passwordForm').reset();
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка смены пароля', 'error');
-            }
-        });
-
-        async function updateProfile(data) {
-            try {
-                const response = await fetch('/api/update_profile', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showMessage('✅ Профиль обновлён!', 'success');
-                    return true;
-                } else {
-                    showMessage(result.error, 'error');
-                    return false;
-                }
-            } catch (error) {
-                showMessage('Ошибка обновления профиля', 'error');
-                return false;
-            }
-        }
-
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.className = 'message ' + type;
-            msg.style.display = 'block';
-            msg.textContent = text;
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            setTimeout(() => {
-                msg.style.display = 'none';
-            }, 5000);
-        }
-
-        // File upload label update
-        document.getElementById('avatar_file').addEventListener('change', function(e) {
-            const label = this.parentElement.querySelector('.file-upload-label');
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                label.innerHTML = `✅ ${file.name}<br><small>${sizeMB} MB</small>`;
-            }
-        });
-
-        document.getElementById('music_file').addEventListener('change', function(e) {
-            const label = this.parentElement.querySelector('.file-upload-label');
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                label.innerHTML = `✅ ${file.name}<br><small>${sizeMB} MB</small>`;
-            }
-        });
-
-        // Character counter for bio
-        const bioTextarea = document.getElementById('bio');
-        bioTextarea.addEventListener('input', function() {
-            const maxLength = 500;
-            const currentLength = this.value.length;
-            if (currentLength > maxLength) {
-                this.value = this.value.substring(0, maxLength);
-            }
-        });
-    </script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/theme.js"></script>
 </body>
 </html>

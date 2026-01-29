@@ -110,6 +110,9 @@ def snake():
 def leaderboard():
     """Таблица лидеров"""
     leaders = db.get_leaderboard(50)
+    # Фильтруем Unknown пользователей
+    leaders = [user for user in leaders if user.get('username') != 'Unknown']
+    
     current_user = None
     if 'token' in session:
         current_user = db.get_account_by_token(session['token'])
@@ -126,16 +129,22 @@ def ranks():
 @app.route('/users')
 def users():
     """Список всех пользователей"""
-    # Получаем всех пользователей
-    all_users = list(db.accounts.get('accounts', {}).values())
-    # Сортируем по дате создания (новые первые)
-    all_users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-    
-    current_user = None
-    if 'token' in session:
-        current_user = db.get_account_by_token(session['token'])
-    
-    return render_template('users.html', users=all_users, current_user=current_user)
+    try:
+        # Получаем всех пользователей
+        all_users = list(db.accounts.get('accounts', {}).values())
+        # Сортируем по дате создания (новые первые)
+        all_users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        current_user = None
+        if 'token' in session:
+            current_user = db.get_account_by_token(session['token'])
+        
+        return render_template('users.html', users=all_users, current_user=current_user)
+    except Exception as e:
+        print(f"❌ Ошибка на странице /users: {e}")
+        import traceback
+        traceback.print_exc()
+        return f"Ошибка: {str(e)}", 500
 
 # ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -342,6 +351,46 @@ def api_upload_background():
         
         if result['success']:
             return jsonify({'success': True, 'background_url': background_url, 'background_type': file_type})
+        else:
+            return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Ошибка загрузки: {str(e)}'}), 500
+
+@app.route('/api/upload_profile_bg', methods=['POST'])
+def api_upload_profile_bg():
+    """API: загрузить фон профиля"""
+    if 'token' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    account = db.get_account_by_token(session['token'])
+    if not account:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    if 'profile_bg' not in request.files:
+        return jsonify({'success': False, 'error': 'Файл не найден'}), 400
+    
+    file = request.files['profile_bg']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
+    
+    if not allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
+        return jsonify({'success': False, 'error': 'Недопустимый формат файла. Используй JPG, PNG, GIF'}), 400
+    
+    # Генерируем уникальное имя файла
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{account['id']}_profile_bg_{uuid.uuid4().hex[:8]}.{ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, 'backgrounds', filename)
+    
+    try:
+        file.save(filepath)
+        profile_bg_url = f"/static/uploads/backgrounds/{filename}"
+        
+        # Обновляем профиль
+        result = db.update_profile(account['id'], profile_bg_url=profile_bg_url)
+        
+        if result['success']:
+            return jsonify({'success': True, 'profile_bg_url': profile_bg_url})
         else:
             return jsonify(result)
     except Exception as e:

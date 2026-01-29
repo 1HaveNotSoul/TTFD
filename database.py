@@ -93,6 +93,8 @@ class Database:
                 'bg_color': '#667eea',
                 'background_url': '',
                 'background_type': 'color',
+                'profile_bg_color': '#667eea',
+                'profile_bg_url': '',
                 'text_color': '#ffffff',
                 'avatar_url': '',
                 'social_links': {}
@@ -148,7 +150,7 @@ class Database:
                 account['email'] = kwargs['email']
             
             # Обновляем профиль
-            for key in ['bio', 'music_url', 'theme', 'background_color', 'bg_color', 'text_color', 'avatar_url', 'background_url', 'background_type']:
+            for key in ['bio', 'music_url', 'theme', 'background_color', 'bg_color', 'text_color', 'avatar_url', 'background_url', 'background_type', 'profile_bg_color', 'profile_bg_url']:
                 if key in kwargs:
                     account['profile'][key] = kwargs[key]
             
