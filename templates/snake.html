@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Змейка - TTFD</title>
+    <link rel="stylesheet" href="/static/css/snake.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐍 Змейка</h1>
+            <div class="score-panel">
+                <div class="score">
+                    <span class="label">Счёт:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="high-score">
+                    <span class="label">Рекорд:</span>
+                    <span id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div id="gameOver" class="game-over hidden">
+                <h2>Игра окончена!</h2>
+                <p>Твой счёт: <span id="finalScore">0</span></p>
+                <button id="restartBtn" class="btn">🔄 Начать заново</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">▶️ Начать игру</button>
+            <button id="pauseBtn" class="btn btn-secondary hidden">⏸️ Пауза</button>
+        </div>
+
+        <div class="instructions">
+            <h3>Управление:</h3>
+            <div class="keys">
+                <div class="key-group">
+                    <span class="key">↑</span>
+                    <span class="key">↓</span>
+                    <span class="key">←</span>
+                    <span class="key">→</span>
+                </div>
+                <span class="or">или</span>
+                <div class="key-group">
+                    <span class="key">W</span>
+                    <span class="key">S</span>
+                    <span class="key">A</span>
+                    <span class="key">D</span>
+                </div>
+            </div>
+            <p>Собирай еду 🍎, становись длиннее, не врезайся в стены и себя!</p>
+        </div>
+
+        <div class="back-link">
+            <a href="/games" class="btn">◀️ Назад к играм</a>
+        </div>
+    </div>
+
+    <script src="/static/js/snake.js"></script>
+</body>
+</html>

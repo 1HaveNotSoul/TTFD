@@ -37,13 +37,29 @@ def index():
         current_user = db.get_account_by_token(session['token'])
     return render_template('index.html', bot_data=bot_data, current_user=current_user)
 
+@app.route('/games')
+def games():
+    """Страница со списком игр"""
+    current_user = None
+    if 'token' in session:
+        current_user = db.get_account_by_token(session['token'])
+    return render_template('games.html', current_user=current_user)
+
 @app.route('/game')
 def game():
-    """Страница мини-игры"""
+    """Страница кликера (старая игра)"""
     current_user = None
     if 'token' in session:
         current_user = db.get_account_by_token(session['token'])
     return render_template('game.html', current_user=current_user)
+
+@app.route('/snake')
+def snake():
+    """Страница игры Змейка"""
+    current_user = None
+    if 'token' in session:
+        current_user = db.get_account_by_token(session['token'])
+    return render_template('snake.html', current_user=current_user)
 
 @app.route('/leaderboard')
 def leaderboard():

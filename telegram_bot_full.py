@@ -1,0 +1,534 @@
+# Полноценный Telegram бот с кнопками, тикетами и админ-панелью
+import os
+import json
+import asyncio
+from datetime import datetime
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+
+# Конфигурация
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+ADMIN_IDS = [int(x) for x in os.getenv('TELEGRAM_ADMIN_IDS', '').split(',') if x.strip()]
+
+# Хранилище тикетов
+TICKETS_FILE = 'tickets.json'
+tickets = {}
+
+def load_tickets():
+    """Загрузить тикеты из файла"""
+    global tickets
+    try:
+        if os.path.exists(TICKETS_FILE):
+            with open(TICKETS_FILE, 'r', encoding='utf-8') as f:
+                tickets = json.load(f)
+    except Exception as e:
+        print(f"❌ Ошибка загрузки тикетов: {e}")
+        tickets = {}
+
+def save_tickets():
+    """Сохранить тикеты в файл"""
+    try:
+        with open(TICKETS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(tickets, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"❌ Ошибка сохранения тикетов: {e}")
+
+def is_admin(user_id):
+    """Проверить является ли пользователь админом"""
+    return user_id in ADMIN_IDS
+
+# ==================== ГЛАВНОЕ МЕНЮ ====================
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда /start - главное меню"""
+    user = update.effective_user
+    
+    keyboard = [
+        [InlineKeyboardButton("👤 Мой профиль", callback_data='profile')],
+        [InlineKeyboardButton("📊 Статистика", callback_data='stats')],
+        [InlineKeyboardButton("🎫 Создать тикет", callback_data='create_ticket')],
+        [InlineKeyboardButton("📋 Мои тикеты", callback_data='my_tickets')],
+    ]
+    
+    # Админ кнопки
+    if is_admin(user.id):
+        keyboard.append([InlineKeyboardButton("🔧 Админ-панель", callback_data='admin_panel')])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    text = f"👋 Привет, {user.first_name}!\n\n"
+    text += "🎮 Добро пожаловать в TTFD Bot!\n\n"
+    text += "Выбери действие:"
+    
+    if update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+    else:
+        await update.callback_query.message.edit_text(text, reply_markup=reply_markup)
+
+# ==================== ПРОФИЛЬ ====================
+
+async def show_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать профиль пользователя"""
+    query = update.callback_query
+    await query.answer()
+    
+    user = query.from_user
+    
+    # Здесь можно подключиться к БД и получить данные
+    # Пока показываем базовую информацию
+    
+    text = f"👤 <b>Твой профиль</b>\n\n"
+    text += f"🆔 ID: <code>{user.id}</code>\n"
+    text += f"👤 Имя: {user.first_name}\n"
+    if user.username:
+        text += f"📝 Username: @{user.username}\n"
+    
+    # TODO: Добавить данные из БД (XP, ранг, монеты и т.д.)
+    
+    keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+# ==================== СТАТИСТИКА ====================
+
+async def show_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать статистику"""
+    query = update.callback_query
+    await query.answer()
+    
+    # TODO: Получить статистику из БД
+    
+    text = "📊 <b>Статистика сервера</b>\n\n"
+    text += "👥 Всего пользователей: <b>0</b>\n"
+    text += "🎮 Игр сыграно: <b>0</b>\n"
+    text += "🏆 Топ игрок: <b>-</b>\n"
+    text += "💰 Всего монет: <b>0</b>\n"
+    
+    keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+# ==================== ТИКЕТЫ ====================
+
+async def create_ticket_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Начать создание тикета"""
+    query = update.callback_query
+    await query.answer()
+    
+    text = "🎫 <b>Создание тикета</b>\n\n"
+    text += "Выбери категорию проблемы:"
+    
+    keyboard = [
+        [InlineKeyboardButton("🐛 Баг/Ошибка", callback_data='ticket_bug')],
+        [InlineKeyboardButton("💡 Предложение", callback_data='ticket_suggestion')],
+        [InlineKeyboardButton("❓ Вопрос", callback_data='ticket_question')],
+        [InlineKeyboardButton("⚠️ Жалоба", callback_data='ticket_complaint')],
+        [InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def ticket_category_selected(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Категория тикета выбрана"""
+    query = update.callback_query
+    await query.answer()
+    
+    category_map = {
+        'ticket_bug': '🐛 Баг/Ошибка',
+        'ticket_suggestion': '💡 Предложение',
+        'ticket_question': '❓ Вопрос',
+        'ticket_complaint': '⚠️ Жалоба'
+    }
+    
+    category = category_map.get(query.data, 'Другое')
+    context.user_data['ticket_category'] = category
+    
+    text = f"🎫 <b>Создание тикета</b>\n\n"
+    text += f"Категория: {category}\n\n"
+    text += "Теперь напиши описание проблемы:"
+    
+    keyboard = [[InlineKeyboardButton("❌ Отмена", callback_data='back_to_menu')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+    
+    # Устанавливаем флаг ожидания сообщения
+    context.user_data['waiting_for_ticket'] = True
+
+async def handle_ticket_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка сообщения с описанием тикета"""
+    if not context.user_data.get('waiting_for_ticket'):
+        return
+    
+    user = update.effective_user
+    category = context.user_data.get('ticket_category', 'Другое')
+    description = update.message.text
+    
+    # Создаём тикет
+    ticket_id = f"T{len(tickets) + 1:04d}"
+    tickets[ticket_id] = {
+        'id': ticket_id,
+        'user_id': user.id,
+        'username': user.username or user.first_name,
+        'category': category,
+        'description': description,
+        'status': 'open',
+        'created_at': datetime.now().isoformat(),
+        'messages': []
+    }
+    save_tickets()
+    
+    # Уведомляем пользователя
+    text = f"✅ <b>Тикет создан!</b>\n\n"
+    text += f"🎫 ID: <code>{ticket_id}</code>\n"
+    text += f"📁 Категория: {category}\n"
+    text += f"📝 Описание: {description}\n\n"
+    text += "Ожидай ответа от администрации!"
+    
+    keyboard = [[InlineKeyboardButton("◀️ В меню", callback_data='back_to_menu')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML')
+    
+    # Уведомляем админов
+    for admin_id in ADMIN_IDS:
+        try:
+            admin_text = f"🎫 <b>Новый тикет!</b>\n\n"
+            admin_text += f"ID: <code>{ticket_id}</code>\n"
+            admin_text += f"От: {user.first_name} (@{user.username or 'нет'})\n"
+            admin_text += f"Категория: {category}\n"
+            admin_text += f"Описание: {description}"
+            
+            admin_keyboard = [[InlineKeyboardButton("📋 Открыть тикет", callback_data=f'admin_ticket_{ticket_id}')]]
+            admin_markup = InlineKeyboardMarkup(admin_keyboard)
+            
+            await context.bot.send_message(admin_id, admin_text, reply_markup=admin_markup, parse_mode='HTML')
+        except:
+            pass
+    
+    # Сбрасываем флаг
+    context.user_data['waiting_for_ticket'] = False
+
+async def show_my_tickets(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать тикеты пользователя"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = query.from_user.id
+    user_tickets = [t for t in tickets.values() if t['user_id'] == user_id]
+    
+    if not user_tickets:
+        text = "📋 <b>Твои тикеты</b>\n\n"
+        text += "У тебя пока нет тикетов."
+        
+        keyboard = [
+            [InlineKeyboardButton("🎫 Создать тикет", callback_data='create_ticket')],
+            [InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')]
+        ]
+    else:
+        text = "📋 <b>Твои тикеты</b>\n\n"
+        
+        keyboard = []
+        for ticket in sorted(user_tickets, key=lambda x: x['created_at'], reverse=True):
+            status_emoji = "🟢" if ticket['status'] == 'open' else "🔴" if ticket['status'] == 'closed' else "🟡"
+            keyboard.append([InlineKeyboardButton(
+                f"{status_emoji} {ticket['id']} - {ticket['category']}", 
+                callback_data=f"view_ticket_{ticket['id']}"
+            )])
+        
+        keyboard.append([InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def view_ticket(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Просмотр тикета"""
+    query = update.callback_query
+    await query.answer()
+    
+    ticket_id = query.data.replace('view_ticket_', '')
+    ticket = tickets.get(ticket_id)
+    
+    if not ticket:
+        await query.message.edit_text("❌ Тикет не найден")
+        return
+    
+    status_map = {'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт'}
+    
+    text = f"🎫 <b>Тикет {ticket['id']}</b>\n\n"
+    text += f"📁 Категория: {ticket['category']}\n"
+    text += f"📊 Статус: {status_map.get(ticket['status'], 'Неизвестно')}\n"
+    text += f"📅 Создан: {ticket['created_at'][:10]}\n\n"
+    text += f"📝 Описание:\n{ticket['description']}\n\n"
+    
+    if ticket['messages']:
+        text += "💬 <b>Сообщения:</b>\n"
+        for msg in ticket['messages'][-3:]:  # Последние 3 сообщения
+            text += f"• {msg['from']}: {msg['text']}\n"
+    
+    keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='my_tickets')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+# ==================== АДМИН-ПАНЕЛЬ ====================
+
+async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Админ-панель"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        await query.message.edit_text("❌ У тебя нет прав администратора")
+        return
+    
+    text = "🔧 <b>Админ-панель</b>\n\n"
+    text += f"📊 Открытых тикетов: {len([t for t in tickets.values() if t['status'] == 'open'])}\n"
+    text += f"📋 Всего тикетов: {len(tickets)}\n"
+    
+    keyboard = [
+        [InlineKeyboardButton("🎫 Все тикеты", callback_data='admin_all_tickets')],
+        [InlineKeyboardButton("💾 Скачать БД", callback_data='admin_download_db')],
+        [InlineKeyboardButton("📊 Статистика БД", callback_data='admin_db_stats')],
+        [InlineKeyboardButton("◀️ Назад", callback_data='back_to_menu')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def admin_all_tickets(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показать все тикеты (админ)"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    if not tickets:
+        text = "📋 <b>Все тикеты</b>\n\nТикетов пока нет."
+        keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='admin_panel')]]
+    else:
+        text = "📋 <b>Все тикеты</b>\n\n"
+        
+        keyboard = []
+        for ticket in sorted(tickets.values(), key=lambda x: x['created_at'], reverse=True)[:10]:
+            status_emoji = "🟢" if ticket['status'] == 'open' else "🔴" if ticket['status'] == 'closed' else "🟡"
+            keyboard.append([InlineKeyboardButton(
+                f"{status_emoji} {ticket['id']} - {ticket['username']}", 
+                callback_data=f"admin_ticket_{ticket['id']}"
+            )])
+        
+        keyboard.append([InlineKeyboardButton("◀️ Назад", callback_data='admin_panel')])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def admin_view_ticket(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Просмотр тикета (админ)"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    ticket_id = query.data.replace('admin_ticket_', '')
+    ticket = tickets.get(ticket_id)
+    
+    if not ticket:
+        await query.message.edit_text("❌ Тикет не найден")
+        return
+    
+    status_map = {'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт'}
+    
+    text = f"🎫 <b>Тикет {ticket['id']}</b>\n\n"
+    text += f"👤 От: {ticket['username']} (ID: {ticket['user_id']})\n"
+    text += f"📁 Категория: {ticket['category']}\n"
+    text += f"📊 Статус: {status_map.get(ticket['status'], 'Неизвестно')}\n"
+    text += f"📅 Создан: {ticket['created_at'][:10]}\n\n"
+    text += f"📝 Описание:\n{ticket['description']}"
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Закрыть тикет", callback_data=f"admin_close_{ticket_id}")],
+        [InlineKeyboardButton("◀️ Назад", callback_data='admin_all_tickets')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def admin_close_ticket(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Закрыть тикет (админ)"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    ticket_id = query.data.replace('admin_close_', '')
+    ticket = tickets.get(ticket_id)
+    
+    if ticket:
+        ticket['status'] = 'closed'
+        save_tickets()
+        
+        # Уведомляем пользователя
+        try:
+            await context.bot.send_message(
+                ticket['user_id'],
+                f"✅ Твой тикет <code>{ticket_id}</code> был закрыт администратором.",
+                parse_mode='HTML'
+            )
+        except:
+            pass
+        
+        await query.answer("✅ Тикет закрыт!")
+        await admin_view_ticket(update, context)
+
+async def admin_download_db(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Скачать БД (админ)"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    # TODO: Подключиться к PostgreSQL и сделать дамп
+    
+    text = "💾 <b>Скачать БД</b>\n\n"
+    text += "Функция в разработке.\n"
+    text += "Скоро здесь можно будет скачать полный дамп базы данных."
+    
+    keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='admin_panel')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+async def admin_db_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Статистика БД (админ)"""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    # TODO: Получить статистику из PostgreSQL
+    
+    text = "📊 <b>Статистика БД</b>\n\n"
+    text += "👥 Пользователей: <b>0</b>\n"
+    text += "🎮 Игровых сессий: <b>0</b>\n"
+    text += "💰 Всего монет: <b>0</b>\n"
+    text += "🏆 Всего XP: <b>0</b>\n"
+    
+    keyboard = [[InlineKeyboardButton("◀️ Назад", callback_data='admin_panel')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+
+# ==================== ОБРАБОТЧИКИ ====================
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик всех кнопок"""
+    query = update.callback_query
+    
+    if query.data == 'back_to_menu':
+        await start(update, context)
+    elif query.data == 'profile':
+        await show_profile(update, context)
+    elif query.data == 'stats':
+        await show_stats(update, context)
+    elif query.data == 'create_ticket':
+        await create_ticket_start(update, context)
+    elif query.data.startswith('ticket_'):
+        await ticket_category_selected(update, context)
+    elif query.data == 'my_tickets':
+        await show_my_tickets(update, context)
+    elif query.data.startswith('view_ticket_'):
+        await view_ticket(update, context)
+    elif query.data == 'admin_panel':
+        await admin_panel(update, context)
+    elif query.data == 'admin_all_tickets':
+        await admin_all_tickets(update, context)
+    elif query.data.startswith('admin_ticket_'):
+        await admin_view_ticket(update, context)
+    elif query.data.startswith('admin_close_'):
+        await admin_close_ticket(update, context)
+    elif query.data == 'admin_download_db':
+        await admin_download_db(update, context)
+    elif query.data == 'admin_db_stats':
+        await admin_db_stats(update, context)
+
+# ==================== КОМАНДЫ ====================
+
+async def link_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда !link - получить ссылку на сайт"""
+    user = update.effective_user
+    
+    text = f"🌐 <b>Ссылка на сайт TTFD</b>\n\n"
+    text += f"🔗 <a href='https://ttfd.onrender.com/'>https://ttfd.onrender.com/</a>\n\n"
+    text += f"📱 Доступные разделы:\n"
+    text += f"• <a href='https://ttfd.onrender.com/game'>Игры</a>\n"
+    text += f"• <a href='https://ttfd.onrender.com/leaderboard'>Таблица лидеров</a>\n"
+    text += f"• <a href='https://ttfd.onrender.com/ranks'>Ранги</a>\n"
+    text += f"• <a href='https://ttfd.onrender.com/login'>Вход</a>\n"
+    text += f"• <a href='https://ttfd.onrender.com/register'>Регистрация</a>\n\n"
+    text += f"✨ Войди через Discord одним кликом!"
+    
+    keyboard = [[InlineKeyboardButton("🌐 Открыть сайт", url='https://ttfd.onrender.com/')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode='HTML', disable_web_page_preview=False)
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда /help - список команд"""
+    text = "📋 <b>Доступные команды:</b>\n\n"
+    text += "/start - Главное меню\n"
+    text += "/help - Список команд\n"
+    text += "!link - Получить ссылку на сайт\n\n"
+    text += "🎮 Используй кнопки для навигации!"
+    
+    await update.message.reply_text(text, parse_mode='HTML')
+
+async def handle_text_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка текстовых команд (!link и т.д.)"""
+    text = update.message.text.strip().lower()
+    
+    if text == '!link':
+        await link_command(update, context)
+    elif not context.user_data.get('waiting_for_ticket'):
+        # Если не ждём тикет, показываем подсказку
+        await update.message.reply_text(
+            "💡 Используй /start для открытия меню\n"
+            "Или !link для получения ссылки на сайт"
+        )
+
+# ==================== ЗАПУСК БОТА ====================
+
+def run_telegram_bot():
+    """Запустить Telegram бота"""
+    if not TELEGRAM_TOKEN:
+        print("❌ TELEGRAM_BOT_TOKEN не установлен!")
+        return
+    
+    load_tickets()
+    
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
+    
+    # Команды
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
+    
+    # Кнопки
+    app.add_handler(CallbackQueryHandler(button_handler))
+    
+    # Сообщения (для тикетов и команд)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: 
+        handle_ticket_message(u, c) if c.user_data.get('waiting_for_ticket') else handle_text_commands(u, c)
+    ))
+    
+    print("✅ Telegram бот запущен!")
+    app.run_polling()
+
+if __name__ == "__main__":
+    run_telegram_bot()

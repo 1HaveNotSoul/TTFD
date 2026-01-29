@@ -13,6 +13,14 @@ except Exception as e:
     print(f"⚠️ Telegram бэкап недоступен: {e}")
     telegram_enabled = False
 
+# Импортируем Telegram бота
+try:
+    from telegram_bot_full import run_telegram_bot
+    telegram_bot_enabled = True
+except Exception as e:
+    print(f"⚠️ Telegram бот недоступен: {e}")
+    telegram_bot_enabled = False
+
 def update_web_stats():
     """Обновление статистики для веб-сайта"""
     while True:
@@ -51,6 +59,12 @@ def main():
     web_thread = threading.Thread(target=run_web_server, daemon=True)
     web_thread.start()
     print("✅ Веб-сервер запущен")
+    
+    # Запускаем Telegram бота в отдельном потоке
+    if telegram_bot_enabled:
+        telegram_thread = threading.Thread(target=run_telegram_bot, daemon=True)
+        telegram_thread.start()
+        print("✅ Telegram бот запущен")
     
     # Запускаем обновление статистики в отдельном потоке
     stats_thread = threading.Thread(target=update_web_stats, daemon=True)
