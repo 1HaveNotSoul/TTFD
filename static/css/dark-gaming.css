@@ -1,0 +1,653 @@
+/* ============================================
+   TTFD Website - Dark Gaming Theme (guns.lol style)
+   Version: 4.0
+   ============================================ */
+
+/* === RESET & BASE === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Dark Colors */
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a24;
+    --bg-hover: #22222e;
+    
+    /* Neon Accents */
+    --neon-red: #ff0844;
+    --neon-blue: #00d9ff;
+    --neon-purple: #b026ff;
+    --neon-green: #00ff88;
+    
+    /* Text */
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
+    
+    /* Effects */
+    --glow-red: 0 0 20px rgba(255, 8, 68, 0.5);
+    --glow-blue: 0 0 20px rgba(0, 217, 255, 0.5);
+    --glow-purple: 0 0 20px rgba(176, 38, 255, 0.5);
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* === ANIMATED BACKGROUND === */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 8, 68, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(176, 38, 255, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: bgPulse 15s ease-in-out infinite;
+}
+
+@keyframes bgPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* === CONTAINER === */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* === HEADER === */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 40px 20px;
+}
+
+.header h1 {
+    font-size: 4em;
+    font-weight: 900;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--neon-red), var(--neon-purple), var(--neon-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: textGlow 3s ease-in-out infinite;
+}
+
+@keyframes textGlow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 8, 68, 0.5)); }
+    50% { filter: drop-shadow(0 0 20px rgba(255, 8, 68, 0.8)); }
+}
+
+.header p {
+    font-size: 1.2em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 600;
+}
+
+/* === NAVIGATION === */
+.nav {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.nav a {
+    padding: 12px 28px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 8, 68, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.nav a:hover::before {
+    left: 100%;
+}
+
+.nav a:hover {
+    border-color: var(--neon-red);
+    box-shadow: var(--glow-red);
+    transform: translateY(-2px);
+}
+
+/* === CARDS === */
+.card {
+    background: var(--bg-card);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 25px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon-red), var(--neon-purple), var(--neon-blue));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover {
+    border-color: rgba(255, 8, 68, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* === CLICKER BUTTON === */
+.click-button {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--neon-red), var(--neon-purple));
+    border: 4px solid var(--neon-red);
+    font-size: 5em;
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 0 40px rgba(255, 8, 68, 0.6),
+        inset 0 0 40px rgba(255, 255, 255, 0.1);
+    margin: 30px auto;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+.click-button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: buttonShine 3s linear infinite;
+}
+
+@keyframes buttonShine {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.click-button:hover {
+    transform: scale(1.05);
+    box-shadow: 
+        0 0 60px rgba(255, 8, 68, 0.8),
+        inset 0 0 60px rgba(255, 255, 255, 0.2);
+}
+
+.click-button:active {
+    transform: scale(0.95);
+    box-shadow: 
+        0 0 30px rgba(255, 8, 68, 0.9),
+        inset 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+/* === STATS === */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.stat-box {
+    background: var(--bg-secondary);
+    border: 2px solid rgba(255, 8, 68, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 8, 68, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.stat-box:hover::before {
+    opacity: 1;
+}
+
+.stat-box:hover {
+    border-color: var(--neon-red);
+    box-shadow: var(--glow-red);
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2.5em;
+    font-weight: 900;
+    color: var(--neon-red);
+    margin-top: 10px;
+    text-shadow: 0 0 10px rgba(255, 8, 68, 0.5);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* === BUTTONS === */
+.btn {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--neon-red), var(--neon-purple));
+    color: var(--text-primary);
+    border: 2px solid var(--neon-red);
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    box-shadow: var(--glow-red);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff0844, #ff4444);
+    border-color: #ff0844;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+    border-color: var(--neon-blue);
+}
+
+.btn-secondary:hover {
+    box-shadow: var(--glow-blue);
+}
+
+/* === FORMS === */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-secondary);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1em;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--neon-red);
+    box-shadow: var(--glow-red);
+    background: var(--bg-card);
+}
+
+.form-group input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+
+/* === RANK DISPLAY === */
+.rank-display {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-red));
+    color: var(--text-primary);
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 25px;
+    border: 2px solid var(--neon-purple);
+    box-shadow: var(--glow-purple);
+}
+
+.rank-name {
+    font-size: 2.5em;
+    font-weight: 900;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.progress-bar {
+    background: rgba(0, 0, 0, 0.3);
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+}
+
+/* === TASKS === */
+.task {
+    background: var(--bg-secondary);
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--neon-red);
+    transition: all 0.3s;
+}
+
+.task:hover {
+    background: var(--bg-hover);
+    box-shadow: var(--glow-red);
+    transform: translateX(5px);
+}
+
+.task.completed {
+    opacity: 0.6;
+    border-left-color: var(--neon-green);
+}
+
+.task-progress {
+    background: rgba(0, 0, 0, 0.3);
+    height: 8px;
+    border-radius: 4px;
+    margin: 12px 0;
+    overflow: hidden;
+}
+
+.task-progress-fill {
+    background: linear-gradient(90deg, var(--neon-red), var(--neon-purple));
+    height: 100%;
+    transition: width 0.3s;
+    box-shadow: 0 0 10px rgba(255, 8, 68, 0.6);
+}
+
+.task.completed .task-progress-fill {
+    background: var(--neon-green);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+.complete-btn {
+    background: var(--neon-green);
+    color: #000;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+.complete-btn:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+    transform: scale(1.05);
+}
+
+.complete-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* === NOTIFICATION === */
+.notification {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: var(--bg-card);
+    border: 2px solid var(--neon-red);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: var(--glow-red), 0 10px 40px rgba(0, 0, 0, 0.5);
+    transform: translateX(400px);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    max-width: 350px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.rank-up-notification {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-red));
+    border-color: var(--neon-purple);
+    box-shadow: var(--glow-purple), 0 10px 40px rgba(0, 0, 0, 0.5);
+    font-size: 1.2em;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* === GAME GRID === */
+.game-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px 350px;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.clicker-section {
+    text-align: center;
+}
+
+.user-id-input {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--neon-red);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1em;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.user-id-input:focus {
+    outline: none;
+    box-shadow: var(--glow-red);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .game-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 2.5em;
+    }
+    
+    .nav {
+        flex-direction: column;
+    }
+    
+    .click-button {
+        width: 220px;
+        height: 220px;
+        font-size: 4em;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--neon-red), var(--neon-purple));
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--neon-purple), var(--neon-blue));
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === UTILITY === */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 10px; }
+.mt-2 { margin-top: 20px; }
+.mt-3 { margin-top: 30px; }
+
+.mb-1 { margin-bottom: 10px; }
+.mb-2 { margin-bottom: 20px; }
+.mb-3 { margin-bottom: 30px; }

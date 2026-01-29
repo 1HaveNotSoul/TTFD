@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 КЛИКЕР - TTFD</title>
+    <link rel="stylesheet" href="/static/css/dark-gaming.css?v=4.0">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 КЛИКЕР</h1>
+            <p>КЛИКАЙ И ДОМИНИРУЙ</p>
+        </div>
+        
+        <div class="nav">
+            <a href="/">ГЛАВНАЯ</a>
+            <a href="/games">ИГРЫ</a>
+            <a href="/clicker">КЛИКЕР</a>
+            <a href="/leaderboard">ЛИДЕРЫ</a>
+            <a href="/ranks">РАНГИ</a>
+            {% if current_user %}
+                <a href="/profile/{{ current_user.username }}">ПРОФИЛЬ</a>
+                <a href="/settings">НАСТРОЙКИ</a>
+                <a href="/logout">ВЫХОД</a>
+            {% else %}
+                <a href="/login">ВХОД</a>
+            {% endif %}
+        </div>
+        
+        <div class="game-grid">
+            <!-- CLICKER SECTION -->
+            <div class="card clicker-section fade-in">
+                <h2>💀 ТВОЙ DISCORD ID</h2>
+                <input type="text" id="userId" class="user-id-input" placeholder="ВВЕДИ DISCORD ID">
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 20px;">
+                    Настройки → Расширенные → Режим разработчика → ПКМ → Копировать ID
+                </p>
+                <button class="click-button" id="clickBtn">👆</button>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">🖱️ КЛИКОВ</div>
+                        <div class="stat-value" id="clicks">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">⭐ ОПЫТ</div>
+                        <div class="stat-value" id="xp">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">💰 МОНЕТЫ</div>
+                        <div class="stat-value" id="coins">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">✅ ЗАДАНИЙ</div>
+                        <div class="stat-value" id="tasksCompleted">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RANK SECTION -->
+            <div class="card fade-in">
+                <div class="rank-display" id="rankDisplay">
+                    <div class="rank-name" id="rankName">НОВИЧОК</div>
+                    <div id="rankXp" style="font-size: 1.2em; font-weight: 600;">0 / 100 XP</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="rankProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <h3 style="margin-bottom: 15px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">📊 СЛЕДУЮЩИЕ РАНГИ</h3>
+                <div id="nextRanks" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+            
+            <!-- TASKS SECTION -->
+            <div class="card tasks-section fade-in">
+                <h2>📋 ЗАДАНИЯ</h2>
+                <div id="tasksList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // State
+        let userId = localStorage.getItem('userId') || '';
+        let userData = null;
+        let allRanks = [];
+        let isClicking = false;
+        
+        // Initialize
+        if (userId) {
+            document.getElementById('userId').value = userId;
+            loadUserData();
+        }
+        
+        // Event Listeners
+        document.getElementById('userId').addEventListener('change', function() {
+            userId = this.value.trim();
+            localStorage.setItem('userId', userId);
+            if (userId) {
+                loadUserData();
+            }
+        });
+        
+        document.getElementById('clickBtn').addEventListener('click', handleClick);
+        
+        // Load user data
+        async function loadUserData() {
+            if (!userId) {
+                showNotification('❌ ВВЕДИ DISCORD ID!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/user/${userId}`);
+                if (!response.ok) throw new Error('Failed to load user');
+                
+                const data = await response.json();
+                userData = data.user;
+                updateUI();
+                loadTasks();
+                loadRanks();
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                showNotification('❌ ОШИБКА ЗАГРУЗКИ ДАННЫХ');
+            }
+        }
+        
+        // Handle click
+        async function handleClick() {
+            if (isClicking) return; // Prevent double clicks
+            if (!userId) {
+                showNotification('❌ ВВЕДИ DISCORD ID!');
+                return;
+            }
+            
+            isClicking = true;
+            const btn = document.getElementById('clickBtn');
+            
+            // Visual feedback
+            btn.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 100);
+            
+            try {
+                const response = await fetch('/api/click', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId})
+                });
+                
+                if (!response.ok) throw new Error('Click failed');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update local data
+                    userData.clicks = data.clicks;
+                    userData.xp = data.xp;
+                    userData.coins = data.coins;
+                    
+                    // Update UI
+                    updateUI();
+                    
+                    // Check for rank up
+                    if (data.rank_up) {
+                        showRankUp(data.new_rank);
+                        setTimeout(() => loadUserData(), 1000);
+                    }
+                    
+                    // Reload tasks
+                    loadTasks();
+                } else {
+                    showNotification('❌ ОШИБКА КЛИКА');
+                }
+            } catch (error) {
+                console.error('Ошибка клика:', error);
+                showNotification('❌ ОШИБКА СОЕДИНЕНИЯ');
+            } finally {
+                isClicking = false;
+            }
+        }
+        
+        // Update UI
+        function updateUI() {
+            if (!userData) return;
+            
+            document.getElementById('clicks').textContent = userData.clicks.toLocaleString();
+            document.getElementById('xp').textContent = userData.xp.toLocaleString();
+            document.getElementById('coins').textContent = userData.coins.toLocaleString();
+            document.getElementById('tasksCompleted').textContent = userData.tasks_completed;
+        }
+        
+        // Load tasks
+        async function loadTasks() {
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`/api/tasks/${userId}`);
+                if (!response.ok) throw new Error('Failed to load tasks');
+                
+                const data = await response.json();
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+                
+                if (data.tasks.length === 0) {
+                    tasksList.innerHTML = '<p style="color: var(--text-muted); text-align: center;">НЕТ ЗАДАНИЙ</p>';
+                    return;
+                }
+                
+                data.tasks.forEach(task => {
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task' + (task.completed ? ' completed' : '');
+                    const progress = Math.min((task.progress / task.target) * 100, 100);
+                    const canComplete = task.progress >= task.target && !task.completed;
+                    
+                    taskDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong style="text-transform: uppercase; letter-spacing: 1px;">${task.name}</strong>
+                            <span style="color: var(--neon-red); font-weight: 700;">${task.completed ? '✅' : `${task.progress}/${task.target}`}</span>
+                        </div>
+                        <div class="task-progress">
+                            <div class="task-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span style="font-size: 0.85em; color: var(--text-secondary); text-transform: uppercase;">
+                                ⭐${task.reward_xp} XP • 💰${task.reward_coins}
+                            </span>
+                            ${!task.completed ? `
+                                <button class="complete-btn" onclick="completeTask(${task.id})" ${!canComplete ? 'disabled' : ''}>
+                                    ЗАБРАТЬ
+                                </button>
+                            ` : '<span style="color: var(--neon-green); font-weight: 700;">ВЫПОЛНЕНО</span>'}
+                        </div>
+                    `;
+                    tasksList.appendChild(taskDiv);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки заданий:', error);
+            }
+        }
+        
+        // Complete task
+        async function completeTask(taskId) {
+            if (!userId) return;
+            
+            try {
+                const response = await fetch('/api/complete_task', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, task_id: taskId})
+                });
+                
+                if (!response.ok) throw new Error('Failed to complete task');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`✅ ЗАДАНИЕ ВЫПОЛНЕНО! +${data.task.reward_xp} XP • +${data.task.reward_coins} МОНЕТ`);
+                    loadUserData();
+                    loadTasks();
+                } else {
+                    showNotification('❌ ОШИБКА ВЫПОЛНЕНИЯ');
+                }
+            } catch (error) {
+                console.error('Ошибка завершения задания:', error);
+                showNotification('❌ ОШИБКА СОЕДИНЕНИЯ');
+            }
+        }
+        
+        // Load ranks
+        async function loadRanks() {
+            try {
+                const response = await fetch('/api/ranks');
+                if (!response.ok) throw new Error('Failed to load ranks');
+                
+                const data = await response.json();
+                allRanks = data.ranks;
+                updateRankDisplay();
+            } catch (error) {
+                console.error('Ошибка загрузки рангов:', error);
+            }
+        }
+        
+        // Update rank display
+        function updateRankDisplay() {
+            if (!userData || allRanks.length === 0) return;
+            
+            const currentRank = allRanks[userData.rank_id - 1];
+            const nextRank = userData.rank_id < allRanks.length ? allRanks[userData.rank_id] : null;
+            
+            document.getElementById('rankName').textContent = currentRank.name.toUpperCase();
+            
+            if (nextRank) {
+                const progress = ((userData.xp - currentRank.required_xp) / (nextRank.required_xp - currentRank.required_xp)) * 100;
+                document.getElementById('rankXp').textContent = `${userData.xp.toLocaleString()} / ${nextRank.required_xp.toLocaleString()} XP`;
+                document.getElementById('rankProgress').style.width = Math.min(progress, 100) + '%';
+            } else {
+                document.getElementById('rankXp').textContent = `${userData.xp.toLocaleString()} XP (МАКСИМУМ!)`;
+                document.getElementById('rankProgress').style.width = '100%';
+            }
+            
+            // Next ranks
+            const nextRanksDiv = document.getElementById('nextRanks');
+            nextRanksDiv.innerHTML = '';
+            
+            for (let i = userData.rank_id; i < Math.min(userData.rank_id + 5, allRanks.length); i++) {
+                const rank = allRanks[i];
+                const div = document.createElement('div');
+                div.style.cssText = `
+                    padding: 12px;
+                    margin-bottom: 10px;
+                    border-radius: 8px;
+                    background: var(--bg-secondary);
+                    border-left: 4px solid ${rank.color};
+                    transition: all 0.3s;
+                `;
+                div.innerHTML = `
+                    <strong style="color: ${rank.color}; text-transform: uppercase; letter-spacing: 1px;">${rank.name}</strong><br>
+                    <span style="font-size: 0.85em; color: var(--text-secondary);">${rank.required_xp.toLocaleString()} XP • 💰${rank.reward_coins}</span>
+                `;
+                div.addEventListener('mouseenter', function() {
+                    this.style.background = 'var(--bg-hover)';
+                    this.style.transform = 'translateX(5px)';
+                });
+                div.addEventListener('mouseleave', function() {
+                    this.style.background = 'var(--bg-secondary)';
+                    this.style.transform = 'translateX(0)';
+                });
+                nextRanksDiv.appendChild(div);
+            }
+        }
+        
+        // Show rank up
+        function showRankUp(rank) {
+            const notification = document.getElementById('notification');
+            notification.className = 'notification rank-up-notification show';
+            notification.innerHTML = `
+                <div style="font-size: 3em; margin-bottom: 15px;">🎉</div>
+                <div style="font-size: 1.5em; margin-bottom: 10px;">ПОВЫШЕНИЕ РАНГА!</div>
+                <div style="font-size: 2em; margin: 15px 0;">${rank.name.toUpperCase()}</div>
+                <div style="font-size: 1.2em;">+${rank.reward_coins} МОНЕТ</div>
+            `;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Show notification
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.className = 'notification show';
+            notification.innerHTML = `<div style="font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">${text}</div>`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Auto-refresh every 10 seconds
+        setInterval(() => {
+            if (userId && !isClicking) {
+                loadUserData();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
