@@ -18,9 +18,17 @@ tickets = {}
 try:
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from database import db, RANKS
+    
+    # Пытаемся использовать PostgreSQL, если нет - JSON
+    try:
+        from database_postgres import db, RANKS
+        print("✅ База данных Discord подключена (PostgreSQL)")
+    except Exception as pg_error:
+        print(f"⚠️ PostgreSQL недоступна: {pg_error}")
+        from database import db, RANKS
+        print("✅ База данных Discord подключена (JSON)")
+    
     DB_AVAILABLE = True
-    print("✅ База данных Discord подключена")
 except Exception as e:
     print(f"⚠️ База данных Discord недоступна: {e}")
     DB_AVAILABLE = False
@@ -512,6 +520,30 @@ async def admin_view_db(update: Update, context: ContextTypes.DEFAULT_TYPE):
             accounts = db.accounts.get('accounts', {})
             sessions = db.accounts.get('sessions', {})
             global_stats = db.data.get('global_stats', {})
+            
+            # Проверка на пустую БД
+            if not users and not accounts:
+                text += "⚠️ <b>База данных пустая</b>\n\n"
+                text += "📝 Данные появятся после:\n"
+                text += "• Первого входа пользователей на сайт\n"
+                text += "• Использования кликера\n"
+                text += "• Регистрации через Discord OAuth\n\n"
+                text += "🔧 <b>Возможные причины:</b>\n"
+                text += "• На Render используется PostgreSQL (новая БД)\n"
+                text += "• Локально используются JSON файлы\n"
+                text += "• Данные не мигрированы между БД\n\n"
+                text += "💡 <b>Что делать:</b>\n"
+                text += "1. Зайди на сайт через Discord\n"
+                text += "2. Поиграй в кликер\n"
+                text += "3. Данные появятся автоматически\n"
+                
+                keyboard = [
+                    [InlineKeyboardButton("🔄 Обновить", callback_data='admin_view_db')],
+                    [InlineKeyboardButton("◀️ Назад", callback_data='admin_panel')]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.message.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+                return
             
             # Основная статистика
             text += "📊 <b>Общая статистика:</b>\n"
