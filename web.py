@@ -289,17 +289,6 @@ def api_upload_music():
             return jsonify(result)
     except Exception as e:
         return jsonify({'success': False, 'error': f'Ошибка загрузки: {str(e)}'}), 500
-    """API: привязать Discord ID"""
-    if 'token' not in session:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
-    
-    account = db.get_account_by_token(session['token'])
-    if not account:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
-    
-    data = request.json
-    result = db.link_discord(account['id'], data.get('discord_id'))
-    return jsonify(result)
 
 # ==================== API ====================
 
@@ -350,20 +339,28 @@ def api_click():
     if not user_id:
         return jsonify({'error': 'user_id required'}), 400
     
+    # Получаем пользователя
     user = db.get_user(user_id)
-    user['clicks'] += 1
+    
+    # Обновляем клики
+    new_clicks = user['clicks'] + 1
+    db.update_user(user_id, clicks=new_clicks)
     
     # Даём 1 XP за клик
     xp_result = db.add_xp(user_id, 1)
     
+    # Получаем обновлённые данные
+    user = db.get_user(user_id)
+    
     # Обновляем прогресс заданий на основе общего количества кликов
-    for task in user['daily_tasks']:
+    daily_tasks = user['daily_tasks']
+    for task in daily_tasks:
         if not task['completed'] and 'клик' in task['name'].lower():
             # Используем общее количество кликов как прогресс
             task['progress'] = min(user['clicks'], task['target'])
     
-    db.save_data()
-    db.data['global_stats']['total_clicks'] += 1
+    # Сохраняем обновлённые задания
+    db.update_user(user_id, daily_tasks=daily_tasks)
     
     return jsonify({
         'success': True,
