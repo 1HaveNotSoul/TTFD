@@ -6,7 +6,7 @@
     <title>⚙️ Настройки - TTFD</title>
     <link rel="stylesheet" href="/static/css/main.css?v=3.0">
 </head>
-<body>
+<body {% if current_user and current_user.profile and current_user.profile.bg_color %}data-user-color="{{ current_user.profile.bg_color }}"{% endif %}>
     <div class="container">
         <div class="header">
             <h1>⚙️ Настройки профиля</h1>
@@ -284,5 +284,6 @@
             setTimeout(() => msg.className = '', 5000);
         }
     </script>
+    <script src="/static/js/theme.js"></script>
 </body>
 </html>

@@ -90,6 +90,7 @@ class Database:
                 'music_url': '',
                 'theme': 'default',
                 'background_color': '#667eea',
+                'bg_color': '#667eea',
                 'text_color': '#ffffff',
                 'avatar_url': '',
                 'social_links': {}
@@ -145,7 +146,7 @@ class Database:
                 account['email'] = kwargs['email']
             
             # Обновляем профиль
-            for key in ['bio', 'music_url', 'theme', 'background_color', 'text_color', 'avatar_url']:
+            for key in ['bio', 'music_url', 'theme', 'background_color', 'bg_color', 'text_color', 'avatar_url']:
                 if key in kwargs:
                     account['profile'][key] = kwargs[key]
             

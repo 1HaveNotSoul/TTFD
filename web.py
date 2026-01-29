@@ -90,11 +90,11 @@ def game():
 
 @app.route('/clicker')
 def clicker():
-    """Новый кликер с dark gaming дизайном"""
+    """Кликер с фиолетовым градиентом"""
     current_user = None
     if 'token' in session:
         current_user = db.get_account_by_token(session['token'])
-    return render_template('clicker_simple.html', current_user=current_user)
+    return render_template('game.html', current_user=current_user)
 
 @app.route('/snake')
 def snake():

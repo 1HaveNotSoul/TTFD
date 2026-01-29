@@ -6,7 +6,7 @@
     <title>Игры - TTFD</title>
     <link rel="stylesheet" href="/static/css/main.css?v=3.0">
 </head>
-<body>
+<body {% if current_user and current_user.profile and current_user.profile.bg_color %}data-user-color="{{ current_user.profile.bg_color }}"{% endif %}>
     <div class="container">
         <div class="header">
             <h1>🎮 Игры TTFD</h1>
@@ -113,5 +113,6 @@
             </div>
         </div>
     </div>
+    <script src="/static/js/theme.js"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
     <title>Змейка - TTFD</title>
     <link rel="stylesheet" href="/static/css/main.css?v=3.0">
 </head>
-<body>
+<body {% if current_user and current_user.profile and current_user.profile.bg_color %}data-user-color="{{ current_user.profile.bg_color }}"{% endif %}>
     <div class="container">
         <div class="header">
             <h1>🐍 Змейка</h1>
@@ -68,6 +68,7 @@
         </div>
     </div>
 
+    <script src="/static/js/theme.js"></script>
     <script src="/static/js/snake.js"></script>
 </body>
 </html>

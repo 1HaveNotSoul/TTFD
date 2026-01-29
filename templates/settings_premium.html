@@ -144,6 +144,27 @@
             </div>
         </div>
 
+        <!-- Персонализация -->
+        <div class="card">
+            <h2>🎨 Персонализация</h2>
+            <form id="themeForm">
+                <div class="form-group">
+                    <label>Цвет фона сайта</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="color" id="bg_color" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}" style="width: 80px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                        <input type="text" id="bg_color_text" value="{{ current_user.profile.bg_color if current_user.profile and current_user.profile.bg_color else '#667eea' }}" placeholder="#667eea" style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace;">
+                        <button type="button" class="btn btn-secondary" onclick="resetColor()">Сбросить</button>
+                    </div>
+                    <small>Выбери свой любимый цвет для градиентного фона</small>
+                </div>
+                
+                <button type="submit" class="btn">Сохранить тему</button>
+            </form>
+        </div>
+
+        <div class="settings-grid">
+        </div>
+
         <!-- Аватарка и Музыка в одной строке -->
         <div class="settings-grid">
             <div class="card">
@@ -252,6 +273,64 @@
             };
             await updateProfile(data);
         });
+
+        // Theme update
+        document.getElementById('themeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bgColor = document.getElementById('bg_color').value;
+            const data = {
+                bg_color: bgColor
+            };
+            const result = await updateProfile(data);
+            if (result) {
+                // Apply immediately
+                applyTheme(bgColor);
+            }
+        });
+
+        // Color picker sync
+        document.getElementById('bg_color').addEventListener('input', function(e) {
+            document.getElementById('bg_color_text').value = e.target.value;
+            // Live preview
+            applyTheme(e.target.value);
+        });
+
+        document.getElementById('bg_color_text').addEventListener('input', function(e) {
+            const color = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(color)) {
+                document.getElementById('bg_color').value = color;
+                applyTheme(color);
+            }
+        });
+
+        function resetColor() {
+            const defaultColor = '#667eea';
+            document.getElementById('bg_color').value = defaultColor;
+            document.getElementById('bg_color_text').value = defaultColor;
+            applyTheme(defaultColor);
+        }
+
+        function applyTheme(color) {
+            // Create gradient with user color
+            const lighterColor = adjustColor(color, 20);
+            document.body.style.background = `linear-gradient(135deg, ${color} 0%, ${lighterColor} 100%)`;
+        }
+
+        function adjustColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                .toString(16).slice(1);
+        }
+
+        // Apply saved theme on load
+        {% if current_user.profile and current_user.profile.bg_color %}
+        applyTheme('{{ current_user.profile.bg_color }}');
+        {% endif %}
 
         // Avatar upload
         document.getElementById('avatarForm').addEventListener('submit', async (e) => {
@@ -403,11 +482,14 @@
                 
                 if (result.success) {
                     showMessage('✅ Профиль обновлён!', 'success');
+                    return true;
                 } else {
                     showMessage(result.error, 'error');
+                    return false;
                 }
             } catch (error) {
                 showMessage('Ошибка обновления профиля', 'error');
+                return false;
             }
         }
 
