@@ -46,19 +46,19 @@ def index():
     """Главная страница"""
     current_user = get_current_user()
     
-    # # Автологин для локальной разработки (ОТКЛЮЧЕНО для онлайн версии)
-    # if not current_user:
-    #     test_user = db.get_account_by_username('testuser')
-    #     if not test_user:
-    #         result = db.create_account('testuser@local.test', 'testuser', 'password123', 'Test User')
-    #         if result['success']:
-    #             test_user = db.get_account_by_username('testuser')
-    #     
-    #     if test_user:
-    #         login_result = db.login('testuser', 'password123')
-    #         if login_result['success']:
-    #             session['token'] = login_result['token']
-    #             current_user = db.get_account_by_token(session['token'])
+    # Автологин для тестирования (временно включен)
+    if not current_user:
+        test_user = db.get_account_by_username('testuser')
+        if not test_user:
+            result = db.create_account('testuser@local.test', 'testuser', 'password123', 'Test User')
+            if result['success']:
+                test_user = db.get_account_by_username('testuser')
+        
+        if test_user:
+            login_result = db.login('testuser', 'password123')
+            if login_result['success']:
+                session['token'] = login_result['token']
+                current_user = db.get_account_by_token(session['token'])
     
     return render_template('index.html', user=current_user)
 
@@ -66,6 +66,7 @@ def index():
 def settings():
     """Страница настроек"""
     current_user = get_current_user()
+    # Автологин если нет пользователя
     if not current_user:
         return redirect(url_for('index'))
     return render_template('settings.html', user=current_user)
@@ -74,6 +75,7 @@ def settings():
 def profile():
     """Страница профиля"""
     current_user = get_current_user()
+    # Автологин если нет пользователя
     if not current_user:
         return redirect(url_for('index'))
     return render_template('profile.html', user=current_user)
@@ -82,6 +84,7 @@ def profile():
 def customize():
     """Страница кастомизации темы"""
     current_user = get_current_user()
+    # Автологин если нет пользователя
     if not current_user:
         return redirect(url_for('index'))
     return render_template('customize.html', user=current_user)
@@ -95,6 +98,7 @@ def music_player():
 def shop():
     """Интернет-магазин TTFD"""
     current_user = get_current_user()
+    # Автологин если нет пользователя
     if not current_user:
         return redirect(url_for('index'))
     return render_template('shop.html', user=current_user)
