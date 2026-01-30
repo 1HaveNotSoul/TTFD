@@ -34,7 +34,8 @@ if not DISCORD_TOKEN:
     print("   - DISCORD_TOKEN")
     print("   - GUILD_ID")
     print("   - SECRET_KEY")
-    raise ValueError("DISCORD_TOKEN is required")
+    print("⚠️ Discord бот будет отключен, работает только веб-сервер")
+    # НЕ выбрасываем исключение, чтобы веб-сервер мог работать
 
 if GUILD_ID == 0:
     print("⚠️ GUILD_ID не установлен, некоторые функции могут не работать")

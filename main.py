@@ -26,9 +26,19 @@ def main():
     web_thread.start()
     print("✅ Веб-сервер запущен")
 
-    # Запускаем бота (блокирующий вызов)
-    print("🤖 Запуск Discord бота...")
-    run_bot()
+    # Проверяем наличие DISCORD_TOKEN перед запуском бота
+    import config
+    if config.DISCORD_TOKEN:
+        # Запускаем бота (блокирующий вызов)
+        print("🤖 Запуск Discord бота...")
+        run_bot()
+    else:
+        print("⚠️ Discord бот отключен (нет DISCORD_TOKEN)")
+        print("💡 Работает только веб-сервер")
+        # Держим процесс живым
+        import time
+        while True:
+            time.sleep(60)
 
 if __name__ == "__main__":
     main()
