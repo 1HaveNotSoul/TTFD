@@ -1,0 +1,310 @@
+/* ============================================
+   THEME EDITOR UI SYSTEM
+   Независимая система компонентов редактора
+   ============================================ */
+
+:root {
+    /* UI Colors */
+    --ui-bg: #0f1419;
+    --ui-panel-bg: #1a1f2e;
+    --ui-control-bg: rgba(255, 255, 255, 0.06);
+    --ui-control-text: #e5e7eb;
+    --ui-border: rgba(255, 255, 255, 0.14);
+    --ui-accent: #667eea;
+    --ui-accent-rgb: 102, 126, 234;
+    --ui-focus: #667eea;
+    --ui-focus-rgb: 102, 126, 234;
+    
+    /* UI Geometry */
+    --ui-radius: 8px;
+    
+    /* UI Glow (независимый от пользовательского RGB) */
+    --ui-glow-color: 102, 126, 234;
+    --ui-glow-intensity: 0.7;
+    --ui-glow-size: 18;
+}
+
+/* ============================================
+   THEME EDITOR CONTAINER
+   ============================================ */
+
+.theme-editor {
+    background: var(--ui-bg);
+    color: var(--ui-control-text);
+    min-height: 100vh;
+}
+
+.theme-editor .customize-panel {
+    background: var(--ui-panel-bg) !important;
+}
+
+/* ============================================
+   UI BUTTONS - Единая система кнопок
+   ============================================ */
+
+.theme-editor .ui-btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--ui-control-bg);
+    color: var(--ui-control-text);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius) !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.theme-editor .ui-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Активное состояние */
+.theme-editor .ui-btn.is-active {
+    background: rgba(var(--ui-accent-rgb), 0.2);
+    border-color: var(--ui-accent);
+    color: var(--ui-accent);
+}
+
+/* Enabled состояние для target кнопок */
+.theme-editor .ui-btn.is-enabled {
+    background: rgba(var(--ui-glow-color), 0.15);
+    border-color: rgba(var(--ui-glow-color), 0.5);
+}
+
+/* ============================================
+   UI GLOW - RGB подсветка для редактора
+   ============================================ */
+
+.theme-editor.glow-on .ui-btn {
+    box-shadow: 
+        0 0 calc(var(--ui-glow-size) * 0.5px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) * 0.6)),
+        0 0 calc(var(--ui-glow-size) * 1px) rgba(var(--ui-glow-color), var(--ui-glow-intensity)),
+        inset 0 0 calc(var(--ui-glow-size) * 0.3px) rgba(var(--ui-glow-color), 0.2) !important;
+}
+
+.theme-editor.glow-on .ui-btn:hover {
+    box-shadow: 
+        0 0 calc(var(--ui-glow-size) * 0.8px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) * 0.8)),
+        0 0 calc(var(--ui-glow-size) * 1.4px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) + 0.2)),
+        inset 0 0 calc(var(--ui-glow-size) * 0.5px) rgba(var(--ui-glow-color), 0.3) !important;
+}
+
+/* ============================================
+   FORM CONTROLS - Темные поля ввода
+   ============================================ */
+
+.theme-editor input,
+.theme-editor select,
+.theme-editor textarea {
+    background: var(--ui-control-bg) !important;
+    color: var(--ui-control-text) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: var(--ui-radius) !important;
+    padding: 0.5rem !important;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.theme-editor input:focus,
+.theme-editor select:focus,
+.theme-editor textarea:focus {
+    outline: none !important;
+    border-color: var(--ui-focus) !important;
+    box-shadow: 0 0 0 2px rgba(var(--ui-focus-rgb), 0.3) !important;
+}
+
+/* Color input */
+.theme-editor input[type="color"] {
+    height: 40px;
+    cursor: pointer;
+    padding: 0.2rem !important;
+}
+
+/* ============================================
+   RANGE SLIDERS - Темные ползунки
+   ============================================ */
+
+.theme-editor input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent !important;
+    cursor: pointer;
+    width: 100%;
+    height: 24px;
+    padding: 0 !important;
+}
+
+/* Track */
+.theme-editor input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+}
+
+.theme-editor input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+}
+
+/* Thumb */
+.theme-editor input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ui-accent);
+    box-shadow: 0 0 8px rgba(var(--ui-accent-rgb), 0.6);
+    margin-top: -5px;
+    cursor: pointer;
+}
+
+.theme-editor input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ui-accent);
+    box-shadow: 0 0 8px rgba(var(--ui-accent-rgb), 0.6);
+    border: none;
+    cursor: pointer;
+}
+
+/* Hover */
+.theme-editor input[type="range"]::-webkit-slider-thumb:hover {
+    background: #7c8ef5;
+    box-shadow: 0 0 12px rgba(var(--ui-accent-rgb), 0.8);
+}
+
+.theme-editor input[type="range"]::-moz-range-thumb:hover {
+    background: #7c8ef5;
+    box-shadow: 0 0 12px rgba(var(--ui-accent-rgb), 0.8);
+}
+
+/* ============================================
+   TABS - Вкладки
+   ============================================ */
+
+.theme-editor .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   TARGET BUTTONS - Кнопки "Применить к"
+   ============================================ */
+
+.theme-editor .ui-target {
+    width: 100%;
+}
+
+/* ============================================
+   ACTION BUTTONS - Кнопки действий
+   ============================================ */
+
+.theme-editor .panel-actions .btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--ui-radius) !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--ui-border);
+}
+
+.theme-editor .panel-actions .btn-secondary {
+    background: var(--ui-control-bg) !important;
+    color: var(--ui-control-text) !important;
+}
+
+.theme-editor .panel-actions .btn-primary {
+    background: rgba(var(--ui-accent-rgb), 0.2) !important;
+    color: var(--ui-accent) !important;
+    border-color: var(--ui-accent) !important;
+}
+
+.theme-editor .panel-actions .btn:hover {
+    transform: translateY(-1px);
+}
+
+.theme-editor.glow-on .panel-actions .btn {
+    box-shadow: 
+        0 0 calc(var(--ui-glow-size) * 0.5px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) * 0.6)),
+        0 0 calc(var(--ui-glow-size) * 1px) rgba(var(--ui-glow-color), var(--ui-glow-intensity)),
+        inset 0 0 calc(var(--ui-glow-size) * 0.3px) rgba(var(--ui-glow-color), 0.2) !important;
+}
+
+.theme-editor.glow-on .panel-actions .btn:hover {
+    box-shadow: 
+        0 0 calc(var(--ui-glow-size) * 0.8px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) * 0.8)),
+        0 0 calc(var(--ui-glow-size) * 1.4px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) + 0.2)),
+        inset 0 0 calc(var(--ui-glow-size) * 0.5px) rgba(var(--ui-glow-color), 0.3) !important;
+}
+
+/* ============================================
+   PREMIUM TOGGLE BUTTON
+   ============================================ */
+
+.theme-editor .premium-badge .btn-small {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    background: var(--ui-control-bg) !important;
+    color: var(--ui-control-text) !important;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius) !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-editor .premium-badge .btn-small:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.theme-editor.glow-on .premium-badge .btn-small {
+    box-shadow: 
+        0 0 calc(var(--ui-glow-size) * 0.5px) rgba(var(--ui-glow-color), calc(var(--ui-glow-intensity) * 0.6)),
+        0 0 calc(var(--ui-glow-size) * 1px) rgba(var(--ui-glow-color), var(--ui-glow-intensity)),
+        inset 0 0 calc(var(--ui-glow-size) * 0.3px) rgba(var(--ui-glow-color), 0.2) !important;
+}
+
+/* ============================================
+   LABELS
+   ============================================ */
+
+.theme-editor label {
+    color: var(--ui-control-text) !important;
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   PREMIUM BADGE
+   ============================================ */
+
+.theme-editor .premium-badge {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.theme-editor #premiumStatus {
+    color: var(--ui-control-text) !important;
+}
+
+/* ============================================
+   GLOW CYCLE MODE
+   ============================================ */
+
+@keyframes ui-glow-cycle {
+    0% { --ui-glow-color: 102, 126, 234; }
+    25% { --ui-glow-color: 234, 102, 126; }
+    50% { --ui-glow-color: 126, 234, 102; }
+    75% { --ui-glow-color: 234, 126, 102; }
+    100% { --ui-glow-color: 102, 126, 234; }
+}
+
+.theme-editor.glow-cycle {
+    animation: ui-glow-cycle 6s ease-in-out infinite;
+}

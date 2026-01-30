@@ -1,14 +1,2 @@
-# Зависимости для Discord бота и веб-сайта
-discord.py>=2.3.0
-flask>=3.0.0
-python-dotenv>=1.0.0
-aiohttp>=3.9.0
-psycopg2-binary>=2.9.0
-requests>=2.31.0
-oauthlib>=3.2.0
-requests-oauthlib>=1.3.0
-python-telegram-bot>=20.0
-
-# Дополнительные зависимости для разработки
-watchdog>=3.0.0
-Pillow>=10.0.0
+Flask==3.0.0
+requests==2.31.0

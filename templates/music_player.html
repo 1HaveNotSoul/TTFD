@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Music Player</title>
+</head>
+<body>
+    <script src="https://w.soundcloud.com/player/api.js"></script>
+    <script>
+        let audioPlayer = null;
+        let soundcloudWidget = null;
+        let isPlaying = false;
+        let initialized = false;
+        
+        // Предотвращаем выгрузку страницы из bfcache
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                console.log('🎵 Страница восстановлена из bfcache');
+                // Отправляем текущее состояние родителю
+                sendState();
+            }
+        });
+        
+        // Слушаем сообщения от родительского окна
+        window.addEventListener('message', function(event) {
+            if (event.data.action === 'init' && !initialized) {
+                initPlayer(event.data);
+            } else if (event.data.action === 'toggle') {
+                togglePlayPause();
+            } else if (event.data.action === 'getState') {
+                sendState();
+            }
+        });
+        
+        function initPlayer(data) {
+            if (initialized) return;
+            initialized = true;
+            
+            const { musicType, musicUrl, savedMusic, savedPosition } = data;
+            
+            console.log('🎵 Инициализация плеера:', musicType);
+            
+            if (musicType === 'file' && savedMusic) {
+                audioPlayer = new Audio(savedMusic);
+                audioPlayer.loop = true;
+                audioPlayer.volume = 0.7;
+                audioPlayer.crossOrigin = "anonymous";
+                
+                audioPlayer.addEventListener('loadedmetadata', function() {
+                    if (savedPosition > 0 && savedPosition < audioPlayer.duration) {
+                        audioPlayer.currentTime = savedPosition;
+                    }
+                    audioPlayer.play().catch(e => console.log('Автоплей заблокирован'));
+                    isPlaying = !audioPlayer.paused;
+                    sendState();
+                });
+                
+                audioPlayer.addEventListener('timeupdate', function() {
+                    if (Math.floor(audioPlayer.currentTime) % 2 === 0) {
+                        sendState();
+                    }
+                });
+                
+            } else if (musicType === 'direct' && musicUrl) {
+                audioPlayer = new Audio(musicUrl);
+                audioPlayer.loop = true;
+                audioPlayer.volume = 0.7;
+                audioPlayer.crossOrigin = "anonymous";
+                
+                audioPlayer.addEventListener('loadedmetadata', function() {
+                    if (savedPosition > 0 && savedPosition < audioPlayer.duration) {
+                        audioPlayer.currentTime = savedPosition;
+                    }
+                    audioPlayer.play().catch(e => console.log('Автоплей заблокирован'));
+                    isPlaying = !audioPlayer.paused;
+                    sendState();
+                });
+                
+                audioPlayer.addEventListener('timeupdate', function() {
+                    if (Math.floor(audioPlayer.currentTime) % 2 === 0) {
+                        sendState();
+                    }
+                });
+                
+            } else if (musicType === 'soundcloud' && musicUrl) {
+                const container = document.createElement('div');
+                container.innerHTML = `<iframe id="sc" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${musicUrl}"></iframe>`;
+                document.body.appendChild(container);
+                
+                const iframe = document.getElementById('sc');
+                soundcloudWidget = SC.Widget(iframe);
+                
+                soundcloudWidget.bind(SC.Widget.Events.READY, function() {
+                    soundcloudWidget.setVolume(70);
+                    if (savedPosition > 0) {
+                        soundcloudWidget.seekTo(savedPosition * 1000);
+                    }
+                    soundcloudWidget.play();
+                    isPlaying = true;
+                    sendState();
+                    
+                    setInterval(sendState, 2000);
+                });
+            }
+        }
+        
+        function togglePlayPause() {
+            if (audioPlayer) {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                } else {
+                    audioPlayer.play();
+                }
+                isPlaying = !audioPlayer.paused;
+                sendState();
+            } else if (soundcloudWidget) {
+                if (isPlaying) {
+                    soundcloudWidget.pause();
+                } else {
+                    soundcloudWidget.play();
+                }
+                isPlaying = !isPlaying;
+                sendState();
+            }
+        }
+        
+        function sendState() {
+            let position = 0;
+            
+            if (audioPlayer && !isNaN(audioPlayer.currentTime)) {
+                position = audioPlayer.currentTime;
+                isPlaying = !audioPlayer.paused;
+                window.parent.postMessage({
+                    type: 'musicState',
+                    isPlaying: isPlaying,
+                    position: position
+                }, '*');
+            } else if (soundcloudWidget) {
+                soundcloudWidget.getPosition(function(pos) {
+                    position = pos / 1000;
+                    window.parent.postMessage({
+                        type: 'musicState',
+                        isPlaying: isPlaying,
+                        position: position
+                    }, '*');
+                });
+            }
+        }
+        
+        // Отправляем готовность
+        setTimeout(function() {
+            window.parent.postMessage({ type: 'playerReady' }, '*');
+        }, 100);
+    </script>
+</body>
+</html>

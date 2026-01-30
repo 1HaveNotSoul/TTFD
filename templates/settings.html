@@ -1,289 +1,146 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚙️ Настройки - TTFD</title>
-    <link rel="stylesheet" href="/static/css/main.css?v=3.0">
-</head>
-<body {% if current_user and current_user.profile %}data-user-color="{{ current_user.profile.bg_color or '#667eea' }}" {% if current_user.profile.background_url %}data-background-url="{{ current_user.profile.background_url }}" data-background-type="{{ current_user.profile.background_type or 'image' }}"{% endif %}{% endif %}>
-    <div class="container">
-        <div class="header">
-            <h1>⚙️ Настройки профиля</h1>
-        </div>
-        
-        <div class="nav">
-            <a href="/">Главная</a>
-            <a href="/profile/{{ current_user.username }}">Мой профиль</a>
-            <a href="/game">🎮 Кликер</a>
-            <a href="/logout">Выход</a>
+{% extends "base.html" %}
+
+{% block title %}Настройки - TTFD{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/settings.css">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-panel">
+        <div class="panel-header">
+            <h2>⚙️ Настройки</h2>
         </div>
 
-        <div id="message"></div>
+        <!-- Табы -->
+        <div class="tabs">
+            <button class="tab active" data-tab="profile">Профиль</button>
+            <button class="tab" data-tab="appearance">Внешний вид</button>
+            <button class="tab" data-tab="privacy">Приватность</button>
+            <button class="tab" data-tab="notifications">Уведомления</button>
+            <button class="tab" data-tab="advanced">Расширенные</button>
+        </div>
 
-        <!-- Основные настройки -->
-        <div class="card">
-            <h2>Основная информация</h2>
-            <form id="profileForm">
-                <div class="form-group">
-                    <label>Отображаемое имя</label>
-                    <input type="text" id="display_name" value="{{ current_user.display_name }}" required>
-                </div>
+        <!-- Контент табов -->
+        <div class="tab-content">
+            <!-- Профиль -->
+            <div class="tab-pane active" id="profile">
+                <h3>👤 Основная информация</h3>
                 
                 <div class="form-group">
-                    <label>Логин (нельзя изменить)</label>
-                    <input type="text" value="{{ current_user.username }}" disabled>
+                    <label>Отображаемое имя</label>
+                    <input type="text" id="display_name" value="{{ user.username }}" class="text-input">
                 </div>
                 
                 <div class="form-group">
                     <label>О себе</label>
-                    <textarea id="bio" placeholder="Расскажи о себе...">{{ current_user.profile.bio }}</textarea>
+                    <textarea id="bio" placeholder="Расскажи о себе..." rows="4" class="text-input">{{ user.bio }}</textarea>
                 </div>
-                
-                <button type="submit" class="btn">Сохранить</button>
-            </form>
-        </div>
+            </div>
 
-        <!-- Внешний вид -->
-        <div class="card">
-            <h2>Внешний вид профиля</h2>
-            <form id="designForm">
-                <div class="form-group">
-                    <label>Аватарка</label>
-                    <input type="file" id="avatar_file" accept="image/*">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Загрузи изображение со своего устройства (JPG, PNG, GIF)
-                    </small>
-                    {% if current_user.profile.avatar_url %}
-                    <div style="margin-top: 10px;">
-                        <img src="{{ current_user.profile.avatar_url }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+            <!-- Внешний вид -->
+            <div class="tab-pane" id="appearance">
+                <div class="media-uploads">
+                    <div class="form-group">
+                        <label>Аватарка</label>
+                        <div class="avatar-upload">
+                            <img src="{{ user.avatar }}" alt="Avatar" class="avatar-preview">
+                            <input type="file" id="avatar_file" accept="image/*" hidden>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('avatar_file').click()">
+                                Загрузить
+                            </button>
+                        </div>
                     </div>
-                    {% endif %}
-                </div>
-                
-                <button type="submit" class="btn">Загрузить аватарку</button>
-            </form>
-        </div>
-
-        <!-- Музыка -->
-        <div class="card">
-            <h2>🎵 Музыка профиля</h2>
-            <form id="musicForm">
-                <div class="form-group">
-                    <label>Музыка (MP3)</label>
-                    <input type="file" id="music_file" accept="audio/mp3,audio/mpeg">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Загрузи MP3 файл со своего устройства. Музыка будет автоматически проигрываться при посещении твоего профиля
-                    </small>
-                    {% if current_user.profile.music_url %}
-                    <div style="margin-top: 10px;">
-                        <audio controls style="width: 100%; max-width: 400px;">
-                            <source src="{{ current_user.profile.music_url }}" type="audio/mpeg">
-                        </audio>
+                    
+                    <div class="form-group">
+                        <label>Фоновая музыка</label>
+                        <div class="music-upload">
+                            <div class="music-preview" id="musicPreview">
+                                <span class="music-placeholder">🎵 Не выбрано</span>
+                            </div>
+                            <input type="file" id="music_file" accept=".mp3,audio/mpeg" hidden>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('music_file').click()">
+                                Загрузить MP3
+                            </button>
+                        </div>
+                        
+                        <div class="music-url-section">
+                            <label>Или укажи ссылку на музыку</label>
+                            <input type="text" id="music_url" placeholder="Ссылка на YouTube, SoundCloud, VK или MP3" class="text-input">
+                            <button type="button" class="btn btn-primary" onclick="loadMusicFromUrl()" style="width: 100%; margin-top: 0.5rem;">
+                                Загрузить по ссылке
+                            </button>
+                            <small style="display: block; margin-top: 0.5rem; color: var(--text-light);">
+                                ✅ YouTube - работает (автоматическая обложка)<br>
+                                ✅ SoundCloud - работает через виджет<br>
+                                ✅ VK - работает через прокси сервер<br>
+                                ✅ Прямые MP3 ссылки - работают
+                            </small>
+                        </div>
                     </div>
-                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Приватность -->
+            <div class="tab-pane" id="privacy">
+                <h3>🔒 Приватность</h3>
+                
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="profile_public" checked>
+                        <span class="toggle-slider" data-on="Публичный профиль" data-off="Приватный профиль">Публичный профиль</span>
+                    </label>
+                    <small>Другие пользователи могут видеть твой профиль</small>
                 </div>
                 
-                <button type="submit" class="btn">Загрузить музыку</button>
-            </form>
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="show_stats" checked>
+                        <span class="toggle-slider" data-on="Статистика видна" data-off="Статистика скрыта">Статистика видна</span>
+                    </label>
+                    <small>Отображать очки и достижения</small>
+                </div>
+            </div>
+
+            <!-- Уведомления -->
+            <div class="tab-pane" id="notifications">
+                <h3>🔔 Уведомления</h3>
+                
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="sound_notifications" checked>
+                        <span class="toggle-slider" data-on="Звук включен" data-off="Звук выключен">Звук включен</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Расширенные настройки -->
+            <div class="tab-pane" id="advanced">
+                <div class="form-group">
+                    <label>Email для уведомлений</label>
+                    <input type="email" id="user_email" placeholder="your@email.com" class="text-input">
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="sendTestNotification()" style="width: 100%;">
+                        📧 Отправить тестовое уведомление
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Discord -->
-        <div class="card">
-            <h2>🎮 Привязка Discord</h2>
-            <form id="discordForm">
-                <div class="form-group">
-                    <label>Discord ID</label>
-                    <input type="text" id="discord_id" value="{{ current_user.discord_id or '' }}" 
-                           placeholder="Твой Discord ID">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Как узнать: Настройки → Расширенные → Режим разработчика → ПКМ на себя → Копировать ID
-                    </small>
-                </div>
-                
-                <button type="submit" class="btn">Привязать Discord</button>
-            </form>
-        </div>
-
-        <!-- Смена пароля -->
-        <div class="card">
-            <h2>🔒 Смена пароля</h2>
-            <form id="passwordForm">
-                <div class="form-group">
-                    <label>Старый пароль</label>
-                    <input type="password" id="old_password" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Новый пароль</label>
-                    <input type="password" id="new_password" required minlength="6">
-                </div>
-                
-                <div class="form-group">
-                    <label>Повтори новый пароль</label>
-                    <input type="password" id="new_password2" required minlength="6">
-                </div>
-                
-                <button type="submit" class="btn btn-danger">Сменить пароль</button>
-            </form>
+        <!-- Кнопки действий -->
+        <div class="panel-actions">
+            <button class="btn btn-secondary" onclick="resetSettings()">Сбросить</button>
+            <button class="btn btn-primary" onclick="saveSettings()">Сохранить изменения</button>
         </div>
     </div>
+</div>
 
-    <script>
-        // Обновление профиля
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                display_name: document.getElementById('display_name').value,
-                bio: document.getElementById('bio').value
-            };
-            await updateProfile(data);
-        });
+<div id="message" class="message"></div>
+{% endblock %}
 
-        // Загрузка аватарки
-        document.getElementById('designForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('avatar_file');
-            
-            if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Выбери файл для загрузки', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('avatar', fileInput.files[0]);
-            
-            try {
-                const response = await fetch('/api/upload_avatar', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Аватарка загружена!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка загрузки аватарки', 'error');
-            }
-        });
-
-        // Загрузка музыки
-        document.getElementById('musicForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('music_file');
-            
-            if (!fileInput.files || !fileInput.files[0]) {
-                showMessage('Выбери MP3 файл для загрузки', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('music', fileInput.files[0]);
-            
-            try {
-                const response = await fetch('/api/upload_music', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Музыка загружена!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка загрузки музыки', 'error');
-            }
-        });
-
-        // Привязка Discord
-        document.getElementById('discordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const discord_id = document.getElementById('discord_id').value;
-            
-            try {
-                const response = await fetch('/api/link_discord', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({discord_id})
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Discord успешно привязан!', 'success');
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка привязки Discord', 'error');
-            }
-        });
-
-        // Смена пароля
-        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const old_password = document.getElementById('old_password').value;
-            const new_password = document.getElementById('new_password').value;
-            const new_password2 = document.getElementById('new_password2').value;
-            
-            if (new_password !== new_password2) {
-                showMessage('Новые пароли не совпадают', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/change_password', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({old_password, new_password})
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Пароль успешно изменён!', 'success');
-                    document.getElementById('passwordForm').reset();
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка смены пароля', 'error');
-            }
-        });
-
-        async function updateProfile(data) {
-            try {
-                const response = await fetch('/api/update_profile', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showMessage('Профиль обновлён!', 'success');
-                } else {
-                    showMessage(result.error, 'error');
-                }
-            } catch (error) {
-                showMessage('Ошибка обновления профиля', 'error');
-            }
-        }
-
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.className = 'message ' + type;
-            msg.textContent = text;
-            window.scrollTo(0, 0);
-            setTimeout(() => msg.className = '', 5000);
-        }
-    </script>
-    <script src="/static/js/theme.js"></script>
-</body>
-</html>
+{% block extra_js %}
+<script src="/static/js/settings.js"></script>
+{% endblock %}

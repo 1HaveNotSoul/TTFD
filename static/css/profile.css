@@ -1,0 +1,479 @@
+/* Страница профиля */
+
+.profile-container {
+    max-width: 700px;
+    margin: 1.2rem auto;
+    padding: 0 1rem;
+}
+
+.profile-panel {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Шапка профиля */
+.panel-header {
+    margin-bottom: 1rem;
+}
+
+.profile-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h2 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.profile-rank {
+    margin: 0.3rem 0 0 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Музыкальный плеер */
+.music-player {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.music-cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.music-cover:hover {
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.music-cover.playing {
+    animation: spin 3s linear infinite;
+    border-color: var(--primary);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.music-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ГОРИЗОНТАЛЬНЫЙ ПОЛЗУНОК МУЗЫКИ */
+.music-progress-horizontal {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.music-progress-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0%;
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.music-progress-thumb {
+    position: absolute;
+    left: 0%;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+.music-progress-thumb:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.music-info {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+/* ГОРИЗОНТАЛЬНЫЙ ПОЛЗУНОК ГРОМКОСТИ */
+.volume-control-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.volume-icon {
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.volume-track-horizontal {
+    width: 100px;  /* ← ДЛИНА ПОЛЗУНКА */
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.volume-fill-horizontal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70%;
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.volume-thumb-horizontal {
+    position: absolute;
+    left: 70%;
+    top: 50%;
+    width: 10px;  /* ← РАЗМЕР КРУЖКА */
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.volume-thumb-horizontal:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Табы */
+.tabs {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 0.4rem 0.7rem;
+    border: none;
+    background: var(--bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    font-family: var(--font-base);
+    white-space: nowrap;
+}
+
+.tab:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Контент табов */
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.3rem;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.tab-pane h3 {
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+/* Статистика - сетка */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.3rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* Био секция */
+.bio-section {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.bio-section h3 {
+    margin: 0 0 0.7rem 0;
+    font-size: 1rem;
+    color: var(--primary);
+}
+
+.bio-section p {
+    margin: 0;
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+/* Статистика - строки */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-row:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.stat-row .stat-name {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.stat-row .stat-value {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Достижения */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+}
+
+.achievement-card {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.achievement-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    border-color: #444;
+}
+
+.achievement-card.locked:hover {
+    border-color: #666;
+}
+
+.achievement-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.achievement-name {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.achievement-desc {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+/* Активность */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.activity-item:hover {
+    border-color: var(--primary);
+    transform: translateX(5px);
+}
+
+.activity-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    color: #ffffff;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+}
+
+.activity-time {
+    color: var(--text-light);
+    font-size: 0.75rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 0 0.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .music-player {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .music-player-left {
+        width: 100%;
+    }
+    
+    .volume-control {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .volume-slider {
+        width: 100px;
+        height: 4px;
+        -webkit-appearance: none;
+        writing-mode: initial;
+        border: 2px solid var(--primary);
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+        margin-left: 0;
+        margin-top: -4px;
+    }
+}
