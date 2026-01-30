@@ -46,14 +46,23 @@ def main():
 
     # Проверяем наличие DISCORD_TOKEN перед запуском бота
     import config
-    if config.DISCORD_TOKEN:
+    
+    # ВРЕМЕННО ОТКЛЮЧЕН: Discord rate limit активен
+    # Бот будет включен автоматически когда rate limit снимется
+    BOT_ENABLED = False
+    
+    if config.DISCORD_TOKEN and BOT_ENABLED:
         # Запускаем бота в отдельном потоке (не блокирующий)
         print("🤖 Запуск Discord бота в фоновом режиме...")
         bot_thread = threading.Thread(target=run_bot, daemon=True)
         bot_thread.start()
         print("✅ Discord бот запущен в фоне")
     else:
-        print("⚠️ Discord бот отключен (нет DISCORD_TOKEN)")
+        if not config.DISCORD_TOKEN:
+            print("⚠️ Discord бот отключен (нет DISCORD_TOKEN)")
+        else:
+            print("⚠️ Discord бот временно отключен (rate limit)")
+            print("💡 Бот будет включен автоматически через несколько часов")
     
     print("💡 Веб-сервер работает на порту", os.environ.get('PORT', 10000))
     
