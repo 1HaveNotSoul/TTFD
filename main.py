@@ -16,8 +16,25 @@ def run_bot():
         import bot as bot_module
         bot_module.run_bot()
     except Exception as e:
-        print(f"❌ Ошибка запуска бота: {e}")
-        print("⚠️ Бот отключен, работает только веб-сервер")
+        error_msg = str(e)
+        print(f"❌ Ошибка запуска бота: {error_msg}")
+        
+        # Проверяем на rate limit
+        if "429" in error_msg or "rate limit" in error_msg.lower():
+            print("⚠️ Discord rate limit - слишком частые подключения")
+            print("💡 Ожидание 60 секунд перед повторной попыткой...")
+            import time
+            time.sleep(60)
+            print("🔄 Повторная попытка подключения...")
+            try:
+                bot_module.run_bot()
+            except Exception as e2:
+                print(f"❌ Повторная попытка не удалась: {e2}")
+                print("⚠️ Бот отключен, работает только веб-сервер")
+        else:
+            print("⚠️ Бот отключен, работает только веб-сервер")
+        
+        # Держим процесс живым
         import time
         while True:
             time.sleep(60)
