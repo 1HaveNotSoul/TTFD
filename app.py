@@ -12,6 +12,9 @@ except Exception as e:
     from database import db, RANKS
     print(f"⚠️ Используется JSON файл: {e}")
 
+# Импорт Discord OAuth
+from discord_oauth import get_oauth_url, handle_oauth_callback
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
@@ -46,19 +49,19 @@ def index():
     """Главная страница"""
     current_user = get_current_user()
     
-    # Автологин для тестирования (временно включен)
-    if not current_user:
-        test_user = db.get_account_by_username('testuser')
-        if not test_user:
-            result = db.create_account('testuser@local.test', 'testuser', 'password123', 'Test User')
-            if result['success']:
-                test_user = db.get_account_by_username('testuser')
-        
-        if test_user:
-            login_result = db.login('testuser', 'password123')
-            if login_result['success']:
-                session['token'] = login_result['token']
-                current_user = db.get_account_by_token(session['token'])
+    # # Автологин для тестирования (ОТКЛЮЧЕНО - используйте Discord OAuth)
+    # if not current_user:
+    #     test_user = db.get_account_by_username('testuser')
+    #     if not test_user:
+    #         result = db.create_account('testuser@local.test', 'testuser', 'password123', 'Test User')
+    #         if result['success']:
+    #             test_user = db.get_account_by_username('testuser')
+    #     
+    #     if test_user:
+    #         login_result = db.login('testuser', 'password123')
+    #         if login_result['success']:
+    #             session['token'] = login_result['token']
+    #             current_user = db.get_account_by_token(session['token'])
     
     return render_template('index.html', user=current_user)
 
@@ -66,27 +69,27 @@ def index():
 def settings():
     """Страница настроек"""
     current_user = get_current_user()
-    # Автологин если нет пользователя
     if not current_user:
-        return redirect(url_for('index'))
+        flash('Войдите, чтобы получить доступ к настройкам', 'info')
+        return redirect(url_for('login'))
     return render_template('settings.html', user=current_user)
 
 @app.route('/profile')
 def profile():
     """Страница профиля"""
     current_user = get_current_user()
-    # Автологин если нет пользователя
     if not current_user:
-        return redirect(url_for('index'))
+        flash('Войдите, чтобы получить доступ к профилю', 'info')
+        return redirect(url_for('login'))
     return render_template('profile.html', user=current_user)
 
 @app.route('/customize')
 def customize():
     """Страница кастомизации темы"""
     current_user = get_current_user()
-    # Автологин если нет пользователя
     if not current_user:
-        return redirect(url_for('index'))
+        flash('Войдите, чтобы получить доступ к кастомизации', 'info')
+        return redirect(url_for('login'))
     return render_template('customize.html', user=current_user)
 
 @app.route('/music_player')
@@ -98,9 +101,9 @@ def music_player():
 def shop():
     """Интернет-магазин TTFD"""
     current_user = get_current_user()
-    # Автологин если нет пользователя
     if not current_user:
-        return redirect(url_for('index'))
+        flash('Войдите, чтобы получить доступ к магазину', 'info')
+        return redirect(url_for('login'))
     return render_template('shop.html', user=current_user)
 
 @app.route('/download/bat_optimizer')
@@ -261,3 +264,67 @@ if __name__ == '__main__':
     print("💡 Для локальной разработки используйте TTFD-WebsiteOffline")
     # print("Регай: http://localhost:3000")
     # app.run(debug=True, host='0.0.0.0', port=3000)
+
+# ==================== DISCORD OAUTH ====================
+
+@app.route('/login')
+def login():
+    """Страница входа"""
+    return render_template('login.html')
+
+@app.route('/auth/discord')
+def auth_discord():
+    """Начать авторизацию через Discord"""
+    try:
+        oauth_url = get_oauth_url()
+        if not oauth_url:
+            flash('Discord OAuth не настроен. Обратитесь к администратору.', 'error')
+            return redirect(url_for('login'))
+        
+        return redirect(oauth_url)
+    except Exception as e:
+        print(f"❌ Ошибка при создании OAuth URL: {e}")
+        flash('Ошибка при подключении к Discord', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/auth/discord/callback')
+def auth_discord_callback():
+    """Обработать callback от Discord"""
+    try:
+        # Проверяем наличие ошибки от Discord
+        error = request.args.get('error')
+        if error:
+            error_description = request.args.get('error_description', 'Unknown error')
+            flash(f'Ошибка Discord: {error_description}', 'error')
+            return redirect(url_for('login'))
+        
+        result = handle_oauth_callback(db)
+        
+        if result['success']:
+            session['token'] = result['token']
+            if result['is_new']:
+                flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
+            elif result.get('was_linked'):
+                flash(f'Discord успешно привязан! С возвращением, {result["account"]["display_name"]}!', 'success')
+            else:
+                flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
+            return redirect(url_for('index'))
+        else:
+            error_msg = result.get('error', 'Unknown error')
+            flash(f'Ошибка авторизации: {error_msg}', 'error')
+            return redirect(url_for('login'))
+    except Exception as e:
+        print(f"❌ Критическая ошибка в OAuth callback: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Произошла ошибка при авторизации', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    """Выход из аккаунта"""
+    if 'token' in session:
+        db.logout(session['token'])
+        session.pop('token', None)
+    flash('Вы вышли из аккаунта', 'info')
+    return redirect(url_for('index'))
