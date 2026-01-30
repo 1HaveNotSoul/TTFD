@@ -290,27 +290,40 @@ def auth_discord():
 @app.route('/auth/discord/callback')
 def auth_discord_callback():
     """Обработать callback от Discord"""
+    print("=" * 50)
+    print("🔵 Discord OAuth Callback")
+    print("=" * 50)
+    
     try:
         # Проверяем наличие ошибки от Discord
         error = request.args.get('error')
         if error:
             error_description = request.args.get('error_description', 'Unknown error')
+            print(f"❌ Ошибка от Discord: {error} - {error_description}")
             flash(f'Ошибка Discord: {error_description}', 'error')
             return redirect(url_for('login'))
         
+        print("🔄 Вызов handle_oauth_callback...")
         result = handle_oauth_callback(db)
+        print(f"📊 Результат OAuth: {result}")
         
         if result['success']:
+            print(f"✅ OAuth успешен! Токен: {result['token'][:10]}...")
             session['token'] = result['token']
+            print(f"✅ Токен сохранен в сессию")
+            
             if result['is_new']:
                 flash(f'Добро пожаловать, {result["account"]["display_name"]}!', 'success')
             elif result.get('was_linked'):
                 flash(f'Discord успешно привязан! С возвращением, {result["account"]["display_name"]}!', 'success')
             else:
                 flash(f'С возвращением, {result["account"]["display_name"]}!', 'success')
+            
+            print("🔄 Редирект на главную страницу...")
             return redirect(url_for('index'))
         else:
             error_msg = result.get('error', 'Unknown error')
+            print(f"❌ OAuth не удался: {error_msg}")
             flash(f'Ошибка авторизации: {error_msg}', 'error')
             return redirect(url_for('login'))
     except Exception as e:
