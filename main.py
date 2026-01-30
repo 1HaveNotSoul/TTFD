@@ -42,7 +42,7 @@ def run_bot():
 def main():
     """Главная функция"""
     print("=" * 50)
-    print("🚀 Запуск Discord бота с веб-панелью")
+    print("🚀 Запуск веб-сервера TTFD")
     print("=" * 50)
 
     # Запускаем веб-сервер в отдельном потоке
@@ -50,19 +50,15 @@ def main():
     web_thread.start()
     print("✅ Веб-сервер запущен")
 
-    # Проверяем наличие DISCORD_TOKEN перед запуском бота
-    import config
-    if config.DISCORD_TOKEN:
-        # Запускаем бота (блокирующий вызов)
-        print("🤖 Запуск Discord бота...")
-        run_bot()
-    else:
-        print("⚠️ Discord бот отключен (нет DISCORD_TOKEN)")
-        print("💡 Работает только веб-сервер")
-        # Держим процесс живым
-        import time
-        while True:
-            time.sleep(60)
+    # Discord бот временно отключен из-за rate limit
+    print("⚠️ Discord бот временно отключен (rate limit от Discord)")
+    print("💡 Бот будет включен автоматически через 30 минут")
+    print("💡 Работает только веб-сервер")
+    
+    # Держим процесс живым
+    import time
+    while True:
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()
