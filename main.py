@@ -12,8 +12,15 @@ def run_web_server():
 
 def run_bot():
     """Запуск Discord бота"""
-    import bot as bot_module
-    bot_module.run_bot()
+    try:
+        import bot as bot_module
+        bot_module.run_bot()
+    except Exception as e:
+        print(f"❌ Ошибка запуска бота: {e}")
+        print("⚠️ Бот отключен, работает только веб-сервер")
+        import time
+        while True:
+            time.sleep(60)
 
 def main():
     """Главная функция"""
