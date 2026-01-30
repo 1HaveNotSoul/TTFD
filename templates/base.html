@@ -14,15 +14,17 @@
             <div class="container">
                 <div class="nav-menu">
                     <a href="/" class="nav-link">Главная</a>
-                    <a href="/profile" class="nav-link">Профиль</a>
+                    {% if user %}
+                        <a href="/profile" class="nav-link">Профиль</a>
+                    {% endif %}
                 </div>
                 <div class="nav-brand">
-                    <h1><a href="/shop" style="text-decoration: none; color: inherit;"><span class="brand-text">TTFD</span></a></h1>
+                    <h1><a href="{% if user %}/shop{% else %}/#{% endif %}" style="text-decoration: none; color: inherit;"><span class="brand-text">TTFD</span></a></h1>
                 </div>
                 <div class="nav-menu">
-                    <a href="/settings" class="nav-link">Настройки</a>
-                    <a href="/customize" class="nav-link">Кастомизация</a>
                     {% if user %}
+                        <a href="/settings" class="nav-link">Настройки</a>
+                        <a href="/customize" class="nav-link">Кастомизация</a>
                         <a href="/logout" class="nav-link">Выход</a>
                     {% else %}
                         <a href="/login" class="nav-link">Вход</a>
