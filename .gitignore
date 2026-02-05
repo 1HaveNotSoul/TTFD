@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════════
+# TTFD Project - Unified .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# КРИТИЧНО: Переменные окружения и секреты
+# ═══════════════════════════════════════════════════════════════
+.env
+.env.*
+!.env.example
+*.env
+.env.local
+.env.production
+.env.development
+
+# Токены и ключи
+*token*
+*secret*
+*key*
+!.env.example
+
+# ═══════════════════════════════════════════════════════════════
+# Python
+# ═══════════════════════════════════════════════════════════════
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ═══════════════════════════════════════════════════════════════
+# C# / .NET
+# ═══════════════════════════════════════════════════════════════
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vs/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# ═══════════════════════════════════════════════════════════════
+# Database
+# ═══════════════════════════════════════════════════════════════
+*.db
+*.sqlite
+*.sqlite3
+*.json
+!package.json
+!tsconfig.json
+!.env.example
+
+# Исключения для важных JSON
+!discord-bot/json/.gitkeep
+!website/static/data/.gitkeep
+
+# Данные пользователей
+accounts.json
+user_data.json
+history.json
+config.json
+
+# ═══════════════════════════════════════════════════════════════
+# IDE и редакторы
+# ═══════════════════════════════════════════════════════════════
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# JetBrains
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ═══════════════════════════════════════════════════════════════
+# OS
+# ═══════════════════════════════════════════════════════════════
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ═══════════════════════════════════════════════════════════════
+# Logs
+# ═══════════════════════════════════════════════════════════════
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ═══════════════════════════════════════════════════════════════
+# Temporary files
+# ═══════════════════════════════════════════════════════════════
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.cache/
+
+# ═══════════════════════════════════════════════════════════════
+# Cleaner specific
+# ═══════════════════════════════════════════════════════════════
+cleaner/build/
+cleaner/dist/
+cleaner/*.exe
+!cleaner/TTFD.Cleaner.Cli.exe
+cleaner/Config/
+
+# ═══════════════════════════════════════════════════════════════
+# Website specific
+# ═══════════════════════════════════════════════════════════════
+website/static/uploads/
+website/instance/
+
+# ═══════════════════════════════════════════════════════════════
+# Discord Bot specific
+# ═══════════════════════════════════════════════════════════════
+discord-bot/json/*.json
+!discord-bot/json/.gitkeep
+
+# ═══════════════════════════════════════════════════════════════
+# Node.js (если будет использоваться)
+# ═══════════════════════════════════════════════════════════════
+node_modules/
+package-lock.json
+yarn.lock
+
+# ═══════════════════════════════════════════════════════════════
+# Документация (генерируемая)
+# ═══════════════════════════════════════════════════════════════
+docs/_build/
+site/
+
+# ═══════════════════════════════════════════════════════════════
+# Backup files
+# ═══════════════════════════════════════════════════════════════
+*.backup
+*.old
+*.orig
+*.rej
+*.bak
+
+# ═══════════════════════════════════════════════════════════════
+# Archives
+# ═══════════════════════════════════════════════════════════════
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.tgz
+
+# ═══════════════════════════════════════════════════════════════
+# Исключения (что НУЖНО коммитить)
+# ═══════════════════════════════════════════════════════════════
+!.env.example
+!.gitkeep
+!README.md
+!LICENSE
+!requirements.txt
+!cleaner/TTFD.Cleaner.Cli.exe
+!cleaner/assets/*.png
+!website/static/фотографии/*.png
+!discord-bot/фотографии/*.png

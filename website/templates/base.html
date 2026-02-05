@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TTFD{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="user-scope">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-menu">
+                    <a href="/" class="nav-link">Главная</a>
+                    {% if user %}
+                        <a href="/profile" class="nav-link">Профиль</a>
+                    {% endif %}
+                </div>
+                <div class="nav-brand">
+                    <h1><a href="{% if user %}/shop{% else %}/#{% endif %}" style="text-decoration: none; color: inherit;"><span class="brand-text">TTFD</span></a></h1>
+                </div>
+                <div class="nav-menu">
+                    {% if user %}
+                        <a href="/settings" class="nav-link">Настройки</a>
+                        <a href="/customize" class="nav-link">Кастомизация</a>
+                        <a href="/logout" class="nav-link">Выход</a>
+                    {% else %}
+                        <a href="/login" class="nav-link">Вход</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Глобальный музыкальный плеер -->
+    <div class="global-music-player" id="globalMusicPlayer">
+        <div class="global-music-cover" id="globalMusicCover"></div>
+    </div>
+    
+    <!-- Скрытый iframe для непрерывного воспроизведения музыки -->
+    <iframe id="musicPlayerFrame" src="/music_player" style="display: none;"></iframe>
+
+    <script src="/static/js/theme-engine.js"></script>
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

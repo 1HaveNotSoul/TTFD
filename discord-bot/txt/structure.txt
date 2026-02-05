@@ -1,0 +1,100 @@
+﻿# Discord Bot - �������� ����
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
+import asyncio
+import aiohttp
+from datetime import datetime, timedelta
+import random
+import config
+
+# ���������� JSON ���� ������
+from database import db
+from font_converter import convert_to_font
+
+print("? ������������ JSON ���� ������")
+
+# ��������� intents
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+intents.guilds = True
+intents.presences = True
+
+# �������� ����
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+
+# ���������� ����
+bot.stats = {
+    'start_time': None,
+    'commands_used': 0,
+    'messages_seen': 0,
+}
+
+# ��������� �������� �������
+active_tickets = {}
+
+# ID ��������� ��� ������� (����� ������� �������������)
+TICKET_CATEGORY_ID = 1466298500471062579
+
+# ���� � �������� � ������� (����� ���������)
+SUPPORT_ROLES = ['ADMIN', 'MODERATOR', 'SUPPORT', '�������������', '���������']
+
+# ID ������ ��� ������ ������
+COMMANDS_CHANNEL_ID = 1466295322002067607
+
+# ID ��������� �� ������� ������ (����� �����������)
+COMMANDS_MESSAGE_ID = None
+# ID канала для уведомлений об обновлениях
+UPDATES_CHANNEL_ID = 1466923990936326294
+
+
+# ==================== ��������������� ������� ====================
+
+def create_progress_bar(current, total, length=10):
+    """������� ��������-���"""
+    filled = int((current / total) * length) if total > 0 else 0
+    bar = "-" * filled + "-" * (length - filled)
+    percentage = int((current / total) * 100) if total > 0 else 0
+    return f"{bar} {percentage}%"
+
+def get_next_rank_info(user):
+    """�������� ���������� � ��������� �����"""
+    current_rank = db.get_rank_info(user['rank_id'])
+    all_ranks = db.get_all_ranks()
+    
+    if user['rank_id'] < len(all_ranks):
+        next_rank = all_ranks[user['rank_id']]
+        xp_needed = next_rank['required_xp'] - user['xp']
+        progress = user['xp'] - current_rank['required_xp']
+        total_needed = next_rank['required_xp'] - current_rank['required_xp']
+        return {
+            'next_rank': next_rank,
+            'xp_needed': xp_needed,
+            'progress_bar': create_progress_bar(progress, total_needed)
+        }
+    return None
+
+def get_daily_streak(user):
+    """�������� ����� ���������� ������"""
+    if 'daily_streak' not in user:
+        user['daily_streak'] = 0
+        user['last_daily_date'] = None
+    return user['daily_streak']
+
+def update_daily_streak(user):
+    """�������� ����� ���������� ������"""
+    if 'last_daily_date' not in user or user['last_daily_date'] is None:
+        user['daily_streak'] = 1
+        user['last_daily_date'] = datetime.now().date().isoformat()
+        return 1
+    
+    last_date = datetime.fromisoformat(user['last_daily_date']).date()
+    today = datetime.now().date()
+    days_diff = (today - last_date).days
+    
+    if days_diff == 1:
+        # ���������� �����
+        user['daily_streak'] = user.get('daily_streak', 0) + 1
+    elif days_diff > 1:
+        # ����� ��������

@@ -1,0 +1,400 @@
+═══════════════════════════════════════════════════════════════
+   TTFD-CLEANER v1.5 - УЛУЧШЕНИЕ UI
+═══════════════════════════════════════════════════════════════
+
+ПЛАН УЛУЧШЕНИЙ ИНТЕРФЕЙСА
+
+═══════════════════════════════════════════════════════════════
+ЧТО ПЛАНИРУЕТСЯ:
+═══════════════════════════════════════════════════════════════
+
+✅ 1. ИСПРАВЛЕНЫ КОЛОНКИ:
+   - "Image Path" → "Path"
+   - Добавлена колонка "Status" (Enabled/Disabled)
+   - Порядок: Entry | Description | Publisher | Path | Status
+
+✅ 2. ИКОНКИ ПЕРЕД НАЗВАНИЕМ:
+   - Иконка извлекается из .exe файла
+   - Отображается перед названием программы
+   - Кэшируется для производительности
+
+🎨 3. ЖИВЫЕ ОБОИ С ДЫМНЫМ ЭФФЕКТОМ:
+   - Анимированный фон
+   - Дымный эффект при наведении курсора
+   - Плавные переходы
+
+═══════════════════════════════════════════════════════════════
+БИБЛИОТЕКИ ДЛЯ ЖИВЫХ ОБОЕВ:
+═══════════════════════════════════════════════════════════════
+
+ВАРИАНТ 1: PYGAME (Рекомендуется)
+----------------------------------
+Pygame - мощная библиотека для создания игр и анимаций
+
+УСТАНОВКА:
+pip install pygame
+
+ВОЗМОЖНОСТИ:
+✅ Частицы дыма
+✅ Анимация фона
+✅ Эффекты при наведении
+✅ Высокая производительность
+✅ Простая интеграция с tkinter
+
+ПРИМЕР ИСПОЛЬЗОВАНИЯ:
+import pygame
+import tkinter as tk
+
+# Создать Canvas для pygame
+canvas = tk.Canvas(root, width=800, height=600)
+canvas.pack()
+
+# Инициализировать pygame
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+
+# Создать частицы дыма
+particles = []
+for i in range(100):
+    particles.append({
+        'x': random.randint(0, 800),
+        'y': random.randint(0, 600),
+        'vx': random.uniform(-1, 1),
+        'vy': random.uniform(-2, -0.5),
+        'alpha': random.randint(50, 200)
+    })
+
+# Анимация
+def update():
+    for particle in particles:
+        particle['x'] += particle['vx']
+        particle['y'] += particle['vy']
+        particle['alpha'] -= 1
+        
+        # Перезапустить частицу
+        if particle['alpha'] <= 0:
+            particle['y'] = 600
+            particle['alpha'] = 200
+
+ВАРИАНТ 2: PILLOW + NUMPY (Легковесный)
+----------------------------------------
+Pillow - библиотека для работы с изображениями
+NumPy - для быстрых вычислений
+
+УСТАНОВКА:
+pip install pillow numpy
+
+ВОЗМОЖНОСТИ:
+✅ Генерация текстур
+✅ Эффекты размытия
+✅ Градиенты
+✅ Легковесный
+✅ Уже используется в проекте
+
+ПРИМЕР ИСПОЛЬЗОВАНИЯ:
+from PIL import Image, ImageDraw, ImageFilter
+import numpy as np
+
+# Создать градиентный фон
+img = Image.new('RGB', (800, 600))
+draw = ImageDraw.Draw(img)
+
+# Нарисовать градиент
+for y in range(600):
+    color = int(255 * (y / 600))
+    draw.line([(0, y), (800, y)], fill=(color, color, color))
+
+# Добавить размытие
+img = img.filter(ImageFilter.GaussianBlur(radius=5))
+
+ВАРИАНТ 3: CUSTOMTKINTER (Современный UI)
+------------------------------------------
+CustomTkinter - современная библиотека для красивых UI
+
+УСТАНОВКА:
+pip install customtkinter
+
+ВОЗМОЖНОСТИ:
+✅ Современный дизайн
+✅ Тёмная/светлая тема
+✅ Анимированные виджеты
+✅ Скруглённые углы
+✅ Градиенты
+✅ Простая замена tkinter
+
+ПРИМЕР ИСПОЛЬЗОВАНИЯ:
+import customtkinter as ctk
+
+# Создать окно
+root = ctk.CTk()
+root.geometry("800x600")
+
+# Установить тему
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+# Создать кнопку с эффектом
+button = ctk.CTkButton(
+    root,
+    text="Обновить",
+    corner_radius=10,
+    hover_color="#1f538d"
+)
+button.pack()
+
+ВАРИАНТ 4: TKINTERDND2 + CANVAS (Кастомный)
+--------------------------------------------
+Создать собственный эффект на Canvas
+
+УСТАНОВКА:
+pip install tkinterdnd2
+
+ВОЗМОЖНОСТИ:
+✅ Полный контроль
+✅ Кастомные эффекты
+✅ Drag & Drop
+✅ Нет зависимостей от игровых библиотек
+
+ПРИМЕР ИСПОЛЬЗОВАНИЯ:
+import tkinter as tk
+import random
+import math
+
+class SmokeEffect:
+    def __init__(self, canvas):
+        self.canvas = canvas
+        self.particles = []
+        
+    def add_particle(self, x, y):
+        particle = {
+            'id': self.canvas.create_oval(
+                x-5, y-5, x+5, y+5,
+                fill='gray', outline=''
+            ),
+            'x': x,
+            'y': y,
+            'vx': random.uniform(-1, 1),
+            'vy': random.uniform(-2, -0.5),
+            'life': 100
+        }
+        self.particles.append(particle)
+    
+    def update(self):
+        for particle in self.particles[:]:
+            particle['x'] += particle['vx']
+            particle['y'] += particle['vy']
+            particle['life'] -= 1
+            
+            # Обновить позицию
+            self.canvas.coords(
+                particle['id'],
+                particle['x']-5, particle['y']-5,
+                particle['x']+5, particle['y']+5
+            )
+            
+            # Удалить мёртвые частицы
+            if particle['life'] <= 0:
+                self.canvas.delete(particle['id'])
+                self.particles.remove(particle)
+
+═══════════════════════════════════════════════════════════════
+РЕКОМЕНДАЦИЯ:
+═══════════════════════════════════════════════════════════════
+
+🎯 ЛУЧШИЙ ВАРИАНТ: CustomTkinter + Canvas
+
+ПОЧЕМУ:
+✅ Современный дизайн из коробки
+✅ Не требует pygame (легковесный)
+✅ Простая интеграция
+✅ Анимированные виджеты
+✅ Тёмная тема
+✅ Можно добавить Canvas для дымного эффекта
+
+УСТАНОВКА:
+----------
+pip install customtkinter
+
+ССЫЛКИ:
+-------
+CustomTkinter GitHub:
+https://github.com/TomSchimansky/CustomTkinter
+
+CustomTkinter Документация:
+https://customtkinter.tomschimansky.com/
+
+CustomTkinter Примеры:
+https://github.com/TomSchimansky/CustomTkinter/tree/master/examples
+
+═══════════════════════════════════════════════════════════════
+АЛЬТЕРНАТИВА: Pygame для дымного эффекта
+═══════════════════════════════════════════════════════════════
+
+Если нужен именно дымный эффект:
+
+УСТАНОВКА:
+----------
+pip install pygame
+
+ССЫЛКИ:
+-------
+Pygame Официальный сайт:
+https://www.pygame.org/
+
+Pygame Документация:
+https://www.pygame.org/docs/
+
+Pygame Примеры частиц:
+https://github.com/pygame/pygame/tree/main/examples
+
+Туториал по частицам:
+https://www.youtube.com/watch?v=O0q28Gd_oDI
+
+═══════════════════════════════════════════════════════════════
+ПЛАН РЕАЛИЗАЦИИ:
+═══════════════════════════════════════════════════════════════
+
+ЭТАП 1: Установить библиотеки
+------------------------------
+pip install customtkinter
+pip install pygame  # Опционально для дымного эффекта
+
+ЭТАП 2: Создать новый модуль ui_effects.py
+-------------------------------------------
+- Класс SmokeEffect для дымного эффекта
+- Класс AnimatedBackground для живых обоев
+- Интеграция с tkinter
+
+ЭТАП 3: Обновить gui.py
+------------------------
+- Заменить ttk на customtkinter
+- Добавить Canvas для эффектов
+- Привязать события мыши
+
+ЭТАП 4: Протестировать
+-----------------------
+- Проверить производительность
+- Настроить параметры эффектов
+- Оптимизировать
+
+═══════════════════════════════════════════════════════════════
+ПРИМЕРНЫЙ КОД:
+═══════════════════════════════════════════════════════════════
+
+# ui_effects.py
+import tkinter as tk
+import random
+import math
+
+class SmokeEffect:
+    """Дымный эффект при наведении курсора"""
+    
+    def __init__(self, canvas):
+        self.canvas = canvas
+        self.particles = []
+        self.running = False
+        
+    def start(self, x, y):
+        """Начать эффект в позиции (x, y)"""
+        self.running = True
+        for _ in range(5):
+            self.add_particle(x, y)
+    
+    def stop(self):
+        """Остановить эффект"""
+        self.running = False
+    
+    def add_particle(self, x, y):
+        """Добавить частицу дыма"""
+        particle = {
+            'id': self.canvas.create_oval(
+                x-3, y-3, x+3, y+3,
+                fill='#888888',
+                outline='',
+                stipple='gray50'
+            ),
+            'x': x + random.uniform(-10, 10),
+            'y': y,
+            'vx': random.uniform(-0.5, 0.5),
+            'vy': random.uniform(-2, -1),
+            'life': 50,
+            'size': random.uniform(3, 8)
+        }
+        self.particles.append(particle)
+    
+    def update(self):
+        """Обновить все частицы"""
+        for particle in self.particles[:]:
+            # Обновить позицию
+            particle['x'] += particle['vx']
+            particle['y'] += particle['vy']
+            particle['life'] -= 1
+            particle['size'] += 0.1
+            
+            # Обновить на canvas
+            self.canvas.coords(
+                particle['id'],
+                particle['x'] - particle['size'],
+                particle['y'] - particle['size'],
+                particle['x'] + particle['size'],
+                particle['y'] + particle['size']
+            )
+            
+            # Изменить прозрачность (через цвет)
+            alpha = int(255 * (particle['life'] / 50))
+            color = f'#{alpha:02x}{alpha:02x}{alpha:02x}'
+            self.canvas.itemconfig(particle['id'], fill=color)
+            
+            # Удалить мёртвые частицы
+            if particle['life'] <= 0:
+                self.canvas.delete(particle['id'])
+                self.particles.remove(particle)
+        
+        # Продолжить анимацию
+        if self.particles or self.running:
+            self.canvas.after(30, self.update)
+
+# Использование в gui.py:
+# 
+# # Создать Canvas для эффектов
+# self.effects_canvas = tk.Canvas(self.root, bg='white', highlightthickness=0)
+# self.effects_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+# self.effects_canvas.lower()  # Поместить под все виджеты
+# 
+# # Создать эффект дыма
+# self.smoke = SmokeEffect(self.effects_canvas)
+# 
+# # Привязать события мыши
+# self.root.bind('<Motion>', self.on_mouse_move)
+# 
+# def on_mouse_move(self, event):
+#     if random.random() < 0.1:  # 10% шанс создать дым
+#         self.smoke.start(event.x, event.y)
+#         self.smoke.update()
+
+═══════════════════════════════════════════════════════════════
+СЛЕДУЮЩИЕ ШАГИ:
+═══════════════════════════════════════════════════════════════
+
+1. УСТАНОВИТЬ БИБЛИОТЕКИ:
+   pip install customtkinter
+   pip install pygame  # Опционально
+
+2. СОЗДАТЬ ui_effects.py:
+   - Класс SmokeEffect
+   - Класс AnimatedBackground
+
+3. ОБНОВИТЬ gui.py:
+   - Добавить Canvas для эффектов
+   - Интегрировать SmokeEffect
+
+4. ПРОТЕСТИРОВАТЬ:
+   - Проверить производительность
+   - Настроить параметры
+
+═══════════════════════════════════════════════════════════════
+
+[OK] План готов!
+[NEXT] Установить библиотеки и начать реализацию
+
+═══════════════════════════════════════════════════════════════

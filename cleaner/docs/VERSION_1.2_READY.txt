@@ -1,0 +1,121 @@
+========================================
+TTFD-Cleaner v1.2 - READY TO TEST
+========================================
+
+[OK] Version 1.2 successfully built!
+
+WHAT'S NEW:
+-----------
+✅ New "Startup" tab (Autoruns-style)
+✅ 12 startup categories scanning
+✅ Tree view with category grouping
+✅ Color coding (Red/Blue/Black/Gray)
+✅ 8 filters for easy navigation
+✅ Enable/Disable functionality
+✅ Export to TXT
+✅ Legend with color explanations
+
+INSTALLATION:
+-------------
+1. Close current TTFD-Cleaner.exe (if running)
+2. Run: ОБНОВИТЬ_EXE.bat
+   OR manually: copy dist\TTFD-Cleaner.exe TTFD-Cleaner.exe
+3. Launch TTFD-Cleaner.exe
+4. Go to "Автозапуск" tab
+5. Click "Сканировать" (Scan)
+
+FILES LOCATION:
+---------------
+✅ dist\TTFD-Cleaner.exe - NEW version (41 MB)
+✅ TTFD.Cleaner.Cli.exe - Backend CLI (68 MB)
+✅ ОБНОВИТЬ_EXE.bat - Update helper script
+
+DOCUMENTATION (Russian):
+------------------------
+✅ ✅_v1.2_ГОТОВО.txt - Full description
+✅ ✅_АВТОЗАПУСК_ГОТОВ.txt - Startup features
+✅ ТЕСТИРОВАНИЕ_v1.2.txt - Testing instructions
+✅ CHANGELOG.txt - Version history
+
+STARTUP CATEGORIES (12):
+------------------------
+1. Logon - Run keys, Startup folders
+2. Explorer - Shell folders
+3. Services - Windows services (auto-start)
+4. Scheduled Tasks - Task scheduler
+5. Drivers - Kernel drivers
+6. Winlogon - Shell, Userinit, UIHost
+7. Browser Helper Objects - BHO
+8. Codecs - Audio/video codecs
+9. Print Monitors - Print monitors
+10. LSA Providers - Security packages (read-only)
+11. Boot Execute - Boot commands (read-only)
+
+COLOR CODING:
+-------------
+🔴 RED - Protected items (cannot disable)
+   - Windows Defender, SecurityHealth, OneDrive
+🔵 BLUE - Microsoft (system components)
+   - Windows services, system drivers
+⚫ BLACK - Third-party programs
+   - Installed applications
+⚪ GRAY - Disabled items
+   - Already disabled
+
+8 FILTERS:
+----------
+☑ Show Microsoft
+☑ Show Third-party
+☑ Show Disabled
+☑ Show Services
+☑ Show Drivers
+☑ Show Tasks
+☑ Show BHO
+☑ Show Protected
+
+FUNCTIONS:
+----------
+[Scan] - Full scan of all 12 categories
+[Enable/Disable] - Manage selected item
+[Export to TXT] - Save startup list
+[Legend] - Color coding explanation
+
+TECHNICAL DETAILS:
+------------------
+Backend:
+- .NET 8
+- System.ServiceProcess.ServiceController v9.0.0
+- ~900 lines of new code
+- 54 CA1416 warnings (Windows-only APIs) - NORMAL
+
+GUI:
+- Python 3.14
+- tkinter (built-in)
+- ~700 lines updated
+- TreeView for display
+
+Size:
+- TTFD-Cleaner.exe: ~41 MB
+- TTFD.Cleaner.Cli.exe: ~68 MB
+
+KNOWN LIMITATIONS:
+------------------
+1. Scanning takes 10-30 seconds (normal)
+2. Some items require admin rights
+3. LSA Providers & Boot Execute are read-only
+4. CA1416 warnings during build (can ignore)
+
+NEXT STEPS:
+-----------
+1. Update the .exe file (run ОБНОВИТЬ_EXE.bat)
+2. Test the new Startup tab
+3. Try all filters
+4. Test Enable/Disable functionality
+5. Export list to TXT
+6. Report any issues
+
+========================================
+Date: 2026-02-04
+Version: 1.2.0
+Status: Ready for testing
+========================================
