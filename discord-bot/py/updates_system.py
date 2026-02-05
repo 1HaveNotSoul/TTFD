@@ -335,11 +335,15 @@ async def check_auto_update(bot):
     if auto_update_info.get('enabled') and auto_update_info.get('changes'):
         print("🔄 Обнаружено автообновление, отправка уведомления...")
         
+        # Получаем версию из файла (если указана)
+        custom_version = auto_update_info.get('version')
+        
         # Отправляем обновление
         success = await send_update_notification(
             bot=bot,
             changes=auto_update_info['changes'],
-            major=False
+            major=False,
+            custom_version=custom_version
         )
         
         if success:
@@ -350,6 +354,8 @@ async def check_auto_update(bot):
             print("❌ Ошибка выполнения автообновления")
         
         return success
+    else:
+        print("ℹ️ Автообновление не настроено (enabled: false или нет изменений)")
     
     return False
 

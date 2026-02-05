@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 import json
 import os
+import asyncio
 from font_converter import convert_to_font
 from theme import BotTheme, success_embed
 
@@ -71,12 +72,38 @@ async def setup_verification(bot):
                     await message.add_reaction('✅')
                     print(f"✅ Добавлена реакция ✅ к существующему сообщению")
                 
+                # Удаляем все ДРУГИЕ сообщения бота в канале (кроме текущего)
+                try:
+                    deleted_count = 0
+                    async for msg in channel.history(limit=100):
+                        if msg.author == bot.user and msg.id != existing_message_id:
+                            await msg.delete()
+                            deleted_count += 1
+                            await asyncio.sleep(0.5)
+                    if deleted_count > 0:
+                        print(f"🗑️ Удалено {deleted_count} старых сообщений верификации")
+                except Exception as e:
+                    print(f"⚠️ Ошибка очистки старых сообщений: {e}")
+                
                 return True
             except discord.NotFound:
                 print("⚠️ Старое сообщение не найдено, создаю новое")
                 # НЕ удаляем все сообщения, только создаём новое
             except Exception as e:
                 print(f"⚠️ Ошибка проверки существующего сообщения: {e}")
+        
+        # Удаляем ВСЕ старые сообщения бота перед созданием нового
+        try:
+            deleted_count = 0
+            async for msg in channel.history(limit=100):
+                if msg.author == bot.user:
+                    await msg.delete()
+                    deleted_count += 1
+                    await asyncio.sleep(0.5)
+            if deleted_count > 0:
+                print(f"🗑️ Удалено {deleted_count} старых сообщений перед созданием нового")
+        except Exception as e:
+            print(f"⚠️ Ошибка очистки канала: {e}")
         
         # Создаём embed
         embed = success_embed(
