@@ -13,35 +13,6 @@ SHOP_FILE = 'json/shop_items.json'
 
 # Предметы магазина по умолчанию
 DEFAULT_SHOP_ITEMS = {
-    'roles': [
-        {
-            'id': 'vip_role',
-            'name': 'VIP роль',
-            'description': 'особая роль с крутым цветом',
-            'price': 5000,
-            'role_id': None,  # Нужно установить ID роли на сервере
-            'emoji': '👑',
-            'category': 'roles'
-        },
-        {
-            'id': 'premium_role',
-            'name': 'Premium роль',
-            'description': 'премиум роль с привилегиями',
-            'price': 10000,
-            'role_id': None,
-            'emoji': '💎',
-            'category': 'roles'
-        },
-        {
-            'id': 'legend_role',
-            'name': 'Legend роль',
-            'description': 'легендарная роль для избранных',
-            'price': 25000,
-            'role_id': None,
-            'emoji': '🔥',
-            'category': 'roles'
-        },
-    ],
     'boosts': [
         {
             'id': 'xp_boost_1h',
