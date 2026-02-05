@@ -65,7 +65,21 @@ class MainMenu(tk.Tk):
                 )
         
         self.title("TTFD-Cleaner")
-        self.geometry("1200x800")
+        
+        # Компактный размер окна
+        window_width = 800
+        window_height = 600
+        
+        # Центрирование окна на экране
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        
+        # Запретить изменение размера окна
+        self.resizable(False, False)
         
         # Пути к ресурсам
         if getattr(sys, 'frozen', False):
@@ -84,29 +98,32 @@ class MainMenu(tk.Tk):
     
     def setup_background(self):
         """Установка фонового изображения"""
+        window_width = 800
+        window_height = 600
+        
         bg_path = self.assets_path / 'Rectangle 6.png'
         if bg_path.exists():
             try:
                 # Загрузить фон
                 bg_image = Image.open(bg_path)
                 # Изменить размер под окно
-                bg_image = bg_image.resize((1200, 800), Image.Resampling.LANCZOS)
+                bg_image = bg_image.resize((window_width, window_height), Image.Resampling.LANCZOS)
                 self.bg_photo = ImageTk.PhotoImage(bg_image)
                 
                 # Создать Canvas для фона
-                self.canvas = tk.Canvas(self, width=1200, height=800, highlightthickness=0)
+                self.canvas = tk.Canvas(self, width=window_width, height=window_height, highlightthickness=0)
                 self.canvas.pack(fill=tk.BOTH, expand=True)
                 self.canvas.create_image(0, 0, image=self.bg_photo, anchor=tk.NW)
             except Exception as e:
                 print(f"Ошибка загрузки фона: {e}")
                 # Fallback на тёмный фон
                 self.configure(bg='#1a1d23')
-                self.canvas = tk.Canvas(self, width=1200, height=800, bg='#1a1d23', highlightthickness=0)
+                self.canvas = tk.Canvas(self, width=window_width, height=window_height, bg='#1a1d23', highlightthickness=0)
                 self.canvas.pack(fill=tk.BOTH, expand=True)
         else:
             # Fallback на тёмный фон
             self.configure(bg='#1a1d23')
-            self.canvas = tk.Canvas(self, width=1200, height=800, bg='#1a1d23', highlightthickness=0)
+            self.canvas = tk.Canvas(self, width=window_width, height=window_height, bg='#1a1d23', highlightthickness=0)
             self.canvas.pack(fill=tk.BOTH, expand=True)
     
     def setup_ui(self):
@@ -116,28 +133,28 @@ class MainMenu(tk.Tk):
         if logo_path.exists():
             try:
                 logo_image = Image.open(logo_path)
-                # Масштабировать логотип
-                logo_image.thumbnail((400, 100), Image.Resampling.LANCZOS)
+                # Масштабировать логотип (меньше для компактного окна)
+                logo_image.thumbnail((300, 70), Image.Resampling.LANCZOS)
                 self.logo_photo = ImageTk.PhotoImage(logo_image)
                 
                 # Разместить логотип на Canvas
-                self.canvas.create_image(600, 80, image=self.logo_photo, anchor=tk.CENTER)
+                self.canvas.create_image(400, 60, image=self.logo_photo, anchor=tk.CENTER)
             except Exception as e:
                 print(f"Ошибка загрузки логотипа: {e}")
                 # Fallback на текст
                 self.canvas.create_text(
-                    600, 80,
+                    400, 60,
                     text="TTFD-Cleaner",
-                    font=("Segoe UI", 32, "bold"),
+                    font=("Segoe UI", 24, "bold"),
                     fill='#e4e6eb',
                     anchor=tk.CENTER
                 )
         else:
             # Fallback на текст
             self.canvas.create_text(
-                600, 80,
+                400, 60,
                 text="TTFD-Cleaner",
-                font=("Segoe UI", 32, "bold"),
+                font=("Segoe UI", 24, "bold"),
                 fill='#e4e6eb',
                 anchor=tk.CENTER
             )
@@ -153,14 +170,14 @@ class MainMenu(tk.Tk):
             ('Group 6.png', self.open_exclusions),    # Исключения
         ]
         
-        # Позиции кнопок (3 колонки, 2 ряда)
+        # Позиции кнопок (3 колонки, 2 ряда) - адаптировано под 800x600
         positions = [
-            (250, 300),   # Очистка (верх-лево)
-            (600, 300),   # Отчёты (верх-центр)
-            (950, 300),   # Автозапуск (верх-право)
-            (250, 550),   # Браузеры (низ-лево)
-            (600, 550),   # Приложения (низ-центр)
-            (950, 550),   # Исключения (низ-право)
+            (165, 220),   # Очистка (верх-лево)
+            (400, 220),   # Отчёты (верх-центр)
+            (635, 220),   # Автозапуск (верх-право)
+            (165, 420),   # Браузеры (низ-лево)
+            (400, 420),   # Приложения (низ-центр)
+            (635, 420),   # Исключения (низ-право)
         ]
         
         for (image_file, command), (x, y) in zip(buttons, positions):
