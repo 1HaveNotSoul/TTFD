@@ -392,3 +392,13 @@ function showMessage(text, type) {
 }
 
 console.log('✅ Все функции настроек загружены');
+
+// Выход из аккаунта
+window.logoutAccount = function() {
+    if (confirm('Вы уверены что хотите выйти из аккаунта?')) {
+        showMessage('👋 Выход из аккаунта...', 'success');
+        setTimeout(() => {
+            window.location.href = '/logout';
+        }, 1000);
+    }
+}
