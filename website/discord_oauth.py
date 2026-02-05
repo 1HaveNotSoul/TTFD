@@ -182,18 +182,23 @@ def handle_oauth_callback(db):
                 cur.close()
                 conn.close()
             else:
+                # Убедимся что sessions существует
+                if 'sessions' not in db.accounts:
+                    db.accounts['sessions'] = {}
+                    
                 db.accounts['sessions'][token] = {
-                    'account_id': existing_account['id'],
+                    'account_id': str(existing_account['id']),
                     'created_at': datetime.now().isoformat()
                 }
                 db.save_accounts()
+                print(f"✅ Сессия сохранена в JSON: account_id={existing_account['id']}, token={token[:10]}...")
             
             print(f"✅ Сессия создана: {token[:10]}...")
         except Exception as e:
             print(f"❌ Ошибка создания сессии: {e}")
             import traceback
             traceback.print_exc()
-            return {'success': False, 'error': 'Failed to create session'}
+            return {'success': False, 'error': f'Failed to create session: {str(e)}'}
         
         print(f"✅ OAuth успешно завершен для существующего пользователя: {existing_account['username']}")
         return {
@@ -265,19 +270,23 @@ def handle_oauth_callback(db):
                     cur.close()
                     conn.close()
                 else:
-                    from datetime import datetime
+                    # Убедимся что sessions существует
+                    if 'sessions' not in db.accounts:
+                        db.accounts['sessions'] = {}
+                    
                     db.accounts['sessions'][token] = {
                         'account_id': str(account_id),
                         'created_at': datetime.now().isoformat()
                     }
                     db.save_accounts()
+                    print(f"✅ Сессия сохранена в JSON: account_id={account_id}, token={token[:10]}...")
                 
                 print(f"✅ Сессия создана: {token[:10]}...")
             except Exception as e:
                 print(f"❌ Ошибка создания сессии: {e}")
                 import traceback
                 traceback.print_exc()
-                return {'success': False, 'error': 'Failed to create session'}
+                return {'success': False, 'error': f'Failed to create session: {str(e)}'}
             
             # Получаем созданный аккаунт
             print("📥 Получение созданного аккаунта...")
