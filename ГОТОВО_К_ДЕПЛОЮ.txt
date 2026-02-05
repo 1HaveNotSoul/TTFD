@@ -92,24 +92,25 @@ TTFD-CLEANER (Desktop)
 Время: ~1 минута
 
 
-ШАГ 3: СОЗДАНИЕ GITHUB РЕПОЗИТОРИЯ
+ШАГ 3: ПОДКЛЮЧЕНИЕ К GITHUB
 ────────────────────────────
-1. Откройте: https://github.com/new
-2. Название: TTFD
-3. Description: The First Descendants - Unified Project
-4. Visibility: Public или Private
-5. НЕ добавляйте README, .gitignore, license
-6. Create repository
+Репозиторий уже создан: https://github.com/1HaveNotSoul/TTFD
 
-Время: ~2 минуты
+Подключитесь к нему:
+
+   git remote add origin https://github.com/1HaveNotSoul/TTFD.git
+
+Время: ~10 секунд
 
 
-ШАГ 4: ПОДКЛЮЧЕНИЕ К GITHUB
+ШАГ 4: ЗАГРУЗКА НА GITHUB
 ────────────────────────────
-Скопируйте команды с GitHub:
+Загрузите все файлы на GitHub:
 
-   git remote add origin https://github.com/yourusername/TTFD.git
-   git push -u origin main
+   git push -u origin main --force
+
+Примечание: --force нужен, так как на GitHub уже есть файлы
+После этого все файлы появятся на https://github.com/1HaveNotSoul/TTFD
 
 Время: ~1 минута
 

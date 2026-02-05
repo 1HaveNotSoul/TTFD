@@ -146,7 +146,28 @@ GUILD_ID=your_guild_id
 
 ## 🚀 Деплой
 
-### Render.com (Website + Discord Bot)
+### Railway.app (Рекомендуется) ⭐
+
+**Преимущества:**
+- ✅ $5 бесплатных кредитов каждый месяц
+- ✅ Не засыпает (в отличие от Render Free)
+- ✅ PostgreSQL включён
+- ✅ Простой деплой из GitHub
+- ✅ Автоматические деплои
+
+**Быстрый старт:**
+1. Зарегистрируйтесь на https://railway.app
+2. Создайте проект из GitHub репозитория
+3. Добавьте PostgreSQL базу
+4. Деплойте Website (Root Directory: `website`)
+5. Деплойте Discord Bot (Root Directory: `discord-bot`)
+
+**Подробная инструкция:** [ДЕПЛОЙ_RAILWAY.md](ДЕПЛОЙ_RAILWAY.md)  
+**Быстрая шпаргалка:** [RAILWAY_БЫСТРЫЙ_СТАРТ.txt](RAILWAY_БЫСТРЫЙ_СТАРТ.txt)
+
+---
+
+### Render.com (Альтернатива)
 
 1. **Website (Web Service)**
    - Build Command: `cd website && pip install -r requirements.txt`
@@ -162,6 +183,8 @@ GUILD_ID=your_guild_id
    - Создайте PostgreSQL инстанс на Render
    - Скопируйте Internal Database URL
    - Добавьте в Environment Variables обоих сервисов
+
+**Подробная инструкция:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ### Cleaner (Standalone)
 
