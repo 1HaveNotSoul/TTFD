@@ -221,24 +221,26 @@
             </button>
         </div>
 
-        <!-- Coming Soon 2 -->
-        <div class="product-card coming-soon">
-            <div class="coming-soon-overlay">Скоро</div>
-            <div class="product-icon">🎵</div>
-            <h3 class="product-title">Music Player Pro</h3>
+        <!-- TTFD-Cleaner -->
+        <div class="product-card">
+            <div class="product-badge">Бесплатно</div>
+            <div class="product-icon">🧹</div>
+            <h3 class="product-title">TTFD-Cleaner</h3>
             <p class="product-description">
-                Расширенный музыкальный плеер с дополнительными функциями
+                Мощный инструмент для очистки и оптимизации Windows
             </p>
             <ul class="product-features">
-                <li>Эквалайзер</li>
-                <li>Плейлисты</li>
-                <li>Визуализация</li>
+                <li>Очистка системы и реестра</li>
+                <li>Управление автозагрузкой</li>
+                <li>Очистка браузеров</li>
+                <li>Удаление временных файлов</li>
+                <li>Современный интерфейс</li>
             </ul>
             <div class="product-price">
-                £2.99
+                Бесплатно
             </div>
-            <button class="buy-button" disabled>
-                В разработке
+            <button class="buy-button" onclick="buyProduct('ttfd_cleaner')">
+                Скачать
             </button>
         </div>
 
@@ -313,6 +315,13 @@ function buyProduct(productId) {
         // Начинаем загрузку файла
         setTimeout(() => {
             window.location.href = '/download/bat_optimizer';
+        }, 1000);
+    } else if (productId === 'ttfd_cleaner') {
+        showToast('✅ Начинаем загрузку TTFD-Cleaner...', 'success');
+        
+        // Начинаем загрузку файла
+        setTimeout(() => {
+            window.location.href = '/download/ttfd_cleaner';
         }, 1000);
     } else {
         showToast('Этот товар пока недоступен', 'info');

@@ -120,6 +120,25 @@ def download_bat_optimizer():
     else:
         return jsonify({'error': 'Файл не найден'}), 404
 
+@app.route('/download/ttfd_cleaner')
+def download_ttfd_cleaner():
+    """Скачивание TTFD-Cleaner"""
+    import os
+    from flask import send_file
+    
+    # Путь к EXE файлу
+    file_path = os.path.join(os.path.dirname(__file__), 'downloads', 'TTFD-Cleaner.exe')
+    
+    if os.path.exists(file_path):
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name='TTFD-Cleaner.exe',
+            mimetype='application/x-msdownload'
+        )
+    else:
+        return jsonify({'error': 'Файл не найден'}), 404
+
 @app.route('/static/фотографии/<path:filename>')
 def serve_photos(filename):
     """Раздача фотографий"""
