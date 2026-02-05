@@ -227,22 +227,17 @@ async def setup_ticket_button(bot):
                 # Пытаемся найти существующее сообщение
                 message = await channel.fetch_message(message_id)
                 print(f"✅ Кнопка тикетов уже существует (Message ID: {message_id})")
+                print(f"   Не создаю новое сообщение - использую существующее")
                 
                 # Обновляем view на случай перезапуска бота
                 view = CreateTicketButton(bot)
                 await message.edit(view=view)
+                print(f"✅ View кнопки тикетов обновлён")
                 return True
             except discord.NotFound:
                 print("⚠️ Старое сообщение не найдено, создаю новое")
-        
-        # Удаляем старые сообщения бота в канале
-        try:
-            async for message in channel.history(limit=50):
-                if message.author == bot.user:
-                    await message.delete()
-                    await asyncio.sleep(0.5)
-        except Exception as e:
-            print(f"⚠️ Не удалось очистить старые сообщения: {e}")
+            except Exception as e:
+                print(f"⚠️ Ошибка проверки существующего сообщения: {e}")
         
         # Создаём embed с инструкцией
         embed = BotTheme.create_embed(

@@ -56,7 +56,8 @@ async def setup_verification(bot):
         if existing_message_id:
             try:
                 message = await channel.fetch_message(existing_message_id)
-                print(f"[+] Сообщение верификации уже существует (ID: {existing_message_id})")
+                print(f"✅ Сообщение верификации уже существует (ID: {existing_message_id})")
+                print(f"   Не создаю новое сообщение - использую существующее")
                 
                 # Проверяем, есть ли реакция ✅
                 has_checkmark = False
@@ -68,21 +69,14 @@ async def setup_verification(bot):
                 # Если реакции нет - добавляем
                 if not has_checkmark:
                     await message.add_reaction('✅')
-                    print(f"[+] Добавлена реакция ✅ к существующему сообщению")
+                    print(f"✅ Добавлена реакция ✅ к существующему сообщению")
                 
                 return True
             except discord.NotFound:
-                print("[!] Старое сообщение не найдено, очищаю канал и создаю новое")
-                # Удаляем все сообщения бота в канале верификации
-                try:
-                    async for msg in channel.history(limit=100):
-                        if msg.author == bot.user:
-                            await msg.delete()
-                            print(f"[+] Удалено старое сообщение: {msg.id}")
-                except Exception as e:
-                    print(f"[!] Ошибка очистки канала: {e}")
+                print("⚠️ Старое сообщение не найдено, создаю новое")
+                # НЕ удаляем все сообщения, только создаём новое
             except Exception as e:
-                print(f"[!] Ошибка проверки существующего сообщения: {e}")
+                print(f"⚠️ Ошибка проверки существующего сообщения: {e}")
         
         # Создаём embed
         embed = success_embed(
