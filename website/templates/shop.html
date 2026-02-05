@@ -175,32 +175,9 @@
     </div>
 
     <div class="products-grid">
-        <!-- Pepe+ Subscription -->
+        <!-- Windows Optimizer -->
         <div class="product-card">
             <div class="product-badge">Популярно</div>
-            <div class="product-icon">🐸</div>
-            <h3 class="product-title">Pepe+ Подписка</h3>
-            <p class="product-description">
-                Премиум подписка с эксклюзивными возможностями и привилегиями
-            </p>
-            <ul class="product-features">
-                <li>Эксклюзивные темы и пресеты</li>
-                <li>Приоритетная поддержка</li>
-                <li>Без рекламы</li>
-                <li>Ранний доступ к новинкам</li>
-                <li>Специальный значок в профиле</li>
-            </ul>
-            <div class="product-price">
-                £9.99 <small>/месяц</small>
-            </div>
-            <button class="buy-button" onclick="buyProduct('pepe_plus')">
-                Купить подписку
-            </button>
-        </div>
-
-        <!-- BAT Files for Windows Optimization -->
-        <div class="product-card">
-            <div class="product-badge">Новинка</div>
             <div class="product-icon">⚡</div>
             <h3 class="product-title">Windows Optimizer</h3>
             <p class="product-description">
@@ -214,7 +191,7 @@
                 <li>Безопасные скрипты</li>
             </ul>
             <div class="product-price">
-                £2.99
+                10₽
             </div>
             <button class="buy-button" onclick="buyProduct('bat_optimizer')">
                 Купить и скачать
@@ -223,7 +200,7 @@
 
         <!-- TTFD-Cleaner -->
         <div class="product-card">
-            <div class="product-badge">Бесплатно</div>
+            <div class="product-badge">Новинка</div>
             <div class="product-icon">🧹</div>
             <h3 class="product-title">TTFD-Cleaner</h3>
             <p class="product-description">
@@ -237,10 +214,10 @@
                 <li>Современный интерфейс</li>
             </ul>
             <div class="product-price">
-                Бесплатно
+                20₽
             </div>
             <button class="buy-button" onclick="buyProduct('ttfd_cleaner')">
-                Скачать
+                Купить и скачать
             </button>
         </div>
 
@@ -302,26 +279,17 @@ function showToast(message, type = 'success') {
 }
 
 function buyProduct(productId) {
-    if (productId === 'pepe_plus') {
-        showToast('🎉 Спасибо за покупку Pepe+! Подписка активирована.', 'success');
-        
-        // Здесь можно добавить логику активации подписки
+    if (productId === 'bat_optimizer') {
+        // Перенаправляем на FunPay для оплаты
+        showToast('🛒 Перенаправление на страницу оплаты...', 'info');
         setTimeout(() => {
-            showToast('✨ Теперь у вас есть доступ ко всем премиум функциям!', 'info');
-        }, 1500);
-    } else if (productId === 'bat_optimizer') {
-        showToast('✅ Покупка успешна! Начинаем загрузку...', 'success');
-        
-        // Начинаем загрузку файла
-        setTimeout(() => {
-            window.location.href = '/download/bat_optimizer';
+            window.open('https://funpay.com/lots/offer?id=YOUR_OFFER_ID_BAT', '_blank');
         }, 1000);
     } else if (productId === 'ttfd_cleaner') {
-        showToast('✅ Начинаем загрузку TTFD-Cleaner...', 'success');
-        
-        // Начинаем загрузку файла
+        // Перенаправляем на FunPay для оплаты
+        showToast('🛒 Перенаправление на страницу оплаты...', 'info');
         setTimeout(() => {
-            window.location.href = '/download/ttfd_cleaner';
+            window.open('https://funpay.com/lots/offer?id=YOUR_OFFER_ID_CLEANER', '_blank');
         }, 1000);
     } else {
         showToast('Этот товар пока недоступен', 'info');
