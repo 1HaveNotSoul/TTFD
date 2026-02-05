@@ -197,6 +197,7 @@ website/instance/
 # ═══════════════════════════════════════════════════════════════
 discord-bot/json/*.json
 !discord-bot/json/.gitkeep
+!discord-bot/json/auto_update.json
 
 # ═══════════════════════════════════════════════════════════════
 # Node.js (если будет использоваться)
