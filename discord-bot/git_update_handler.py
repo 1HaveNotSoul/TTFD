@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Git Update Handler - автоматическое добавление обновлений из коммитов
+"""
+
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime
+
+# Путь к файлу автообновления
+AUTO_UPDATE_FILE = 'json/auto_update.json'
+
+# Префиксы коммитов которые НЕ добавляются в обновления
+IGNORE_PREFIXES = [
+    'docs:',      # Документация
+    'chore:',     # Рутинные задачи
+    'test:',      # Тесты
+    'style:',     # Форматирование
+    'refactor:',  # Рефакторинг без изменения функционала
+]
+
+# Префиксы которые ДОБАВЛЯЮТСЯ в обновления
+INCLUDE_PREFIXES = [
+    'feat:',      # Новая функция
+    'fix:',       # Исправление бага
+    'perf:',      # Улучшение производительности
+    'security:',  # Безопасность
+]
+
+
+def load_auto_update():
+    """Загрузить текущий файл автообновления"""
+    if os.path.exists(AUTO_UPDATE_FILE):
+        with open(AUTO_UPDATE_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {
+        "enabled": False,
+        "changes": []
+    }
+
+
+def save_auto_update(data):
+    """Сохранить файл автообновления"""
+    os.makedirs('json', exist_ok=True)
+    with open(AUTO_UPDATE_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def get_last_commit_message():
+    """Получить сообщение последнего коммита"""
+    try:
+        result = subprocess.run(
+            ['git', 'log', '-1', '--pretty=%B'],
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
+        )
+        return result.stdout.strip()
+    except Exception as e:
+        print(f"❌ Ошибка получения сообщения коммита: {e}")
+        return None
+
+
+def should_add_to_updates(commit_message):
+    """Проверить нужно ли добавлять коммит в обновления"""
+    # Проверяем игнорируемые префиксы
+    for prefix in IGNORE_PREFIXES:
+        if commit_message.lower().startswith(prefix):
+            return False, None
+    
+    # Проверяем включаемые префиксы
+    for prefix in INCLUDE_PREFIXES:
+        if commit_message.lower().startswith(prefix):
+            # Убираем префикс из сообщения
+            message = commit_message[len(prefix):].strip()
+            return True, message
+    
+    # Если нет префикса - добавляем как есть
+    return True, commit_message
+
+
+def format_change_message(message):
+    """Форматировать сообщение изменения"""
+    # Убираем лишние пробелы
+    message = ' '.join(message.split())
+    
+    # Делаем первую букву строчной (для единообразия)
+    if message and message[0].isupper():
+        message = message[0].lower() + message[1:]
+    
+    return message
+
+
+def add_update(commit_message):
+    """Добавить обновление из коммита"""
+    # Проверяем нужно ли добавлять
+    should_add, formatted_message = should_add_to_updates(commit_message)
+    
+    if not should_add:
+        print(f"ℹ️ Коммит игнорируется (префикс документации/тестов)")
+        return False
+    
+    if not formatted_message:
+        print(f"⚠️ Пустое сообщение коммита")
+        return False
+    
+    # Форматируем сообщение
+    formatted_message = format_change_message(formatted_message)
+    
+    # Загружаем текущие обновления
+    auto_update = load_auto_update()
+    
+    # Проверяем дубликаты
+    if formatted_message in auto_update.get('changes', []):
+        print(f"ℹ️ Изменение уже добавлено: {formatted_message}")
+        return False
+    
+    # Добавляем изменение
+    if 'changes' not in auto_update:
+        auto_update['changes'] = []
+    
+    auto_update['changes'].append(formatted_message)
+    auto_update['enabled'] = True
+    
+    # Сохраняем
+    save_auto_update(auto_update)
+    
+    print(f"✅ Добавлено обновление: {formatted_message}")
+    print(f"📊 Всего изменений: {len(auto_update['changes'])}")
+    
+    return True
+
+
+def main():
+    """Главная функция"""
+    print("=" * 60)
+    print("🔄 Git Update Handler")
+    print("=" * 60)
+    
+    # Получаем сообщение последнего коммита
+    commit_message = get_last_commit_message()
+    
+    if not commit_message:
+        print("❌ Не удалось получить сообщение коммита")
+        return 1
+    
+    print(f"📝 Сообщение коммита: {commit_message}")
+    
+    # Добавляем обновление
+    success = add_update(commit_message)
+    
+    if success:
+        print("\n✅ Обновление добавлено!")
+        print("💡 При следующем запуске бота оно будет отправлено в Discord")
+    else:
+        print("\nℹ️ Обновление не добавлено")
+    
+    print("=" * 60)
+    
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
