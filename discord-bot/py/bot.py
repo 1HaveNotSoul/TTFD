@@ -11,19 +11,38 @@ import config
 import os
 
 # Автоматический выбор базы данных
-if os.getenv('DATABASE_URL'):
-    print("🔄 Обнаружен DATABASE_URL, используется PostgreSQL")
+database_url = os.getenv('DATABASE_URL')
+print("═══════════════════════════════════════════════════════════════")
+print("🔍 ПРОВЕРКА ПОДКЛЮЧЕНИЯ К БАЗЕ ДАННЫХ")
+print("═══════════════════════════════════════════════════════════════")
+
+if database_url:
+    print(f"✅ DATABASE_URL найден")
+    print(f"   Длина URL: {len(database_url)} символов")
+    print(f"   Начинается с: {database_url[:20]}...")
+    print("🔄 Попытка подключения к PostgreSQL...")
     try:
         from database_postgres import db
-        print("✅ Используется PostgreSQL база данных")
+        print("✅ PostgreSQL подключен успешно!")
+        print("✅ Данные будут сохраняться в PostgreSQL")
+        print("═══════════════════════════════════════════════════════════════")
     except Exception as e:
-        print(f"⚠️ PostgreSQL недоступен: {e}")
-        print("⚠️ Переключение на JSON файл")
+        print(f"❌ Ошибка подключения к PostgreSQL:")
+        print(f"   {type(e).__name__}: {e}")
+        print("⚠️ Переключение на JSON файл (данные будут теряться при деплое)")
+        print("═══════════════════════════════════════════════════════════════")
         from database import db
 else:
-    print("🔄 DATABASE_URL не найден, используется JSON")
+    print("❌ DATABASE_URL не найден в переменных окружения")
+    print("⚠️ Используется JSON файл (данные будут теряться при деплое)")
+    print("")
+    print("💡 Чтобы подключить PostgreSQL:")
+    print("   1. Railway → Postgres → Variables → DATABASE_URL (скопируй)")
+    print("   2. Railway → TTFD (бот) → Variables → + New Variable")
+    print("   3. Name: DATABASE_URL, Value: вставь скопированный URL")
+    print("   4. Settings → Restart")
+    print("═══════════════════════════════════════════════════════════════")
     from database import db
-    print("✅ Используется JSON база данных")
 
 from font_converter import convert_to_font
 import tickets_system
