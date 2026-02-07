@@ -869,7 +869,20 @@ async def coinflip(ctx, choice: str = None):
 
 @bot.command(name='clear')
 async def clear(ctx, amount: int = 10):
-    """Очистить сообщения (только для администраторов)"""
+    """Очистить сообщения (только для администраторов в канале команд)"""
+    # Проверка что команда используется в канале команд
+    if not commands_channel.is_commands_channel(ctx.channel.id):
+        try:
+            warning_msg = await ctx.send(
+                f"{ctx.author.mention} " + convert_to_font(f"эта команда работает только в <#{commands_channel.COMMANDS_CHANNEL_ID}>")
+            )
+            await ctx.message.delete()
+            await asyncio.sleep(10)
+            await warning_msg.delete()
+        except:
+            pass
+        return
+    
     if not is_admin(ctx):
         await ctx.send(convert_to_font("❌ у тебя нет прав для использования этой команды!"))
         return
