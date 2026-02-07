@@ -375,10 +375,6 @@ async def auto_sync_rank_roles():
         print(f"❌ Ошибка автоматической синхронизации ролей: {e}")
         import traceback
         traceback.print_exc()
-        discord.Activity(type=discord.ActivityType.playing, name="!help для помощи"),
-        discord.Activity(type=discord.ActivityType.listening, name="ваши команды"),
-    ]
-    await bot.change_presence(activity=random.choice(statuses))
 
 
 # ==================== Обновление списка команд ====================
