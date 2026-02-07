@@ -18,6 +18,7 @@ from commands_manager import get_commands_text
 from theme import BotTheme, game_embed, profile_embed, success_embed, error_embed, warning_embed
 import shop_system
 import commands_channel
+import updates_system
 import voice_tracking
 import rank_roles
 import game_integration
@@ -260,6 +261,15 @@ async def on_ready():
         print(f"✅ Синхронизировано {len(synced)} slash команд (включая игровые)")
     except Exception as e:
         print(f"❌ Ошибка настройки интеграции с игрой: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Проверка автообновления
+    print("🔄 Проверка автообновления...")
+    try:
+        await updates_system.check_auto_update(bot)
+    except Exception as e:
+        print(f"❌ Ошибка проверки автообновления: {e}")
         import traceback
         traceback.print_exc()
     
