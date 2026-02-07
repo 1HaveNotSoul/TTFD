@@ -754,12 +754,15 @@ async def dice(ctx):
     
     result = random.randint(1, 6)
     
+    # Сохраняем старый XP
+    old_xp = user.get('xp', 0)
+    
     # Обновляем статистику игр
     user['games_played'] = user.get('games_played', 0) + 1
     
     # Награда за игру
     xp_reward = result * 5
-    user['xp'] = user.get('xp', 0) + xp_reward
+    user['xp'] = old_xp + xp_reward
     
     if result >= 5:
         user['games_won'] = user.get('games_won', 0) + 1
@@ -783,6 +786,9 @@ async def dice(ctx):
     embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
     
     await ctx.send(embed=embed)
+    
+    # Проверяем и обрабатываем повышение роли
+    await handle_rank_up(ctx, user, old_xp)
 
 @bot.command(name='coinflip')
 async def coinflip(ctx, choice: str = None):
@@ -813,16 +819,19 @@ async def coinflip(ctx, choice: str = None):
     user_choice = 'орёл' if choice.lower() in ['орёл', 'орел'] else 'решка'
     won = result == user_choice
     
+    # Сохраняем старый XP
+    old_xp = user.get('xp', 0)
+    
     # Обновляем статистику
     user['games_played'] = user.get('games_played', 0) + 1
     
     if won:
         user['games_won'] = user.get('games_won', 0) + 1
         xp_reward = 25
-        user['xp'] = user.get('xp', 0) + xp_reward
+        user['xp'] = old_xp + xp_reward
     else:
         xp_reward = 5
-        user['xp'] = user.get('xp', 0) + xp_reward
+        user['xp'] = old_xp + xp_reward
     
     # Сохраняем время последнего подбрасывания
     user['last_coinflip'] = datetime.now().isoformat()
@@ -844,6 +853,9 @@ async def coinflip(ctx, choice: str = None):
     embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
     
     await ctx.send(embed=embed)
+    
+    # Проверяем и обрабатываем повышение роли
+    await handle_rank_up(ctx, user, old_xp)
 
 @bot.command(name='clear')
 async def clear(ctx, amount: int = 10):
@@ -1197,6 +1209,9 @@ async def work(ctx):
             await ctx.send(convert_to_font(f"⏰ ты уже работал! приходи через {hours}ч {minutes}м"))
             return
     
+    # Сохраняем старый XP для проверки повышения роли
+    old_xp = user.get('xp', 0)
+    
     # Список работ
     jobs = [
         ("программист", "написал код для сайта", 150, 250),
@@ -1267,6 +1282,9 @@ async def work(ctx):
     embed.set_footer(text=convert_to_font("следующая работа через 1 час"))
     
     await ctx.send(embed=embed)
+    
+    # Проверяем и обрабатываем повышение роли
+    await handle_rank_up(ctx, user, old_xp)
 
 
 # ==================== Запуск бота ====================
