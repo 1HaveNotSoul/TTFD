@@ -283,7 +283,6 @@ def buy_item(db, user_id, item_id):
     return {'success': True, 'item': item}
 
 async def buy_item_legacy(ctx, bot, db, item_id):
-async def buy_item_legacy(ctx, bot, db, item_id):
     """Купить предмет (старая версия для команды !buy)"""
     user = db.get_user(str(ctx.author.id))
     
