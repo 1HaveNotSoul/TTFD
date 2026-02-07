@@ -268,14 +268,28 @@ def calculate_voice_xp(duration_seconds):
     """
     Рассчитать XP за время в войсе
     
-    Формула: 1 XP за каждые 5 минут (300 секунд)
-    Максимум: 50 XP за сессию (250 минут)
+    Формула:
+    - 5 минут = 10 XP (2 XP за минуту)
+    - 10 минут = 20 XP
+    - 1 час = 100 XP
+    - После 1 часа: каждые +30 минут X2 к имеющемуся показателю
+    - Без ограничения максимума
     """
-    # 1 XP за 5 минут
-    xp = int(duration_seconds / 300)
+    minutes = duration_seconds / 60
     
-    # Максимум 50 XP за сессию
-    return min(xp, 50)
+    if minutes < 60:
+        # До 1 часа: 2 XP за минуту
+        xp = int(minutes * 2)
+    else:
+        # После 1 часа: базовые 100 XP + экспоненциальный рост
+        base_xp = 100
+        extra_minutes = minutes - 60
+        
+        # Каждые 30 минут удваиваем
+        multiplier_count = int(extra_minutes / 30)
+        xp = base_xp * (2 ** multiplier_count)
+    
+    return xp
 
 def calculate_message_xp(message_length):
     """
@@ -283,43 +297,33 @@ def calculate_message_xp(message_length):
     
     Формула:
     - Короткие сообщения (< 10 символов): 0 XP (спам)
-    - Нормальные сообщения (10-100 символов): 1-3 XP
-    - Длинные сообщения (> 100 символов): 3-5 XP
+    - 10-50 символов: 1 XP
+    - 50-100 символов: 10 XP
+    - 100-200 символов: 50 XP
+    - 200-500 символов: 100 XP
+    - 500+ символов: 250 XP
     """
     if message_length < 10:
         return 0  # Спам
     elif message_length < 50:
         return 1
     elif message_length < 100:
-        return 2
+        return 10
     elif message_length < 200:
-        return 3
+        return 50
     elif message_length < 500:
-        return 4
+        return 100
     else:
-        return 5  # Максимум за очень длинное сообщение
+        return 250  # Максимум за очень длинное сообщение
 
-# Кулдаун для сообщений (чтобы избежать спама)
+# Кулдаун для сообщений убран - каждое сообщение даёт XP
 # {user_id: last_message_time}
 message_cooldowns = {}
 
 def can_earn_message_xp(user_id):
     """
     Проверить можно ли получить XP за сообщение
-    Кулдаун: 30 секунд между сообщениями
+    Кулдаун убран - каждое сообщение даёт XP
     """
-    now = datetime.now()
-    user_id = str(user_id)
-    
-    if user_id not in message_cooldowns:
-        message_cooldowns[user_id] = now
-        return True
-    
-    last_message = message_cooldowns[user_id]
-    time_diff = (now - last_message).total_seconds()
-    
-    if time_diff >= 30:  # 30 секунд кулдаун
-        message_cooldowns[user_id] = now
-        return True
-    
-    return False
+    # Всегда возвращаем True - кулдауна нет
+    return True
