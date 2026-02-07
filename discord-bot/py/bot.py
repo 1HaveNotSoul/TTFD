@@ -13,8 +13,13 @@ import os
 # Автоматический выбор базы данных
 if os.getenv('DATABASE_URL'):
     print("🔄 Обнаружен DATABASE_URL, используется PostgreSQL")
-    from database_postgres import db
-    print("✅ Используется PostgreSQL база данных")
+    try:
+        from database_postgres import db
+        print("✅ Используется PostgreSQL база данных")
+    except Exception as e:
+        print(f"⚠️ PostgreSQL недоступен: {e}")
+        print("⚠️ Переключение на JSON файл")
+        from database import db
 else:
     print("🔄 DATABASE_URL не найден, используется JSON")
     from database import db
