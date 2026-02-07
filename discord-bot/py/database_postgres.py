@@ -180,10 +180,11 @@ class PostgresDatabase:
         fields = []
         values = []
         for key, value in user_data.items():
-            if key != 'id':
+            if key != 'id' and key != 'last_active':  # Исключаем last_active из user_data
                 fields.append(f"{key} = %s")
                 values.append(value)
         
+        # Добавляем last_active один раз
         fields.append("last_active = CURRENT_TIMESTAMP")
         values.append(str(user_id))
         
