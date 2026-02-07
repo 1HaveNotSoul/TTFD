@@ -55,6 +55,8 @@ import updates_system
 import voice_tracking
 import rank_roles
 import game_integration
+import slash_commands
+import views
 
 # Настройка intents
 intents = discord.Intents.default()
@@ -205,10 +207,20 @@ async def on_ready():
     print(f"👥 Пользователей: {len(bot.users)}")
     print("=" * 50)
     
-    # Синхронизация slash команд (если есть)
+    # Регистрация slash команд
+    print("🔄 Регистрация slash команд...")
+    try:
+        await slash_commands.setup_slash_commands(bot, db)
+        print("✅ Slash команды зарегистрированы")
+    except Exception as e:
+        print(f"❌ Ошибка регистрации slash команд: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Синхронизация slash команд с Discord
     try:
         synced = await bot.tree.sync()
-        print(f"✅ Синхронизировано {len(synced)} slash команд")
+        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
     
@@ -628,34 +640,50 @@ async def top(ctx, category: str = 'xp'):
         users = db.get_all_users()
         
         # Сортируем по XP
-        sorted_users = sorted(users.items(), key=lambda x: x[1].get('xp', 0), reverse=True)[:10]
+        sorted_users = sorted(users.items(), key=lambda x: x[1].get('xp', 0), reverse=True)
         
-        embed = BotTheme.create_embed(
-            title=convert_to_font("🏆 топ-10 по xp"),
-            description=convert_to_font("самые активные игроки"),
-            embed_type='info'
-        )
-        embed.timestamp = datetime.now()
+        # Создаём страницы по 10 пользователей
+        pages = []
+        items_per_page = 10
+        total_pages = (len(sorted_users) + items_per_page - 1) // items_per_page
         
-        medals = ["🥇", "🥈", "🥉"]
+        for page_num in range(total_pages):
+            start_idx = page_num * items_per_page
+            end_idx = min(start_idx + items_per_page, len(sorted_users))
+            page_users = sorted_users[start_idx:end_idx]
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("🏆 топ по xp"),
+                description=convert_to_font("самые активные игроки"),
+                embed_type='info'
+            )
+            embed.timestamp = datetime.now()
+            
+            medals = ["🥇", "🥈", "🥉"]
+            
+            for idx, (user_id, user_data) in enumerate(page_users, start=start_idx + 1):
+                try:
+                    member = await bot.fetch_user(int(user_id))
+                    rank_info = db.get_rank_info(user_data['rank_id'])
+                    medal = medals[idx-1] if idx <= 3 else f"{idx}."
+                    
+                    embed.add_field(
+                        name=convert_to_font(f"{medal} {member.name}"),
+                        value=convert_to_font(f"ранг: {rank_info['name']} | xp: {user_data['xp']}"),
+                        inline=False
+                    )
+                except:
+                    continue
+            
+            embed.set_footer(text=convert_to_font(f"страница {page_num + 1}/{total_pages} • используй !top voice для топа по войсу"))
+            pages.append(embed)
         
-        for idx, (user_id, user_data) in enumerate(sorted_users, 1):
-            try:
-                member = await bot.fetch_user(int(user_id))
-                rank_info = db.get_rank_info(user_data['rank_id'])
-                medal = medals[idx-1] if idx <= 3 else f"{idx}."
-                
-                embed.add_field(
-                    name=convert_to_font(f"{medal} {member.name}"),
-                    value=convert_to_font(f"ранг: {rank_info['name']} | xp: {user_data['xp']}"),
-                    inline=False
-                )
-            except:
-                continue
-        
-        embed.set_footer(text=convert_to_font("используй !top voice для топа по войсу"))
-        
-        await ctx.send(embed=embed)
+        # Если страниц больше 1 - используем пагинацию
+        if len(pages) > 1:
+            view = views.TopPaginator(pages)
+            await ctx.send(embed=pages[0], view=view)
+        else:
+            await ctx.send(embed=pages[0])
 
 @bot.command(name='daily')
 async def daily(ctx):
@@ -1110,7 +1138,7 @@ async def buy(ctx, item_id: str = None):
         await ctx.send(convert_to_font("❌ укажи id предмета: !buy [id]"))
         return
     
-    success, embed = await shop_system.buy_item(ctx, bot, db, item_id)
+    success, embed = await shop_system.buy_item_legacy(ctx, bot, db, item_id)
     await ctx.send(embed=embed)
 
 @bot.command(name='inventory')

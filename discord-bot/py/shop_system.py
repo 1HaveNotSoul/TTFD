@@ -203,9 +203,224 @@ def get_shop_embed_page(page=1, category='all'):
     
     return embed
 
-async def buy_item(ctx, bot, db, item_id):
-    """Купить предмет"""
+def get_shop_items(category='all'):
+    """Получить предметы магазина по категории"""
+    shop_items = load_shop_items()
+    
+    if category == 'all':
+        all_items = []
+        for items in shop_items.values():
+            all_items.extend(items)
+        return all_items
+    
+    return shop_items.get(category, [])
+
+def buy_item(db, user_id, item_id):
+    """
+    Купить предмет (для использования в Views)
+    Возвращает dict с результатом: {'success': bool, 'item': dict, 'error': str}
+    """
+    user = db.get_user(user_id)
+    
+    if not user:
+        return {'success': False, 'error': 'пользователь не зарегистрирован'}
+    
+    item = find_item(item_id)
+    
+    if not item:
+        return {'success': False, 'error': f"предмет '{item_id}' не найден"}
+    
+    # Проверка баланса
+    if user.get('coins', 0) < item['price']:
+        return {
+            'success': False,
+            'error': f"недостаточно монет\nнужно: {item['price']}, у тебя: {user.get('coins', 0)}"
+        }
+    
+    # Инициализация инвентаря
+    if 'inventory' not in user:
+        user['inventory'] = []
+    
+    # Проверка на повторную покупку (для ролей и косметики)
+    if item['category'] in ['roles', 'cosmetics']:
+        if item_id in user['inventory']:
+            return {'success': False, 'error': 'у тебя уже есть этот предмет'}
+    
+    # Покупка
+    user['coins'] -= item['price']
+    
+    # Обработка по типу предмета
+    if item['category'] in ['roles', 'cosmetics']:
+        user['inventory'].append(item_id)
+    
+    elif item['category'] == 'boosts':
+        # Активация буста
+        if 'active_boosts' not in user:
+            user['active_boosts'] = []
+        
+        boost_data = {
+            'item_id': item_id,
+            'boost_type': item.get('boost_type', 'xp'),
+            'multiplier': item.get('multiplier', 2),
+            'expires_at': (datetime.now() + timedelta(seconds=item['duration'])).isoformat()
+        }
+        
+        user['active_boosts'].append(boost_data)
+    
+    elif item['category'] == 'special':
+        special_type = item.get('special_type')
+        
+        if special_type == 'daily_reset':
+            user['last_daily_date'] = None
+        
+        elif special_type == 'xp_instant':
+            xp_amount = item.get('value', 1000)
+            user['xp'] = user.get('xp', 0) + xp_amount
+            db.check_rank_up(user)
+    
+    db.save_user(user_id, user)
+    
+    return {'success': True, 'item': item}
+
+async def buy_item_legacy(ctx, bot, db, item_id):
+async def buy_item_legacy(ctx, bot, db, item_id):
+    """Купить предмет (старая версия для команды !buy)"""
     user = db.get_user(str(ctx.author.id))
+    
+    if not user:
+        return False, error_embed(
+            title=convert_to_font("❌ ошибка"),
+            description=convert_to_font("ты не зарегистрирован!")
+        )
+    
+    item = find_item(item_id)
+    
+    if not item:
+        return False, error_embed(
+            title=convert_to_font("❌ предмет не найден"),
+            description=convert_to_font(f"предмет '{item_id}' не существует")
+        )
+    
+    # Проверка баланса
+    if user['coins'] < item['price']:
+        return False, error_embed(
+            title=convert_to_font("❌ недостаточно монет"),
+            description=convert_to_font(f"нужно: {item['price']}, у тебя: {user['coins']}")
+        )
+    
+    # Инициализация инвентаря
+    if 'inventory' not in user:
+        user['inventory'] = []
+    
+    # Проверка на повторную покупку (для ролей и косметики)
+    if item['category'] in ['roles', 'cosmetics']:
+        if item_id in user['inventory']:
+            return False, error_embed(
+                title=convert_to_font("❌ уже куплено"),
+                description=convert_to_font("у тебя уже есть этот предмет!")
+            )
+    
+    # Покупка
+    user['coins'] -= item['price']
+    
+    # Обработка по типу предмета
+    result_message = ""
+    
+    if item['category'] == 'roles':
+        # Выдача роли
+        if item.get('role_id'):
+            try:
+                role = ctx.guild.get_role(item['role_id'])
+                if role:
+                    await ctx.author.add_roles(role)
+                    result_message = convert_to_font(f"роль {role.name} выдана!")
+                else:
+                    result_message = convert_to_font("роль не настроена на сервере")
+            except Exception as e:
+                result_message = convert_to_font(f"ошибка выдачи роли: {e}")
+        else:
+            result_message = convert_to_font("роль не настроена (обратись к админу)")
+        
+        user['inventory'].append(item_id)
+    
+    elif item['category'] == 'boosts':
+        # Активация буста
+        if 'active_boosts' not in user:
+            user['active_boosts'] = []
+        
+        boost_data = {
+            'item_id': item_id,
+            'boost_type': item.get('boost_type', 'xp'),
+            'multiplier': item.get('multiplier', 2),
+            'expires_at': (datetime.now() + timedelta(seconds=item['duration'])).isoformat()
+        }
+        
+        user['active_boosts'].append(boost_data)
+        
+        hours = item['duration'] // 3600
+        minutes = (item['duration'] % 3600) // 60
+        time_str = f"{hours}ч" if hours > 0 else f"{minutes}м"
+        
+        result_message = convert_to_font(f"буст активирован на {time_str}!")
+    
+    elif item['category'] == 'cosmetics':
+        user['inventory'].append(item_id)
+        
+        if item.get('cosmetic_type') == 'background':
+            # Автоматически применяем фон
+            if 'profile_settings' not in user:
+                user['profile_settings'] = {}
+            user['profile_settings']['background'] = item.get('value', '#0d0d0d')
+            result_message = convert_to_font("фон профиля изменён!")
+        elif item.get('cosmetic_type') == 'nickname':
+            result_message = convert_to_font("используй !setnick [новый ник] для смены")
+        else:
+            result_message = convert_to_font("предмет добавлен в инвентарь!")
+    
+    elif item['category'] == 'special':
+        special_type = item.get('special_type')
+        
+        if special_type == 'daily_reset':
+            user['last_daily_date'] = None
+            result_message = convert_to_font("кулдаун !daily сброшен!")
+        
+        elif special_type == 'rank_up':
+            # Повышаем ранг на следующий уровень
+            current_rank_id = user.get('rank_id', 1)
+            all_ranks = db.get_all_ranks()
+            
+            if current_rank_id < len(all_ranks):
+                # Переходим на следующий ранг
+                user['rank_id'] = current_rank_id + 1
+                new_rank = db.get_rank_info(user['rank_id'])
+                
+                # Устанавливаем XP на минимум для нового ранга
+                user['xp'] = new_rank['required_xp']
+                
+                result_message = convert_to_font(f"ранг повышен до {new_rank['name']}!")
+            else:
+                # Уже максимальный ранг
+                result_message = convert_to_font("у тебя уже максимальный ранг!")
+        
+        elif special_type == 'xp_instant':
+            xp_amount = item.get('value', 1000)
+            user['xp'] = user.get('xp', 0) + xp_amount
+            db.check_rank_up(user)
+            result_message = convert_to_font(f"+{xp_amount} xp получено!")
+    
+    db.save_user(str(ctx.author.id), user)
+    
+    embed = success_embed(
+        title=convert_to_font(f"✅ куплено: {item['name']}"),
+        description=result_message
+    )
+    embed.add_field(
+        name=convert_to_font("💰 баланс"),
+        value=convert_to_font(f"{user['coins']} монет"),
+        inline=True
+    )
+    
+    return True, embed
     
     if not user:
         return False, error_embed(
