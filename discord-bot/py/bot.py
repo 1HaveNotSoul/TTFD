@@ -160,49 +160,7 @@ def update_daily_streak(user):
     user['last_daily_date'] = today.isoformat()
     return user['daily_streak']
 
-async def handle_rank_up(ctx, user, old_xp):
-    """
-    Обработать повышение ранга с выдачей роли
-    
-    Args:
-        ctx: Discord Context
-        user: Данные пользователя
-        old_xp: Старое количество XP
-    
-    Returns:
-        bool: True если была выдана новая роль
-    """
-    new_xp = user.get('xp', 0)
-    
-    # Определяем старую и новую роль по XP
-    old_tier = rank_roles.get_role_for_xp(old_xp)
-    new_tier = rank_roles.get_role_for_xp(new_xp)
-    
-    # Проверяем, изменилась ли роль ИЛИ нужно выдать роль
-    if new_tier:
-        try:
-            result = await rank_roles.update_user_rank_role(ctx.author, new_xp)
-            
-            # Если роль была добавлена (не было раньше или изменилась)
-            if result['success'] and result['action'] == 'added':
-                # Отправляем уведомление только если tier изменился
-                if old_tier != new_tier:
-                    await rank_roles.send_rank_up_notification(
-                        ctx,
-                        ctx.author,
-                        old_xp,
-                        new_xp,
-                        old_tier,
-                        new_tier,
-                        result.get('role')
-                    )
-                return True
-        except Exception as e:
-            print(f"❌ Ошибка выдачи роли: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    return False
+# Функция handle_rank_up удалена - роли выдаются автоматически фоновой задачей
 
 
 # ==================== События бота ====================
@@ -286,6 +244,11 @@ async def on_ready():
     # Запуск фоновых задач
     if not update_bot_status.is_running():
         update_bot_status.start()
+        print("✅ Запущена задача обновления статуса")
+    
+    if not auto_sync_rank_roles.is_running():
+        auto_sync_rank_roles.start()
+        print("✅ Запущена задача автоматической синхронизации ролей (каждую минуту)")
 
 @bot.event
 async def on_message(message):
@@ -368,6 +331,50 @@ async def update_bot_status():
     """Обновление статуса бота"""
     statuses = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов"),
+        discord.Activity(type=discord.ActivityType.playing, name="!help для помощи"),
+        discord.Activity(type=discord.ActivityType.listening, name="ваши команды"),
+    ]
+    await bot.change_presence(activity=random.choice(statuses))
+
+@tasks.loop(minutes=1)
+async def auto_sync_rank_roles():
+    """
+    Автоматическая синхронизация ролей каждую минуту
+    Проверяет XP всех пользователей и выдаёт роли
+    """
+    try:
+        print("🔄 Автоматическая проверка ролей...")
+        
+        all_users = db.get_all_users()
+        updated_count = 0
+        
+        for user_id, user_data in all_users.items():
+            try:
+                xp = user_data.get('xp', 0)
+                
+                # Находим пользователя на всех серверах
+                for guild in bot.guilds:
+                    member = guild.get_member(int(user_id))
+                    
+                    if member:
+                        result = await rank_roles.update_user_rank_role(member, xp)
+                        
+                        if result['success'] and result['action'] == 'added':
+                            updated_count += 1
+                            print(f"✅ Автоматически выдана роль {result.get('tier')} пользователю {member.name}")
+                        
+                        break  # Нашли пользователя, выходим из цикла
+            
+            except Exception as e:
+                print(f"⚠️ Ошибка проверки роли для {user_id}: {e}")
+        
+        if updated_count > 0:
+            print(f"✅ Автоматически обновлено ролей: {updated_count}")
+    
+    except Exception as e:
+        print(f"❌ Ошибка автоматической синхронизации ролей: {e}")
+        import traceback
+        traceback.print_exc()
         discord.Activity(type=discord.ActivityType.playing, name="!help для помощи"),
         discord.Activity(type=discord.ActivityType.listening, name="ваши команды"),
     ]
@@ -718,8 +725,7 @@ async def daily(ctx):
     
     await ctx.send(embed=embed)
     
-    # Проверяем и обрабатываем повышение роли
-    await handle_rank_up(ctx, user, old_xp)
+    # Роли выдаются автоматически фоновой задачей каждую минуту
 
 @bot.command(name='link')
 async def link(ctx):
@@ -797,8 +803,7 @@ async def dice(ctx):
     
     await ctx.send(embed=embed)
     
-    # Проверяем и обрабатываем повышение роли
-    await handle_rank_up(ctx, user, old_xp)
+    # Роли выдаются автоматически фоновой задачей каждую минуту
 
 @bot.command(name='coinflip')
 async def coinflip(ctx, choice: str = None):
@@ -864,8 +869,7 @@ async def coinflip(ctx, choice: str = None):
     
     await ctx.send(embed=embed)
     
-    # Проверяем и обрабатываем повышение роли
-    await handle_rank_up(ctx, user, old_xp)
+    # Роли выдаются автоматически фоновой задачей каждую минуту
 
 @bot.command(name='clear')
 async def clear(ctx, amount: int = 10):
@@ -1293,8 +1297,7 @@ async def work(ctx):
     
     await ctx.send(embed=embed)
     
-    # Проверяем и обрабатываем повышение роли
-    await handle_rank_up(ctx, user, old_xp)
+    # Роли выдаются автоматически фоновой задачей каждую минуту
 
 
 # ==================== События для XP ====================
@@ -1384,20 +1387,7 @@ async def on_message(message):
                 db.check_rank_up(user)
                 db.save_user(str(message.author.id), user)
                 
-                # Проверяем и обрабатываем повышение роли
-                # Создаём фейковый контекст для handle_rank_up
-                class FakeContext:
-                    def __init__(self, message):
-                        self.message = message
-                        self.author = message.author
-                        self.channel = message.channel
-                        self.guild = message.guild
-                    
-                    async def send(self, *args, **kwargs):
-                        return await self.channel.send(*args, **kwargs)
-                
-                fake_ctx = FakeContext(message)
-                await handle_rank_up(fake_ctx, user, old_xp)
+                # Роли выдаются автоматически фоновой задачей каждую минуту
                 
                 # Логируем
                 print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение ({len(message.content)} символов)")
