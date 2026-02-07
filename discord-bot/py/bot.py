@@ -18,7 +18,6 @@ from commands_manager import get_commands_text
 from theme import BotTheme, game_embed, profile_embed, success_embed, error_embed, warning_embed
 import shop_system
 import commands_channel
-import updates_system
 import voice_tracking
 import rank_roles
 import game_integration
@@ -261,15 +260,6 @@ async def on_ready():
         print(f"✅ Синхронизировано {len(synced)} slash команд (включая игровые)")
     except Exception as e:
         print(f"❌ Ошибка настройки интеграции с игрой: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Проверка автообновления
-    print("🔄 Проверка автообновления...")
-    try:
-        await updates_system.check_auto_update(bot)
-    except Exception as e:
-        print(f"❌ Ошибка проверки автообновления: {e}")
         import traceback
         traceback.print_exc()
     
@@ -721,7 +711,7 @@ async def link(ctx):
     )
     embed.add_field(
         name=convert_to_font("🌐 сайт"),
-        value="[перейти на сайт](https://your-website.com)",
+        value="[перейти на сайт](https://bubbly-blessing-production-0c06.up.railway.app/)",
         inline=False
     )
     embed.add_field(
@@ -772,7 +762,7 @@ async def dice(ctx):
     
     db.save_user(str(ctx.author.id), user)
     
-    dice_emoji = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
+    dice_emoji = ["🎲", "🎲", "🎲", "🎲", "🎲", "🎲"]
     
     embed = game_embed(
         title=convert_to_font("🎲 бросок кубика")
@@ -1296,8 +1286,40 @@ async def on_voice_state_update(member, before, after):
     if member.bot:
         return
     
+    # Сохраняем старый XP перед начислением
+    user = db.get_user(str(member.id))
+    old_xp = user.get('xp', 0)
+    
     # Передаём db в voice_tracking для начисления XP
     await voice_tracking.on_voice_state_update(member, before, after, db=db)
+    
+    # Проверяем выдачу роли только при выходе из войса
+    if before.channel is not None and after.channel is None:
+        # Пользователь вышел из войса - проверяем роль
+        user = db.get_user(str(member.id))
+        new_xp = user.get('xp', 0)
+        
+        if new_xp > old_xp:
+            # XP изменился - проверяем роль
+            # Создаём фейковый контекст
+            class FakeContext:
+                def __init__(self, member):
+                    self.author = member
+                    self.guild = member.guild
+                    self.channel = None  # Нет канала для войса
+                
+                async def send(self, *args, **kwargs):
+                    # Отправляем в первый текстовый канал
+                    if self.guild:
+                        for channel in self.guild.text_channels:
+                            try:
+                                return await channel.send(*args, **kwargs)
+                            except:
+                                continue
+                    return None
+            
+            fake_ctx = FakeContext(member)
+
 
 @bot.event
 async def on_message(message):
@@ -1306,28 +1328,61 @@ async def on_message(message):
     if message.author.bot:
         return
     
-    # Игнорируем команды (начинаются с !)
+    bot.stats['messages_seen'] += 1
+    
+    # Проверяем, является ли сообщение командой
     if message.content.startswith('!'):
-        await bot.process_commands(message)
-        return
-    
-    # Проверяем кулдаун
-    if voice_tracking.can_earn_message_xp(message.author.id):
-        # Рассчитываем XP за сообщение
-        xp_reward = voice_tracking.calculate_message_xp(len(message.content))
-        
-        if xp_reward > 0:
-            user = db.get_user(str(message.author.id))
-            old_xp = user.get('xp', 0)
-            user['xp'] = old_xp + xp_reward
-            db.check_rank_up(user)
-            db.save_user(str(message.author.id), user)
+        # Проверяем, в каком канале написана команда
+        if commands_channel.is_commands_channel(message.channel.id):
+            # В канале команд: обрабатываем и удаляем через 5 минут
+            asyncio.create_task(delete_message_after(message, 300))
+            await bot.process_commands(message)
+        else:
+            # В других каналах: отправляем сообщение и удаляем команду
+            try:
+                # Отправляем сообщение только автору
+                warning_msg = await message.channel.send(
+                    f"{message.author.mention} " + convert_to_font(f"все команды работают только здесь: <#{commands_channel.COMMANDS_CHANNEL_ID}>")
+                )
+                # Удаляем команду пользователя сразу
+                await message.delete()
+                # Удаляем предупреждение через 10 секунд
+                asyncio.create_task(delete_message_after(warning_msg, 10))
+            except:
+                pass
+            return
+    else:
+        # Обычное сообщение (не команда) - начисляем XP
+        if voice_tracking.can_earn_message_xp(message.author.id):
+            # Рассчитываем XP за сообщение
+            xp_reward = voice_tracking.calculate_message_xp(len(message.content))
             
-            # Логируем (опционально)
-            # print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение")
-    
-    # Обрабатываем команды
-    await bot.process_commands(message)
+            if xp_reward > 0:
+                user = db.get_user(str(message.author.id))
+                old_xp = user.get('xp', 0)
+                user['xp'] = old_xp + xp_reward
+                db.check_rank_up(user)
+                db.save_user(str(message.author.id), user)
+                
+                # Проверяем и обрабатываем повышение роли
+                # Создаём фейковый контекст для handle_rank_up
+                class FakeContext:
+                    def __init__(self, message):
+                        self.message = message
+                        self.author = message.author
+                        self.channel = message.channel
+                        self.guild = message.guild
+                    
+                    async def send(self, *args, **kwargs):
+                        return await self.channel.send(*args, **kwargs)
+                
+                fake_ctx = FakeContext(message)
+                await handle_rank_up(fake_ctx, user, old_xp)
+                
+                # Логируем
+                print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение ({len(message.content)} символов)")
+        
+        await bot.process_commands(message)
 
 
 # ==================== Запуск бота ====================
