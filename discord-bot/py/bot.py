@@ -251,39 +251,6 @@ async def on_ready():
         print("✅ Запущена задача автоматической синхронизации ролей (каждую минуту)")
 
 @bot.event
-async def on_message(message):
-    """Обработка сообщений"""
-    if message.author.bot:
-        return
-    
-    bot.stats['messages_seen'] += 1
-    
-    # Проверяем, является ли сообщение командой
-    if message.content.startswith('!'):
-        # Проверяем, в каком канале написана команда
-        if commands_channel.is_commands_channel(message.channel.id):
-            # В канале команд: обрабатываем и удаляем через 5 минут
-            asyncio.create_task(delete_message_after(message, 300))
-            await bot.process_commands(message)
-        else:
-            # В других каналах: отправляем сообщение и удаляем команду
-            try:
-                # Отправляем сообщение только автору (ephemeral через DM невозможно, используем обычное сообщение)
-                warning_msg = await message.channel.send(
-                    f"{message.author.mention} " + convert_to_font(f"все команды работают только здесь: <#{commands_channel.COMMANDS_CHANNEL_ID}>")
-                )
-                # Удаляем команду пользователя сразу
-                await message.delete()
-                # Удаляем предупреждение через 10 секунд
-                asyncio.create_task(delete_message_after(warning_msg, 10))
-            except:
-                pass
-            return
-    else:
-        # Обычное сообщение (не команда)
-        await bot.process_commands(message)
-
-@bot.event
 async def on_command(ctx):
     """Событие использования команды"""
     bot.stats['commands_used'] += 1
