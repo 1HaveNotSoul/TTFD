@@ -1287,6 +1287,49 @@ async def work(ctx):
     await handle_rank_up(ctx, user, old_xp)
 
 
+# ==================== События для XP ====================
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    """Обработка изменения голосового состояния с начислением XP"""
+    # Игнорируем ботов
+    if member.bot:
+        return
+    
+    # Передаём db в voice_tracking для начисления XP
+    await voice_tracking.on_voice_state_update(member, before, after, db=db)
+
+@bot.event
+async def on_message(message):
+    """Обработка сообщений с начислением XP"""
+    # Игнорируем ботов
+    if message.author.bot:
+        return
+    
+    # Игнорируем команды (начинаются с !)
+    if message.content.startswith('!'):
+        await bot.process_commands(message)
+        return
+    
+    # Проверяем кулдаун
+    if voice_tracking.can_earn_message_xp(message.author.id):
+        # Рассчитываем XP за сообщение
+        xp_reward = voice_tracking.calculate_message_xp(len(message.content))
+        
+        if xp_reward > 0:
+            user = db.get_user(str(message.author.id))
+            old_xp = user.get('xp', 0)
+            user['xp'] = old_xp + xp_reward
+            db.check_rank_up(user)
+            db.save_user(str(message.author.id), user)
+            
+            # Логируем (опционально)
+            # print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение")
+    
+    # Обрабатываем команды
+    await bot.process_commands(message)
+
+
 # ==================== Запуск бота ====================
 
 if __name__ == "__main__":
