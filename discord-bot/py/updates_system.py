@@ -96,15 +96,25 @@ def increment_version(current_version, major=False):
     """
     Увеличить версию
     major=True: 1.0 -> 2.0
-    major=False: 1.0 -> 1.1
+    major=False: 1.0 -> 1.1, 1.9 -> 2.0
     """
     parts = current_version.split('.')
+    major_ver = int(parts[0])
+    minor_ver = int(parts[1])
+    
     if major:
-        parts[0] = str(int(parts[0]) + 1)
-        parts[1] = '0'
+        # Крупное обновление
+        major_ver += 1
+        minor_ver = 0
     else:
-        parts[1] = str(int(parts[1]) + 1)
-    return '.'.join(parts)
+        # Минорное обновление
+        minor_ver += 1
+        # Если достигли 10, переходим на следующую мажорную версию
+        if minor_ver >= 10:
+            major_ver += 1
+            minor_ver = 0
+    
+    return f"{major_ver}.{minor_ver}"
 
 async def send_update_notification(bot, changes, major=False, custom_version=None):
     """
