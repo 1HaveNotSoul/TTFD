@@ -178,26 +178,29 @@ async def handle_rank_up(ctx, user, old_xp):
     old_tier = rank_roles.get_role_for_xp(old_xp)
     new_tier = rank_roles.get_role_for_xp(new_xp)
     
-    # Проверяем, изменилась ли роль
-    if old_tier != new_tier and new_tier:
-        # Выдаём новую роль
+    # Проверяем, изменилась ли роль ИЛИ нужно выдать роль
+    if new_tier:
         try:
             result = await rank_roles.update_user_rank_role(ctx.author, new_xp)
             
+            # Если роль была добавлена (не было раньше или изменилась)
             if result['success'] and result['action'] == 'added':
-                # Отправляем уведомление с информацией о роли
-                await rank_roles.send_rank_up_notification(
-                    ctx,
-                    ctx.author,
-                    old_xp,
-                    new_xp,
-                    old_tier,
-                    new_tier,
-                    result.get('role')
-                )
+                # Отправляем уведомление только если tier изменился
+                if old_tier != new_tier:
+                    await rank_roles.send_rank_up_notification(
+                        ctx,
+                        ctx.author,
+                        old_xp,
+                        new_xp,
+                        old_tier,
+                        new_tier,
+                        result.get('role')
+                    )
                 return True
         except Exception as e:
             print(f"❌ Ошибка выдачи роли: {e}")
+            import traceback
+            traceback.print_exc()
     
     return False
 
@@ -1118,31 +1121,7 @@ async def inventory(ctx, member: discord.Member = None):
     embed = shop_system.get_inventory_embed(user, bot)
     await ctx.send(embed=embed)
 
-@bot.command(name='balance')
-async def balance(ctx, member: discord.Member = None):
-    """Баланс монет"""
-    member = member or ctx.author
-    user = db.get_user(str(member.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ пользователь не зарегистрирован!"))
-        return
-    
-    embed = profile_embed(
-        title=convert_to_font(f"💰 баланс {member.display_name}")
-    )
-    embed.add_field(
-        name=convert_to_font("монеты"),
-        value=convert_to_font(str(user.get('coins', 0))),
-        inline=True
-    )
-    embed.add_field(
-        name=convert_to_font("xp"),
-        value=convert_to_font(str(user.get('xp', 0))),
-        inline=True
-    )
-    
-    await ctx.send(embed=embed)
+# Команда balance перенесена в shop_commands.py чтобы избежать дублирования
 
 @bot.command(name='pay')
 async def pay(ctx, member: discord.Member = None, amount: int = 0):
