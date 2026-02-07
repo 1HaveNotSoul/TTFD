@@ -8,9 +8,18 @@ import aiohttp
 from datetime import datetime, timedelta
 import random
 import config
+import os
 
-# Используем JSON базу данных
-from database import db
+# Автоматический выбор базы данных
+if os.getenv('DATABASE_URL'):
+    print("🔄 Обнаружен DATABASE_URL, используется PostgreSQL")
+    from database_postgres import db
+    print("✅ Используется PostgreSQL база данных")
+else:
+    print("🔄 DATABASE_URL не найден, используется JSON")
+    from database import db
+    print("✅ Используется JSON база данных")
+
 from font_converter import convert_to_font
 import tickets_system
 import verification_system
@@ -22,8 +31,6 @@ import updates_system
 import voice_tracking
 import rank_roles
 import game_integration
-
-print("✅ Используется JSON база данных")
 
 # Настройка intents
 intents = discord.Intents.default()
