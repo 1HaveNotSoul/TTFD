@@ -198,6 +198,7 @@ website/instance/
 discord-bot/json/*.json
 !discord-bot/json/.gitkeep
 !discord-bot/json/auto_update.json
+!discord-bot/json/rank_roles.json
 
 # ═══════════════════════════════════════════════════════════════
 # Node.js (если будет использоваться)

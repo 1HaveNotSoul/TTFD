@@ -15,9 +15,14 @@ def load_rank_roles():
             with open(RANK_ROLES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 # Возвращаем только роли, без info
-                return {k: v for k, v in data.items() if k != 'info'}
-        except:
-            pass
+                roles = {k: v for k, v in data.items() if k != 'info'}
+                print(f"✅ Загружены роли из {RANK_ROLES_FILE}: {list(roles.keys())}")
+                return roles
+        except Exception as e:
+            print(f"⚠️ Ошибка загрузки ролей из файла: {e}")
+    else:
+        print(f"⚠️ Файл {RANK_ROLES_FILE} не найден, используются значения по умолчанию")
+    
     return {
         'F': {'role_id': None, 'required_xp': 100},
         'E': {'role_id': None, 'required_xp': 500},
