@@ -272,26 +272,16 @@ async def on_ready():
     print(f"🔍 DEBUG: Команд в bot.tree: {len(bot.tree.get_commands())}")
     print(f"🔍 DEBUG: Список команд: {[cmd.name for cmd in bot.tree.get_commands()]}")
     
-    # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
+    # Синхронизация ВСЕХ slash команд с Discord
     try:
-        guild = discord.Object(id=config.GUILD_ID)
         print(f"🔍 DEBUG: GUILD_ID = {config.GUILD_ID}")
         
-        # ВАЖНО: Очищаем старые глобальные команды (они конфликтуют с guild командами)
-        print("🗑️ Очищаю старые глобальные команды...")
-        bot.tree.clear_commands(guild=None)
-        await bot.tree.sync()
-        print("✅ Глобальные команды очищены")
+        # Используем ТОЛЬКО global sync (guild sync даёт 403 ошибку)
+        print("🔄 Синхронизация команд глобально...")
+        synced = await bot.tree.sync()
+        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (global sync)")
+        print("⏱️ Команды появятся на сервере в течение 1 часа")
         
-        # Синхронизируем с guild для мгновенного появления
-        synced = await bot.tree.sync(guild=guild)
-        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
-        
-        if len(synced) == 0:
-            print("⚠️ WARNING: Синхронизировано 0 команд!")
-            print("🔄 Пробую global sync...")
-            synced_global = await bot.tree.sync()
-            print(f"✅ Global sync: {len(synced_global)} команд")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
         import traceback

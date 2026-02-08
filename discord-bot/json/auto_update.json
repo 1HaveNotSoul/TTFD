@@ -12,6 +12,7 @@
     "fix: добавлен модуль requests в requirements.txt - критическое исправление деплоя",
     "fix: улучшены команды /dice и /coinflip - добавлена проверка ранга и footer",
     "fix: КРИТИЧЕСКОЕ - убран clear_commands который удалял все команды перед sync",
-    "dEBUG: Добавлена диагностика slash команд - проверка bot.tree и global sync"
+    "dEBUG: Добавлена диагностика slash команд - проверка bot.tree и global sync",
+    "fIX: Исправлен GUILD_ID и добавлена очистка глобальных команд"
   ]
 }
