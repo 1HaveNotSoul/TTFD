@@ -535,70 +535,88 @@ async def setup_slash_commands(bot, db):
         from datetime import datetime, timedelta
         import random
         
-        # Отложенный ответ (на случай если обработка займёт время)
-        await interaction.response.defer()
-        
-        user_data = db.get_user(str(interaction.user.id))
-        
-        # Проверка кулдауна
-        if 'last_dice' in user_data and user_data['last_dice']:
-            last_dice = datetime.fromisoformat(user_data['last_dice'])
-            time_diff = (datetime.now() - last_dice).total_seconds()
+        try:
+            user_data = db.get_user(str(interaction.user.id))
             
-            if time_diff < 3600:
-                time_left = 3600 - time_diff
-                hours = int(time_left // 3600)
-                minutes = int((time_left % 3600) // 60)
+            # Проверка кулдауна
+            if 'last_dice' in user_data and user_data['last_dice']:
+                last_dice = datetime.fromisoformat(user_data['last_dice'])
+                time_diff = (datetime.now() - last_dice).total_seconds()
                 
-                embed = BotTheme.create_embed(
-                    title=convert_to_font("⏰ слишком рано"),
-                    description=convert_to_font(f"следующий бросок через: {hours}ч {minutes}м"),
-                    embed_type='error'
-                )
-                await interaction.followup.send(embed=embed, ephemeral=True)
-                return
-        
-        result = random.randint(1, 6)
-        xp_reward = result * 5
-        
-        # Сохраняем старый XP для проверки повышения ранга
-        old_xp = user_data.get('xp', 0)
-        
-        user_data['xp'] = old_xp + xp_reward
-        user_data['games_played'] = user_data.get('games_played', 0) + 1
-        
-        if result >= 5:
-            user_data['games_won'] = user_data.get('games_won', 0) + 1
-        
-        user_data['last_dice'] = datetime.now().isoformat()
-        
-        # Проверяем повышение ранга
-        db.check_rank_up(user_data)
-        db.save_user(str(interaction.user.id), user_data)
-        
-        dice_emoji = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
-        
-        embed = BotTheme.create_embed(
-            title=convert_to_font("🎲 бросок кубика"),
-            description=convert_to_font(f"выпало: {dice_emoji[result-1]} {result}"),
-            embed_type='info'
-        )
-        embed.add_field(
-            name=convert_to_font("💎 получено xp"),
-            value=convert_to_font(f"+{xp_reward}"),
-            inline=True
-        )
-        
-        if result >= 5:
+                if time_diff < 3600:
+                    time_left = 3600 - time_diff
+                    hours = int(time_left // 3600)
+                    minutes = int((time_left % 3600) // 60)
+                    
+                    embed = BotTheme.create_embed(
+                        title=convert_to_font("⏰ слишком рано"),
+                        description=convert_to_font(f"следующий бросок через: {hours}ч {minutes}м"),
+                        embed_type='error'
+                    )
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    return
+            
+            result = random.randint(1, 6)
+            xp_reward = result * 5
+            
+            # Сохраняем старый XP для проверки повышения ранга
+            old_xp = user_data.get('xp', 0)
+            
+            user_data['xp'] = old_xp + xp_reward
+            user_data['games_played'] = user_data.get('games_played', 0) + 1
+            
+            if result >= 5:
+                user_data['games_won'] = user_data.get('games_won', 0) + 1
+            
+            user_data['last_dice'] = datetime.now().isoformat()
+            
+            # Проверяем повышение ранга
+            db.check_rank_up(user_data)
+            db.save_user(str(interaction.user.id), user_data)
+            
+            dice_emoji = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("🎲 бросок кубика"),
+                description=convert_to_font(f"выпало: {dice_emoji[result-1]} {result}"),
+                embed_type='info'
+            )
             embed.add_field(
-                name=convert_to_font("🎉"),
-                value=convert_to_font("отличный бросок!"),
+                name=convert_to_font("💎 получено xp"),
+                value=convert_to_font(f"+{xp_reward}"),
                 inline=True
             )
-        
-        embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
-        
-        await interaction.followup.send(embed=embed)
+            
+            if result >= 5:
+                embed.add_field(
+                    name=convert_to_font("🎉"),
+                    value=convert_to_font("отличный бросок!"),
+                    inline=True
+                )
+            
+            embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
+            
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception as e:
+            print(f"❌ Ошибка в /dice: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Пытаемся отправить ошибку пользователю
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        convert_to_font(f"❌ ошибка: {e}"),
+                        ephemeral=True
+                    )
+                else:
+                    await interaction.followup.send(
+                        convert_to_font(f"❌ ошибка: {e}"),
+                        ephemeral=True
+                    )
+            except:
+                pass
     
     @bot.tree.command(name="coinflip", description="Подбросить монетку (1 раз в час)")
     @app_commands.describe(choice="Твой выбор: орёл или решка")
@@ -611,74 +629,92 @@ async def setup_slash_commands(bot, db):
         from datetime import datetime, timedelta
         import random
         
-        # Отложенный ответ (на случай если обработка займёт время)
-        await interaction.response.defer()
-        
-        user_data = db.get_user(str(interaction.user.id))
-        
-        # Проверка кулдауна
-        if 'last_coinflip' in user_data and user_data['last_coinflip']:
-            last_coinflip = datetime.fromisoformat(user_data['last_coinflip'])
-            time_diff = (datetime.now() - last_coinflip).total_seconds()
+        try:
+            user_data = db.get_user(str(interaction.user.id))
             
-            if time_diff < 3600:
-                time_left = 3600 - time_diff
-                hours = int(time_left // 3600)
-                minutes = int((time_left % 3600) // 60)
+            # Проверка кулдауна
+            if 'last_coinflip' in user_data and user_data['last_coinflip']:
+                last_coinflip = datetime.fromisoformat(user_data['last_coinflip'])
+                time_diff = (datetime.now() - last_coinflip).total_seconds()
                 
-                embed = BotTheme.create_embed(
-                    title=convert_to_font("⏰ слишком рано"),
-                    description=convert_to_font(f"следующее подбрасывание через: {hours}ч {minutes}м"),
-                    embed_type='error'
-                )
-                await interaction.followup.send(embed=embed, ephemeral=True)
-                return
-        
-        result = random.choice(['орёл', 'решка'])
-        won = result == choice
-        
-        # Сохраняем старый XP для проверки повышения ранга
-        old_xp = user_data.get('xp', 0)
-        
-        user_data['games_played'] = user_data.get('games_played', 0) + 1
-        
-        if won:
-            user_data['games_won'] = user_data.get('games_won', 0) + 1
-            xp_reward = 25
-        else:
-            xp_reward = 5
-        
-        user_data['xp'] = old_xp + xp_reward
-        user_data['last_coinflip'] = datetime.now().isoformat()
-        
-        # Проверяем повышение ранга
-        db.check_rank_up(user_data)
-        db.save_user(str(interaction.user.id), user_data)
-        
-        embed = BotTheme.create_embed(
-            title=convert_to_font("🪙 подбрасывание монетки"),
-            description=convert_to_font("🎉 ты выиграл!" if won else "😔 ты проиграл..."),
-            embed_type='success' if won else 'error'
-        )
-        embed.add_field(
-            name=convert_to_font("твой выбор"),
-            value=convert_to_font(choice.capitalize()),
-            inline=True
-        )
-        embed.add_field(
-            name=convert_to_font("результат"),
-            value=convert_to_font(result.capitalize()),
-            inline=True
-        )
-        embed.add_field(
-            name=convert_to_font("💎 получено xp"),
-            value=convert_to_font(f"+{xp_reward}"),
-            inline=False
-        )
-        
-        embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
-        
-        await interaction.followup.send(embed=embed)
+                if time_diff < 3600:
+                    time_left = 3600 - time_diff
+                    hours = int(time_left // 3600)
+                    minutes = int((time_left % 3600) // 60)
+                    
+                    embed = BotTheme.create_embed(
+                        title=convert_to_font("⏰ слишком рано"),
+                        description=convert_to_font(f"следующее подбрасывание через: {hours}ч {minutes}м"),
+                        embed_type='error'
+                    )
+                    await interaction.response.send_message(embed=embed, ephemeral=True)
+                    return
+            
+            result = random.choice(['орёл', 'решка'])
+            won = result == choice
+            
+            # Сохраняем старый XP для проверки повышения ранга
+            old_xp = user_data.get('xp', 0)
+            
+            user_data['games_played'] = user_data.get('games_played', 0) + 1
+            
+            if won:
+                user_data['games_won'] = user_data.get('games_won', 0) + 1
+                xp_reward = 25
+            else:
+                xp_reward = 5
+            
+            user_data['xp'] = old_xp + xp_reward
+            user_data['last_coinflip'] = datetime.now().isoformat()
+            
+            # Проверяем повышение ранга
+            db.check_rank_up(user_data)
+            db.save_user(str(interaction.user.id), user_data)
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("🪙 подбрасывание монетки"),
+                description=convert_to_font("🎉 ты выиграл!" if won else "😔 ты проиграл..."),
+                embed_type='success' if won else 'error'
+            )
+            embed.add_field(
+                name=convert_to_font("твой выбор"),
+                value=convert_to_font(choice.capitalize()),
+                inline=True
+            )
+            embed.add_field(
+                name=convert_to_font("результат"),
+                value=convert_to_font(result.capitalize()),
+                inline=True
+            )
+            embed.add_field(
+                name=convert_to_font("💎 получено xp"),
+                value=convert_to_font(f"+{xp_reward}"),
+                inline=False
+            )
+            
+            embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
+            
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception as e:
+            print(f"❌ Ошибка в /coinflip: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Пытаемся отправить ошибку пользователю
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        convert_to_font(f"❌ ошибка: {e}"),
+                        ephemeral=True
+                    )
+                else:
+                    await interaction.followup.send(
+                        convert_to_font(f"❌ ошибка: {e}"),
+                        ephemeral=True
+                    )
+            except:
+                pass
     
     @bot.tree.command(name="ticket", description="Создать тикет поддержки")
     async def ticket_slash(interaction: discord.Interaction):
