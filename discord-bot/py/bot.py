@@ -43,8 +43,6 @@ else:
     print("   4. Settings → Restart")
     print("═══════════════════════════════════════════════════════════════")
     from database import db
-
-from font_converter import convert_to_font
 import tickets_system
 import verification_system
 from commands_manager import get_commands_text
@@ -58,6 +56,8 @@ import game_integration
 import slash_commands
 import views
 
+print("✅ Используется JSON база данных")
+
 # Настройка intents
 intents = discord.Intents.default()
 intents.message_content = True
@@ -65,7 +65,7 @@ intents.members = True
 intents.guilds = True
 intents.presences = True
 
-# Создание бота (префикс ! оставлен только для админских команд)
+# Создание бота
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 # Статистика бота
@@ -186,7 +186,46 @@ def update_daily_streak(user):
     user['last_daily_date'] = today.isoformat()
     return user['daily_streak']
 
-# Функция handle_rank_up удалена - роли выдаются автоматически фоновой задачей
+async def handle_rank_up(ctx, user, old_xp):
+    """
+    Обработать повышение ранга с выдачей роли
+    
+    Args:
+        ctx: Discord Context
+        user: Данные пользователя
+        old_xp: Старое количество XP
+    
+    Returns:
+        bool: True если была выдана новая роль
+    """
+    new_xp = user.get('xp', 0)
+    
+    # Определяем старую и новую роль по XP
+    old_tier = rank_roles.get_role_for_xp(old_xp)
+    new_tier = rank_roles.get_role_for_xp(new_xp)
+    
+    # Проверяем, изменилась ли роль
+    if old_tier != new_tier and new_tier:
+        # Выдаём новую роль
+        try:
+            result = await rank_roles.update_user_rank_role(ctx.author, new_xp)
+            
+            if result['success'] and result['action'] == 'added':
+                # Отправляем уведомление с информацией о роли
+                await rank_roles.send_rank_up_notification(
+                    ctx,
+                    ctx.author,
+                    old_xp,
+                    new_xp,
+                    old_tier,
+                    new_tier,
+                    result.get('role')
+                )
+                return True
+        except Exception as e:
+            print(f"❌ Ошибка выдачи роли: {e}")
+    
+    return False
 
 
 # ==================== События бота ====================
@@ -217,13 +256,13 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # Настройка интеграции с игрой (регистрация команд ПЕРЕД синхронизацией)
+    # Настройка интеграции с игрой
     print("🎮 Настройка интеграции с TTFD Game...")
     try:
         global game_int
         game_int = game_integration.GameIntegration(db)
         game_integration.setup_game_commands(bot, db, game_int)
-        print("✅ Команды игры зарегистрированы")
+        print("✅ Интеграция с игрой настроена")
     except Exception as e:
         print(f"❌ Ошибка настройки интеграции с игрой: {e}")
         import traceback
@@ -231,33 +270,16 @@ async def on_ready():
     
     # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
     try:
-        if config.GUILD_ID:
-            guild = discord.Object(id=config.GUILD_ID)
-            # Очищаем старые команды перед синхронизацией (убирает кеш)
-            bot.tree.clear_commands(guild=guild)
-            synced = await bot.tree.sync(guild=guild)
-            print(f"✅ Синхронизировано {len(synced)} slash команд с сервером (guild sync)")
-            
-            # Выводим список синхронизированных команд для отладки
-            print("📋 Список синхронизированных команд:")
-            for cmd in sorted(synced, key=lambda x: x.name):
-                print(f"   /{cmd.name} - {cmd.description}")
-        else:
-            synced = await bot.tree.sync()
-            print(f"✅ Синхронизировано {len(synced)} slash команд глобально")
+        guild = discord.Object(id=config.GUILD_ID)
+        # Очищаем кеш команд перед синхронизацией
+        bot.tree.clear_commands(guild=guild)
+        # Синхронизируем с guild для мгновенного появления
+        synced = await bot.tree.sync(guild=guild)
+        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
         import traceback
         traceback.print_exc()
-    
-    # Обновление списка команд в канале (ОТКЛЮЧЕНО - дублирует сообщения)
-    # print("🔄 Обновление списка команд...")
-    # try:
-    #     await update_commands_list()
-    # except Exception as e:
-    #     print(f"❌ Ошибка при обновлении списка команд: {e}")
-    #     import traceback
-    #     traceback.print_exc()
     
     # Настройка системы верификации
     print("🔄 Настройка системы верификации...")
@@ -289,11 +311,6 @@ async def on_ready():
     # Запуск фоновых задач
     if not update_bot_status.is_running():
         update_bot_status.start()
-        print("✅ Запущена задача обновления статуса")
-    
-    if not auto_sync_rank_roles.is_running():
-        auto_sync_rank_roles.start()
-        print("✅ Запущена задача автоматической синхронизации ролей (каждую минуту)")
 
 @bot.event
 async def on_command(ctx):
@@ -347,46 +364,6 @@ async def update_bot_status():
         discord.Activity(type=discord.ActivityType.listening, name="ваши команды"),
     ]
     await bot.change_presence(activity=random.choice(statuses))
-
-@tasks.loop(minutes=1)
-async def auto_sync_rank_roles():
-    """
-    Автоматическая синхронизация ролей каждую минуту
-    Проверяет XP всех пользователей и выдаёт роли
-    """
-    try:
-        print("🔄 Автоматическая проверка ролей...")
-        
-        all_users = db.get_all_users()
-        updated_count = 0
-        
-        for user_id, user_data in all_users.items():
-            try:
-                xp = user_data.get('xp', 0)
-                
-                # Находим пользователя на всех серверах
-                for guild in bot.guilds:
-                    member = guild.get_member(int(user_id))
-                    
-                    if member:
-                        result = await rank_roles.update_user_rank_role(member, xp)
-                        
-                        if result['success'] and result['action'] == 'added':
-                            updated_count += 1
-                            print(f"✅ Автоматически выдана роль {result.get('tier')} пользователю {member.name}")
-                        
-                        break  # Нашли пользователя, выходим из цикла
-            
-            except Exception as e:
-                print(f"⚠️ Ошибка проверки роли для {user_id}: {e}")
-        
-        if updated_count > 0:
-            print(f"✅ Автоматически обновлено ролей: {updated_count}")
-    
-    except Exception as e:
-        print(f"❌ Ошибка автоматической синхронизации ролей: {e}")
-        import traceback
-        traceback.print_exc()
 
 
 # ==================== Обновление списка команд ====================
@@ -450,501 +427,6 @@ async def update_commands_list():
 
 
 # ==================== Команды ====================
-
-@bot.command(name='ping')
-async def ping(ctx):
-    """Проверка задержки бота"""
-    latency = round(bot.latency * 1000)
-    embed = BotTheme.create_embed(
-        title=convert_to_font("🏓 понг!"),
-        description=convert_to_font(f"задержка: {latency}ms"),
-        embed_type='info'
-    )
-    await ctx.send(embed=embed)
-
-@bot.command(name='help')
-async def help_command(ctx):
-    """Список всех команд"""
-    embed = BotTheme.create_embed(
-        title=convert_to_font("📋 список команд"),
-        description=convert_to_font("все команды бота в одном месте!"),
-        embed_type='info'
-    )
-    embed.add_field(
-        name=convert_to_font("📍 канал команд"),
-        value=f"<#{COMMANDS_CHANNEL_ID}>",
-        inline=False
-    )
-    embed.add_field(
-        name=convert_to_font("💡 как использовать"),
-        value=convert_to_font("перейди в канал выше чтобы увидеть все команды"),
-        inline=False
-    )
-    await ctx.send(embed=embed)
-
-@bot.command(name='stats')
-async def stats(ctx):
-    """Статистика бота"""
-    if bot.stats['start_time']:
-        uptime = datetime.now() - bot.stats['start_time']
-        hours, remainder = divmod(int(uptime.total_seconds()), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        uptime_str = f"{hours}ч {minutes}м {seconds}с"
-    else:
-        uptime_str = "Неизвестно"
-    
-    embed = BotTheme.create_embed(
-        title=convert_to_font("📊 статистика бота"),
-        embed_type='info'
-    )
-    embed.timestamp = datetime.now()
-    embed.add_field(name=convert_to_font("⏰ аптайм"), value=convert_to_font(uptime_str), inline=True)
-    embed.add_field(name=convert_to_font("🌐 серверов"), value=convert_to_font(str(len(bot.guilds))), inline=True)
-    embed.add_field(name=convert_to_font("👥 пользователей"), value=convert_to_font(str(len(bot.users))), inline=True)
-    embed.add_field(name=convert_to_font("📝 команд использовано"), value=convert_to_font(str(bot.stats['commands_used'])), inline=True)
-    embed.add_field(name=convert_to_font("💬 сообщений обработано"), value=convert_to_font(str(bot.stats['messages_seen'])), inline=True)
-    embed.add_field(name=convert_to_font("📡 задержка"), value=convert_to_font(f"{round(bot.latency * 1000)}ms"), inline=True)
-    
-    await ctx.send(embed=embed)
-
-@bot.command(name='profile')
-async def profile(ctx, member: discord.Member = None):
-    """Профиль пользователя"""
-    member = member or ctx.author
-    user = db.get_user(str(member.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ пользователь не найден в базе данных!"))
-        return
-    
-    rank_info = db.get_rank_info(user['rank_id'])
-    next_rank = get_next_rank_info(user)
-    streak = get_daily_streak(user)
-    
-    embed = profile_embed(
-        title=convert_to_font(f"👤 профиль {member.display_name}")
-    )
-    embed.set_thumbnail(url=member.display_avatar.url)
-    embed.add_field(name=convert_to_font("🏆 ранг"), value=convert_to_font(rank_info['name']), inline=True)
-    embed.add_field(name=convert_to_font("⭐ xp"), value=convert_to_font(str(user['xp'])), inline=True)
-    embed.add_field(name=convert_to_font("🔥 серия дней"), value=convert_to_font(str(streak)), inline=True)
-    
-    if next_rank:
-        embed.add_field(
-            name=convert_to_font("📈 до следующего ранга"),
-            value=convert_to_font(f"{next_rank['xp_needed']} xp\n{next_rank['progress_bar']}"),
-            inline=False
-        )
-    
-    if 'games_played' in user:
-        win_rate = (user.get('games_won', 0) / user['games_played'] * 100) if user['games_played'] > 0 else 0
-        embed.add_field(name=convert_to_font("🎮 игр сыграно"), value=convert_to_font(str(user['games_played'])), inline=True)
-        embed.add_field(name=convert_to_font("🏅 побед"), value=convert_to_font(str(user.get('games_won', 0))), inline=True)
-        embed.add_field(name=convert_to_font("📊 винрейт"), value=convert_to_font(f"{win_rate:.1f}%"), inline=True)
-    
-    await ctx.send(embed=embed)
-
-@bot.command(name='rank')
-async def rank(ctx):
-    """Текущий ранг пользователя"""
-    user = db.get_user(str(ctx.author.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ Ты не зарегистрирован в системе!"))
-        return
-    
-    rank_info = db.get_rank_info(user['rank_id'])
-    next_rank = get_next_rank_info(user)
-    
-    embed = discord.Embed(
-        title=convert_to_font(f"🏆 Твой ранг: {rank_info['name']}"),
-        color=discord.Color.gold()
-    )
-    embed.add_field(name=convert_to_font("⭐ XP"), value=convert_to_font(str(user['xp'])), inline=True)
-    
-    if next_rank:
-        embed.add_field(
-            name=convert_to_font("📈 До следующего ранга"),
-            value=convert_to_font(f"{next_rank['xp_needed']} XP"),
-            inline=True
-        )
-        embed.add_field(
-            name=convert_to_font("Прогресс"),
-            value=convert_to_font(next_rank['progress_bar']),
-            inline=False
-        )
-    else:
-        embed.add_field(name=convert_to_font("🎉"), value=convert_to_font("Максимальный ранг!"), inline=False)
-    
-    await ctx.send(embed=embed)
-
-@bot.command(name='top')
-async def top(ctx, category: str = 'xp'):
-    """Таблица лидеров"""
-    category = category.lower()
-    
-    if category == 'voice':
-        # Топ по войсу
-        top_users = voice_tracking.get_top_users(10)
-        
-        if not top_users:
-            await ctx.send(convert_to_font("❌ нет данных о войс активности"))
-            return
-        
-        embed = BotTheme.create_embed(
-            title=convert_to_font("🎤 топ-10 по войсу"),
-            description=convert_to_font("самые активные в голосовых каналах"),
-            embed_type='info'
-        )
-        embed.timestamp = datetime.now()
-        
-        medals = ["🥇", "🥈", "🥉"]
-        
-        for idx, user_data in enumerate(top_users, 1):
-            try:
-                member = await bot.fetch_user(int(user_data['user_id']))
-                medal = medals[idx-1] if idx <= 3 else f"{idx}."
-                time_str = voice_tracking.format_time(user_data['total_time'])
-                
-                embed.add_field(
-                    name=convert_to_font(f"{medal} {member.name}"),
-                    value=convert_to_font(f"время: {time_str} | сессий: {user_data['sessions_count']}"),
-                    inline=False
-                )
-            except:
-                continue
-        
-        # Добавляем топ каналов
-        top_channels = voice_tracking.get_top_channels(3)
-        if top_channels:
-            channels_text = ""
-            for channel_data in top_channels:
-                time_str = voice_tracking.format_time(channel_data['total_time'])
-                channels_text += f"• {convert_to_font(channel_data['channel_name'])}: {convert_to_font(time_str)}\n"
-            
-            embed.add_field(
-                name=convert_to_font("🔥 топ каналов"),
-                value=channels_text,
-                inline=False
-            )
-        
-        # Добавляем самую длительную сессию
-        longest = voice_tracking.get_longest_session()
-        if longest:
-            try:
-                member = await bot.fetch_user(int(longest['user_id']))
-                time_str = voice_tracking.format_time(longest['duration'])
-                embed.add_field(
-                    name=convert_to_font("⏱️ рекорд сессии"),
-                    value=convert_to_font(f"{member.name}: {time_str}"),
-                    inline=False
-                )
-            except:
-                pass
-        
-        await ctx.send(embed=embed)
-    
-    else:
-        # Топ по XP (по умолчанию)
-        users = db.get_all_users()
-        
-        # Сортируем по XP
-        sorted_users = sorted(users.items(), key=lambda x: x[1].get('xp', 0), reverse=True)
-        
-        # Создаём страницы по 10 пользователей
-        pages = []
-        items_per_page = 10
-        total_pages = (len(sorted_users) + items_per_page - 1) // items_per_page
-        
-        for page_num in range(total_pages):
-            start_idx = page_num * items_per_page
-            end_idx = min(start_idx + items_per_page, len(sorted_users))
-            page_users = sorted_users[start_idx:end_idx]
-            
-            embed = BotTheme.create_embed(
-                title=convert_to_font("🏆 топ по xp"),
-                description=convert_to_font("самые активные игроки"),
-                embed_type='info'
-            )
-            embed.timestamp = datetime.now()
-            
-            medals = ["🥇", "🥈", "🥉"]
-            
-            for idx, (user_id, user_data) in enumerate(page_users, start=start_idx + 1):
-                try:
-                    member = await bot.fetch_user(int(user_id))
-                    rank_info = db.get_rank_info(user_data['rank_id'])
-                    medal = medals[idx-1] if idx <= 3 else f"{idx}."
-                    
-                    embed.add_field(
-                        name=convert_to_font(f"{medal} {member.name}"),
-                        value=convert_to_font(f"ранг: {rank_info['name']} | xp: {user_data['xp']}"),
-                        inline=False
-                    )
-                except:
-                    continue
-            
-            embed.set_footer(text=convert_to_font(f"страница {page_num + 1}/{total_pages} • используй !top voice для топа по войсу"))
-            pages.append(embed)
-        
-        # Если страниц больше 1 - используем пагинацию
-        if len(pages) > 1:
-            view = views.TopPaginator(pages)
-            await ctx.send(embed=pages[0], view=view)
-        else:
-            await ctx.send(embed=pages[0])
-
-@bot.command(name='daily')
-async def daily(ctx):
-    """Ежедневная награда"""
-    user = db.get_user(str(ctx.author.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ ты не зарегистрирован в системе!"))
-        return
-    
-    # Проверяем, можно ли получить награду
-    if 'last_daily_date' in user and user['last_daily_date']:
-        last_date = datetime.fromisoformat(user['last_daily_date']).date()
-        today = datetime.now().date()
-        
-        if last_date == today:
-            next_daily = datetime.combine(today + timedelta(days=1), datetime.min.time())
-            time_left = next_daily - datetime.now()
-            hours = int(time_left.total_seconds() // 3600)
-            minutes = int((time_left.total_seconds() % 3600) // 60)
-            
-            await ctx.send(convert_to_font(f"⏰ ты уже получил награду сегодня! приходи через {hours}ч {minutes}м"))
-            return
-    
-    # Обновляем серию
-    streak = update_daily_streak(user)
-    
-    # Базовая награда + бонус за серию
-    base_reward = 50
-    streak_bonus = min(streak * 10, 200)  # Максимум +200 XP
-    total_reward = base_reward + streak_bonus
-    
-    # Сохраняем старый XP
-    old_xp = user.get('xp', 0)
-    
-    # Добавляем XP
-    user['xp'] = old_xp + total_reward
-    
-    # Проверяем повышение ранга
-    db.check_rank_up(user)
-    
-    db.save_user(str(ctx.author.id), user)
-    
-    # Отправляем базовое сообщение
-    embed = BotTheme.create_embed(
-        title=convert_to_font("🎁 ежедневная награда получена!"),
-        embed_type='success'
-    )
-    embed.add_field(name=convert_to_font("💰 получено xp"), value=convert_to_font(f"+{total_reward}"), inline=True)
-    embed.add_field(name=convert_to_font("🔥 серия дней"), value=convert_to_font(str(streak)), inline=True)
-    
-    if streak > 1:
-        embed.add_field(name=convert_to_font("🎉 бонус за серию"), value=convert_to_font(f"+{streak_bonus} xp"), inline=False)
-    
-    await ctx.send(embed=embed)
-    
-    # Роли выдаются автоматически фоновой задачей каждую минуту
-
-@bot.command(name='link')
-async def link(ctx):
-    """Актуальные ссылки"""
-    embed = BotTheme.create_embed(
-        title=convert_to_font("🔗 актуальные ссылки"),
-        description=convert_to_font("все важные ссылки в одном месте!"),
-        embed_type='info'
-    )
-    embed.add_field(
-        name=convert_to_font("🌐 сайт"),
-        value="[перейти на сайт](https://bubbly-blessing-production-0c06.up.railway.app/)",
-        inline=False
-    )
-    embed.add_field(
-        name=convert_to_font("💬 discord"),
-        value="[сервер discord](https://discord.gg/your-invite)",
-        inline=False
-    )
-    await ctx.send(embed=embed)
-
-@bot.command(name='dice')
-async def dice(ctx):
-    """Бросить кубик (1 раз в час)"""
-    user = db.get_user(str(ctx.author.id))
-    if not user:
-        await ctx.send(convert_to_font("❌ ты не зарегистрирован в системе!"))
-        return
-    
-    # Проверка кулдауна (1 час)
-    if 'last_dice' in user and user['last_dice']:
-        last_dice = datetime.fromisoformat(user['last_dice'])
-        time_diff = (datetime.now() - last_dice).total_seconds()
-        
-        if time_diff < 3600:  # 1 час
-            time_left = 3600 - time_diff
-            hours = int(time_left // 3600)
-            minutes = int((time_left % 3600) // 60)
-            
-            await ctx.send(convert_to_font(f"⏰ ты уже бросал кубик! приходи через {hours}ч {minutes}м"))
-            return
-    
-    result = random.randint(1, 6)
-    
-    # Сохраняем старый XP
-    old_xp = user.get('xp', 0)
-    
-    # Обновляем статистику игр
-    user['games_played'] = user.get('games_played', 0) + 1
-    
-    # Награда за игру
-    xp_reward = result * 5
-    user['xp'] = old_xp + xp_reward
-    
-    if result >= 5:
-        user['games_won'] = user.get('games_won', 0) + 1
-    
-    # Сохраняем время последнего броска
-    user['last_dice'] = datetime.now().isoformat()
-    
-    db.save_user(str(ctx.author.id), user)
-    
-    dice_emoji = ["🎲", "🎲", "🎲", "🎲", "🎲", "🎲"]
-    
-    embed = game_embed(
-        title=convert_to_font("🎲 бросок кубика")
-    )
-    embed.description = convert_to_font(f"выпало: {dice_emoji[result-1]} {result}")
-    embed.add_field(name=convert_to_font("💰 получено xp"), value=convert_to_font(f"+{xp_reward}"), inline=True)
-    
-    if result >= 5:
-        embed.add_field(name=convert_to_font("🎉"), value=convert_to_font("отличный бросок!"), inline=True)
-    
-    embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
-    
-    await ctx.send(embed=embed)
-    
-    # Роли выдаются автоматически фоновой задачей каждую минуту
-
-@bot.command(name='coinflip')
-async def coinflip(ctx, choice: str = None):
-    """Подбросить монетку (1 раз в час)"""
-    user = db.get_user(str(ctx.author.id))
-    if not user:
-        await ctx.send(convert_to_font("❌ ты не зарегистрирован в системе!"))
-        return
-    
-    if not choice or choice.lower() not in ['орёл', 'решка', 'орел']:
-        await ctx.send(convert_to_font("❌ укажи свой выбор: !coinflip орёл или !coinflip решка"))
-        return
-    
-    # Проверка кулдауна (1 час)
-    if 'last_coinflip' in user and user['last_coinflip']:
-        last_coinflip = datetime.fromisoformat(user['last_coinflip'])
-        time_diff = (datetime.now() - last_coinflip).total_seconds()
-        
-        if time_diff < 3600:  # 1 час
-            time_left = 3600 - time_diff
-            hours = int(time_left // 3600)
-            minutes = int((time_left % 3600) // 60)
-            
-            await ctx.send(convert_to_font(f"⏰ ты уже подбрасывал монетку! приходи через {hours}ч {minutes}м"))
-            return
-    
-    result = random.choice(['орёл', 'решка'])
-    user_choice = 'орёл' if choice.lower() in ['орёл', 'орел'] else 'решка'
-    won = result == user_choice
-    
-    # Сохраняем старый XP
-    old_xp = user.get('xp', 0)
-    
-    # Обновляем статистику
-    user['games_played'] = user.get('games_played', 0) + 1
-    
-    if won:
-        user['games_won'] = user.get('games_won', 0) + 1
-        xp_reward = 25
-        user['xp'] = old_xp + xp_reward
-    else:
-        xp_reward = 5
-        user['xp'] = old_xp + xp_reward
-    
-    # Сохраняем время последнего подбрасывания
-    user['last_coinflip'] = datetime.now().isoformat()
-    
-    db.save_user(str(ctx.author.id), user)
-    
-    embed = game_embed(
-        title=convert_to_font("🪙 подбрасывание монетки")
-    )
-    embed.add_field(name=convert_to_font("твой выбор"), value=convert_to_font(user_choice.capitalize()), inline=True)
-    embed.add_field(name=convert_to_font("результат"), value=convert_to_font(result.capitalize()), inline=True)
-    embed.add_field(name=convert_to_font("💰 получено xp"), value=convert_to_font(f"+{xp_reward}"), inline=False)
-    
-    if won:
-        embed.description = convert_to_font("🎉 ты выиграл!")
-    else:
-        embed.description = convert_to_font("😔 ты проиграл...")
-    
-    embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
-    
-    await ctx.send(embed=embed)
-    
-    # Роли выдаются автоматически фоновой задачей каждую минуту
-
-@bot.command(name='clear')
-async def clear(ctx, amount: int = 10):
-    """Очистить сообщения (только для администраторов в канале команд)"""
-    # Проверка прав администратора
-    if not is_admin(ctx):
-        await ctx.send(convert_to_font("❌ у тебя нет прав для использования этой команды!"))
-        return
-    
-    # Проверка что команда используется в канале команд
-    if not commands_channel.is_commands_channel(ctx.channel.id):
-        try:
-            warning_msg = await ctx.send(
-                f"{ctx.author.mention} " + convert_to_font(f"эта команда работает только в <#{commands_channel.COMMANDS_CHANNEL_ID}>")
-            )
-            await ctx.message.delete()
-            await asyncio.sleep(10)
-            await warning_msg.delete()
-        except:
-            pass
-        return
-    
-    if amount < 1 or amount > 100:
-        await ctx.send(convert_to_font("❌ укажи число от 1 до 100!"))
-        return
-    
-    deleted = await ctx.channel.purge(limit=amount + 1)
-    
-    embed = BotTheme.create_embed(
-        title=convert_to_font("🗑️ сообщения удалены"),
-        description=convert_to_font(f"удалено сообщений: {len(deleted) - 1}"),
-        embed_type='success'
-    )
-    msg = await ctx.send(embed=embed)
-    
-    await asyncio.sleep(3)
-    await msg.delete()
-
-
-# ==================== Команды тикетов ====================
-
-@bot.command(name='ticket')
-async def ticket(ctx):
-    """Создать тикет поддержки"""
-    await tickets_system.create_ticket(ctx, bot)
-
-@bot.command(name='close')
-async def close(ctx):
-    """Закрыть тикет"""
-    await tickets_system.close_ticket(ctx, bot)
-
 
 # ==================== Команды для администраторов ====================
 
@@ -1127,217 +609,6 @@ async def sync_rank_roles(ctx):
         await ctx.send(convert_to_font(f"❌ ошибка синхронизации: {e}"))
 
 
-# ==================== Команды магазина ====================
-
-@bot.command(name='shop')
-async def shop(ctx, category: str = 'all'):
-    """Магазин предметов"""
-    valid_categories = ['all', 'roles', 'boosts', 'cosmetics', 'special']
-    
-    if category not in valid_categories:
-        category = 'all'
-    
-    embed = shop_system.get_shop_embed_page(category=category)
-    await ctx.send(embed=embed)
-
-@bot.command(name='buy')
-async def buy(ctx, item_id: str = None):
-    """Купить предмет"""
-    if not item_id:
-        await ctx.send(convert_to_font("❌ укажи id предмета: !buy [id]"))
-        return
-    
-    success, embed = await shop_system.buy_item_legacy(ctx, bot, db, item_id)
-    await ctx.send(embed=embed)
-
-@bot.command(name='inventory')
-async def inventory(ctx, member: discord.Member = None):
-    """Инвентарь пользователя"""
-    member = member or ctx.author
-    user = db.get_user(str(member.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ пользователь не зарегистрирован!"))
-        return
-    
-    embed = shop_system.get_inventory_embed(user, bot)
-    await ctx.send(embed=embed)
-
-@bot.command(name='balance')
-async def balance(ctx, member: discord.Member = None):
-    """Баланс монет"""
-    member = member or ctx.author
-    user = db.get_user(str(member.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ пользователь не зарегистрирован!"))
-        return
-    
-    embed = profile_embed(
-        title=convert_to_font(f"💰 баланс {member.display_name}")
-    )
-    embed.add_field(
-        name=convert_to_font("монеты"),
-        value=convert_to_font(str(user.get('coins', 0))),
-        inline=True
-    )
-    embed.add_field(
-        name=convert_to_font("xp"),
-        value=convert_to_font(str(user.get('xp', 0))),
-        inline=True
-    )
-    
-    await ctx.send(embed=embed)
-
-@bot.command(name='pay')
-async def pay(ctx, member: discord.Member = None, amount: int = 0):
-    """Перевести монеты другому пользователю"""
-    if not member or amount <= 0:
-        await ctx.send(convert_to_font("❌ использование: !pay [@пользователь] [сумма]"))
-        return
-    
-    if member == ctx.author:
-        await ctx.send(convert_to_font("❌ нельзя перевести монеты самому себе!"))
-        return
-    
-    if member.bot:
-        await ctx.send(convert_to_font("❌ нельзя перевести монеты боту!"))
-        return
-    
-    sender = db.get_user(str(ctx.author.id))
-    receiver = db.get_user(str(member.id))
-    
-    if not sender or not receiver:
-        await ctx.send(convert_to_font("❌ пользователь не зарегистрирован!"))
-        return
-    
-    if sender['coins'] < amount:
-        await ctx.send(convert_to_font(f"❌ недостаточно монет! у тебя: {sender['coins']}"))
-        return
-    
-    # Перевод монет
-    sender['coins'] -= amount
-    receiver['coins'] = receiver.get('coins', 0) + amount
-    
-    db.save_user(str(ctx.author.id), sender)
-    db.save_user(str(member.id), receiver)
-    
-    embed = success_embed(
-        title=convert_to_font("💸 перевод выполнен!"),
-        description=convert_to_font(f"{ctx.author.mention} → {member.mention}")
-    )
-    embed.add_field(
-        name=convert_to_font("сумма"),
-        value=convert_to_font(f"{amount} монет"),
-        inline=True
-    )
-    embed.add_field(
-        name=convert_to_font("твой баланс"),
-        value=convert_to_font(f"{sender['coins']} монет"),
-        inline=True
-    )
-    
-    await ctx.send(embed=embed)
-
-@bot.command(name='work')
-async def work(ctx):
-    """Поработать и заработать монеты"""
-    user = db.get_user(str(ctx.author.id))
-    
-    if not user:
-        await ctx.send(convert_to_font("❌ ты не зарегистрирован!"))
-        return
-    
-    # Проверка кулдауна (1 час)
-    if 'last_work' in user and user['last_work']:
-        last_work = datetime.fromisoformat(user['last_work'])
-        time_diff = (datetime.now() - last_work).total_seconds()
-        
-        if time_diff < 3600:  # 1 час
-            time_left = 3600 - time_diff
-            hours = int(time_left // 3600)
-            minutes = int((time_left % 3600) // 60)
-            
-            await ctx.send(convert_to_font(f"⏰ ты уже работал! приходи через {hours}ч {minutes}м"))
-            return
-    
-    # Сохраняем старый XP для проверки повышения роли
-    old_xp = user.get('xp', 0)
-    
-    # Список работ
-    jobs = [
-        ("программист", "написал код для сайта", 150, 250),
-        ("дизайнер", "создал крутой дизайн", 120, 200),
-        ("модератор", "почистил чат от спама", 80, 150),
-        ("стример", "провёл стрим на 100 зрителей", 200, 300),
-        ("музыкант", "записал новый трек", 100, 180),
-        ("художник", "нарисовал арт", 90, 170),
-        ("писатель", "написал статью", 70, 140),
-        ("геймер", "выиграл турнир", 180, 280),
-    ]
-    
-    job_name, job_desc, min_reward, max_reward = random.choice(jobs)
-    reward = random.randint(min_reward, max_reward)
-    
-    # Бонус за ранг (1% за ранг)
-    rank_bonus = int(reward * (user['rank_id'] / 100))
-    
-    # Применяем буст монет
-    total_reward = reward + rank_bonus
-    total_reward, boost_bonus = shop_system.apply_boost_to_reward(user, 'coins', total_reward)
-    
-    # Добавляем монеты
-    user['coins'] = user.get('coins', 0) + total_reward
-    user['last_work'] = datetime.now().isoformat()
-    
-    db.save_user(str(ctx.author.id), user)
-    
-    # Создаём embed
-    embed = BotTheme.create_embed(
-        title=convert_to_font("💼 работа"),
-        description=convert_to_font(f"ты поработал как {job_name}"),
-        embed_type='info'
-    )
-    
-    embed.add_field(
-        name=convert_to_font("что сделал"),
-        value=convert_to_font(job_desc),
-        inline=False
-    )
-    
-    embed.add_field(
-        name=convert_to_font("💰 заработано"),
-        value=convert_to_font(f"{total_reward} монет"),
-        inline=True
-    )
-    
-    if rank_bonus > 0:
-        embed.add_field(
-            name=convert_to_font("🎁 бонус за ранг"),
-            value=convert_to_font(f"+{rank_bonus} монет"),
-            inline=True
-        )
-    
-    if boost_bonus > 0:
-        embed.add_field(
-            name=convert_to_font("⚡ буст монет"),
-            value=convert_to_font(f"+{boost_bonus} монет"),
-            inline=True
-        )
-    
-    embed.add_field(
-        name=convert_to_font("баланс"),
-        value=convert_to_font(f"{user['coins']} монет"),
-        inline=False
-    )
-    
-    embed.set_footer(text=convert_to_font("следующая работа через 1 час"))
-    
-    await ctx.send(embed=embed)
-    
-    # Роли выдаются автоматически фоновой задачей каждую минуту
-
-
 # ==================== События для XP ====================
 
 @bot.event
@@ -1391,46 +662,37 @@ async def on_message(message):
     
     bot.stats['messages_seen'] += 1
     
-    # Проверяем, является ли сообщение командой
-    if message.content.startswith('!'):
-        # Проверяем, в каком канале написана команда
-        if commands_channel.is_commands_channel(message.channel.id):
-            # В канале команд: обрабатываем и удаляем через 5 минут
-            asyncio.create_task(delete_message_after(message, 300))
-            await bot.process_commands(message)
-        else:
-            # В других каналах: отправляем сообщение и удаляем команду
-            try:
-                # Отправляем сообщение только автору
-                warning_msg = await message.channel.send(
-                    f"{message.author.mention} " + convert_to_font(f"все команды работают только здесь: <#{commands_channel.COMMANDS_CHANNEL_ID}>")
-                )
-                # Удаляем команду пользователя сразу
-                await message.delete()
-                # Удаляем предупреждение через 10 секунд
-                asyncio.create_task(delete_message_after(warning_msg, 10))
-            except:
-                pass
-            return
-    else:
-        # Обычное сообщение (не команда) - начисляем XP
-        if voice_tracking.can_earn_message_xp(message.author.id):
-            # Рассчитываем XP за сообщение
-            xp_reward = voice_tracking.calculate_message_xp(len(message.content))
-            
-            if xp_reward > 0:
-                user = db.get_user(str(message.author.id))
-                old_xp = user.get('xp', 0)
-                user['xp'] = old_xp + xp_reward
-                db.check_rank_up(user)
-                db.save_user(str(message.author.id), user)
-                
-                # Роли выдаются автоматически фоновой задачей каждую минуту
-                
-                # Логируем
-                print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение ({len(message.content)} символов)")
+    # Обычное сообщение - начисляем XP
+    if voice_tracking.can_earn_message_xp(message.author.id):
+        # Рассчитываем XP за сообщение
+        xp_reward = voice_tracking.calculate_message_xp(len(message.content))
         
-        await bot.process_commands(message)
+        if xp_reward > 0:
+            user = db.get_user(str(message.author.id))
+            old_xp = user.get('xp', 0)
+            user['xp'] = old_xp + xp_reward
+            db.check_rank_up(user)
+            db.save_user(str(message.author.id), user)
+            
+            # Проверяем и обрабатываем повышение роли
+            # Создаём фейковый контекст для handle_rank_up
+            class FakeContext:
+                def __init__(self, message):
+                    self.message = message
+                    self.author = message.author
+                    self.channel = message.channel
+                    self.guild = message.guild
+                
+                async def send(self, *args, **kwargs):
+                    return await self.channel.send(*args, **kwargs)
+            
+            fake_ctx = FakeContext(message)
+            await handle_rank_up(fake_ctx, user, old_xp)
+            
+            # Логируем
+            print(f"💬 {message.author.name} получил {xp_reward} XP за сообщение ({len(message.content)} символов)")
+    
+    await bot.process_commands(message)
 
 
 # ==================== Запуск бота ====================
