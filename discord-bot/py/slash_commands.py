@@ -540,7 +540,11 @@ async def setup_slash_commands(bot, db):
             
             # Проверка кулдауна
             if 'last_dice' in user_data and user_data['last_dice']:
-                last_dice = datetime.fromisoformat(user_data['last_dice'])
+                last_dice = user_data['last_dice']
+                # Если это строка - конвертируем в datetime
+                if isinstance(last_dice, str):
+                    last_dice = datetime.fromisoformat(last_dice)
+                
                 time_diff = (datetime.now() - last_dice).total_seconds()
                 
                 if time_diff < 3600:
@@ -634,7 +638,11 @@ async def setup_slash_commands(bot, db):
             
             # Проверка кулдауна
             if 'last_coinflip' in user_data and user_data['last_coinflip']:
-                last_coinflip = datetime.fromisoformat(user_data['last_coinflip'])
+                last_coinflip = user_data['last_coinflip']
+                # Если это строка - конвертируем в datetime
+                if isinstance(last_coinflip, str):
+                    last_coinflip = datetime.fromisoformat(last_coinflip)
+                
                 time_diff = (datetime.now() - last_coinflip).total_seconds()
                 
                 if time_diff < 3600:
