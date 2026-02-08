@@ -197,7 +197,13 @@ async def setup_slash_commands(bot, db):
         last_daily = user_data.get('last_daily')
         
         if last_daily:
-            last_daily_time = datetime.fromisoformat(last_daily)
+            # Если это строка - конвертируем в datetime (для JSON)
+            if isinstance(last_daily, str):
+                last_daily_time = datetime.fromisoformat(last_daily)
+            else:
+                # PostgreSQL возвращает datetime объект напрямую
+                last_daily_time = last_daily
+            
             time_since = datetime.now() - last_daily_time
             
             if time_since < timedelta(hours=24):
@@ -242,7 +248,13 @@ async def setup_slash_commands(bot, db):
         last_work = user_data.get('last_work')
         
         if last_work:
-            last_work_time = datetime.fromisoformat(last_work)
+            # Если это строка - конвертируем в datetime (для JSON)
+            if isinstance(last_work, str):
+                last_work_time = datetime.fromisoformat(last_work)
+            else:
+                # PostgreSQL возвращает datetime объект напрямую
+                last_work_time = last_work
+            
             time_since = datetime.now() - last_work_time
             
             if time_since < timedelta(hours=1):
