@@ -200,6 +200,9 @@ discord-bot/json/*.json
 !discord-bot/json/auto_update.json
 !discord-bot/json/rank_roles.json
 
+# Версия обновлений (НЕ игнорировать - нужна для Railway)
+!discord-bot/data/update_version.json
+
 # ═══════════════════════════════════════════════════════════════
 # Node.js (если будет использоваться)
 # ═══════════════════════════════════════════════════════════════

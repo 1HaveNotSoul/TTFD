@@ -4,15 +4,13 @@ import discord
 from datetime import datetime, timezone, timedelta
 import json
 import os
+from py.update_version import bump_version, get_current_version
 
 # ID канала для уведомлений
 UPDATES_CHANNEL_ID = 1466923990936326294
 
 # Путь к файлу автообновления
 AUTO_UPDATE_FILE = "json/auto_update.json"
-
-# Путь к файлу версии
-VERSION_FILE = "json/version.json"
 
 # Часовой пояс МСК (UTC+3)
 MSK = timezone(timedelta(hours=3))
@@ -24,43 +22,6 @@ def load_auto_update():
         with open(AUTO_UPDATE_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {"enabled": False, "changes": []}
-
-
-def load_version():
-    """Загрузить текущую версию"""
-    if os.path.exists(VERSION_FILE):
-        with open(VERSION_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {"current_version": "1.0", "last_update": "", "changelog": []}
-
-
-def save_version(version_data):
-    """Сохранить версию"""
-    os.makedirs('json', exist_ok=True)
-    with open(VERSION_FILE, 'w', encoding='utf-8') as f:
-        json.dump(version_data, f, ensure_ascii=False, indent=2)
-
-
-def increment_version(version):
-    """
-    Увеличить версию
-    1.0 → 1.1 → 1.2 → ... → 1.9 → 2.0 → 2.1 → ...
-    """
-    try:
-        parts = version.split('.')
-        major = int(parts[0])
-        minor = int(parts[1])
-        
-        minor += 1
-        
-        # Если минорная версия достигла 10, увеличиваем мажорную
-        if minor >= 10:
-            major += 1
-            minor = 0
-        
-        return f"{major}.{minor}"
-    except:
-        return "1.0"
 
 
 
@@ -95,12 +56,12 @@ async def send_update_notification(bot, changes):
     Отправить уведомление об обновлении
     
     Формат:
-    Обновление: 1.1
-    07.02.2026 12:30 МСК
+    Обновление: 1.4
+    08.02.2026 12:30 МСК
     
     Список изменений:
-    • изменение 1
-    • изменение 2
+    · изменение 1
+    · изменение 2
     """
     try:
         channel = bot.get_channel(UPDATES_CHANNEL_ID)
@@ -108,26 +69,22 @@ async def send_update_notification(bot, changes):
             print(f"⚠️ Канал обновлений не найден (ID: {UPDATES_CHANNEL_ID})")
             return False
         
-        # Загружаем текущую версию
-        version_data = load_version()
-        current_version = version_data.get('current_version', '1.0')
-        
-        # Увеличиваем версию
-        new_version = increment_version(current_version)
+        # Увеличиваем версию (автоматически сохраняется в файл)
+        version = bump_version()
         
         # Текущая дата и время (МСК)
         now = datetime.now(MSK)
-        date_str = now.strftime("%d.%m.%Y %H:%M МСК")
+        date_str = now.strftime("%d.%m.%Y %H:%M")
         
         # Формируем список изменений
         if isinstance(changes, str):
             changes = [changes]
         
-        changes_text = "\n".join([f"• {change}" for change in changes])
+        changes_text = "\n".join([f"· {change}" for change in changes])
         
         # Формируем сообщение
-        message_text = f"""**Обновление: {new_version}**
-{date_str}
+        message_text = f"""**Обновление: {version}**
+{date_str} МСК
 
 **Список изменений:**
 {changes_text}"""
@@ -135,12 +92,7 @@ async def send_update_notification(bot, changes):
         # Отправляем сообщение
         await channel.send(message_text)
         
-        # Сохраняем новую версию
-        version_data['current_version'] = new_version
-        version_data['last_update'] = date_str
-        save_version(version_data)
-        
-        print(f"✅ Уведомление об обновлении {new_version} отправлено в #{channel.name}")
+        print(f"✅ Уведомление об обновлении {version} отправлено в #{channel.name}")
         return True
         
     except Exception as e:
