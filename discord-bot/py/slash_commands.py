@@ -558,13 +558,19 @@ async def setup_slash_commands(bot, db):
         result = random.randint(1, 6)
         xp_reward = result * 5
         
-        user_data['xp'] = user_data.get('xp', 0) + xp_reward
+        # Сохраняем старый XP для проверки повышения ранга
+        old_xp = user_data.get('xp', 0)
+        
+        user_data['xp'] = old_xp + xp_reward
         user_data['games_played'] = user_data.get('games_played', 0) + 1
         
         if result >= 5:
             user_data['games_won'] = user_data.get('games_won', 0) + 1
         
         user_data['last_dice'] = datetime.now().isoformat()
+        
+        # Проверяем повышение ранга
+        db.check_rank_up(user_data)
         db.save_user(str(interaction.user.id), user_data)
         
         dice_emoji = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
@@ -586,6 +592,8 @@ async def setup_slash_commands(bot, db):
                 value=convert_to_font("отличный бросок!"),
                 inline=True
             )
+        
+        embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
         
         await interaction.response.send_message(embed=embed)
     
@@ -623,6 +631,9 @@ async def setup_slash_commands(bot, db):
         result = random.choice(['орёл', 'решка'])
         won = result == choice
         
+        # Сохраняем старый XP для проверки повышения ранга
+        old_xp = user_data.get('xp', 0)
+        
         user_data['games_played'] = user_data.get('games_played', 0) + 1
         
         if won:
@@ -631,8 +642,11 @@ async def setup_slash_commands(bot, db):
         else:
             xp_reward = 5
         
-        user_data['xp'] = user_data.get('xp', 0) + xp_reward
+        user_data['xp'] = old_xp + xp_reward
         user_data['last_coinflip'] = datetime.now().isoformat()
+        
+        # Проверяем повышение ранга
+        db.check_rank_up(user_data)
         db.save_user(str(interaction.user.id), user_data)
         
         embed = BotTheme.create_embed(
@@ -655,6 +669,8 @@ async def setup_slash_commands(bot, db):
             value=convert_to_font(f"+{xp_reward}"),
             inline=False
         )
+        
+        embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
         
         await interaction.response.send_message(embed=embed)
     
