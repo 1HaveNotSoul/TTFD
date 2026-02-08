@@ -237,11 +237,18 @@ async def on_ready():
             bot.tree.clear_commands(guild=guild)
             synced = await bot.tree.sync(guild=guild)
             print(f"✅ Синхронизировано {len(synced)} slash команд с сервером (guild sync)")
+            
+            # Выводим список синхронизированных команд для отладки
+            print("📋 Список синхронизированных команд:")
+            for cmd in sorted(synced, key=lambda x: x.name):
+                print(f"   /{cmd.name} - {cmd.description}")
         else:
             synced = await bot.tree.sync()
             print(f"✅ Синхронизировано {len(synced)} slash команд глобально")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
+        import traceback
+        traceback.print_exc()
     
     # Обновление списка команд в канале (ОТКЛЮЧЕНО - дублирует сообщения)
     # print("🔄 Обновление списка команд...")

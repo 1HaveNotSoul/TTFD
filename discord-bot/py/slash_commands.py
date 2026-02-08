@@ -324,23 +324,53 @@ async def setup_slash_commands(bot, db):
     
     @bot.tree.command(name="help", description="Список всех команд")
     async def help_slash(interaction: discord.Interaction):
-        """Slash команда для помощи"""
+        """Slash команда для помощи (динамический список)"""
+        # Получаем все зарегистрированные команды
+        cmds = bot.tree.get_commands()
+        
+        # Группируем команды по категориям
+        categories = {
+            '👤 Профиль': ['profile', 'balance', 'rank', 'top', 'stats'],
+            '🛒 Магазин': ['shop', 'inventory', 'buy', 'pay'],
+            '💰 Заработок': ['daily', 'work'],
+            '🎮 Игры': ['dice', 'coinflip'],
+            '🎮 Интеграция': ['gamelink', 'unlink', 'gamestats'],
+            '🎫 Поддержка': ['ticket', 'close'],
+            '⚙️ Утилиты': ['clear', 'help', 'ping', 'links']
+        }
+        
         embed = BotTheme.create_embed(
             title=convert_to_font("📋 список команд"),
-            description=convert_to_font("все команды бота в одном месте!"),
+            description=convert_to_font(f"всего команд: {len(cmds)}"),
             embed_type='info'
         )
+        
+        # Создаём словарь команд для быстрого поиска
+        cmd_dict = {c.name: c for c in cmds}
+        
+        # Добавляем команды по категориям
+        for category, cmd_names in categories.items():
+            lines = []
+            for name in cmd_names:
+                if name in cmd_dict:
+                    cmd = cmd_dict[name]
+                    desc = cmd.description or 'без описания'
+                    lines.append(f"/{name} — {convert_to_font(desc)}")
+            
+            if lines:
+                embed.add_field(
+                    name=convert_to_font(category),
+                    value='\n'.join(lines),
+                    inline=False
+                )
+        
         embed.add_field(
             name=convert_to_font("📍 канал команд"),
             value=f"<#1466295322002067607>",
             inline=False
         )
-        embed.add_field(
-            name=convert_to_font("💡 как использовать"),
-            value=convert_to_font("перейди в канал выше чтобы увидеть все команды"),
-            inline=False
-        )
-        await interaction.response.send_message(embed=embed)
+        
+        await interaction.response.send_message(embed=embed, ephemeral=True)
     
     @bot.tree.command(name="ping", description="Проверка задержки бота")
     async def ping_slash(interaction: discord.Interaction):
