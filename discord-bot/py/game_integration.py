@@ -335,9 +335,9 @@ def setup_game_commands(bot, db, game_integration):
     
     # ==================== SLASH КОМАНДЫ (оставляем для совместимости) ====================
     
-    @bot.tree.command(name="link", description="Привязать игровой аккаунт TTFD Game")
+    @bot.tree.command(name="gamelink", description="Привязать игровой аккаунт TTFD Game")
     @app_commands.describe(code="6-значный код из лаунчера игры")
-    async def link_game(interaction: discord.Interaction, code: str):
+    async def gamelink_slash(interaction: discord.Interaction, code: str):
         """Привязать игровой аккаунт"""
         
         # Проверка формата кода

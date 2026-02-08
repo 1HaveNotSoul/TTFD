@@ -217,10 +217,24 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # Синхронизация slash команд с Discord (guild sync для мгновенного появления)
+    # Настройка интеграции с игрой (регистрация команд ПЕРЕД синхронизацией)
+    print("🎮 Настройка интеграции с TTFD Game...")
+    try:
+        global game_int
+        game_int = game_integration.GameIntegration(db)
+        game_integration.setup_game_commands(bot, db, game_int)
+        print("✅ Команды игры зарегистрированы")
+    except Exception as e:
+        print(f"❌ Ошибка настройки интеграции с игрой: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
     try:
         if config.GUILD_ID:
             guild = discord.Object(id=config.GUILD_ID)
+            # Очищаем старые команды перед синхронизацией (убирает кеш)
+            bot.tree.clear_commands(guild=guild)
             synced = await bot.tree.sync(guild=guild)
             print(f"✅ Синхронизировано {len(synced)} slash команд с сервером (guild sync)")
         else:
@@ -253,23 +267,6 @@ async def on_ready():
         await tickets_system.setup_ticket_button(bot)
     except Exception as e:
         print(f"❌ Ошибка настройки кнопки тикетов: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Настройка интеграции с игрой
-    print("🎮 Настройка интеграции с TTFD Game...")
-    try:
-        global game_int
-        game_int = game_integration.GameIntegration(db)
-        game_integration.setup_game_commands(bot, db, game_int)
-        print("✅ Интеграция с игрой настроена")
-        
-        # Синхронизация команд игры с Discord
-        print("🔄 Синхронизация команд игры...")
-        synced = await bot.tree.sync()
-        print(f"✅ Синхронизировано {len(synced)} slash команд (включая игровые)")
-    except Exception as e:
-        print(f"❌ Ошибка настройки интеграции с игрой: {e}")
         import traceback
         traceback.print_exc()
     
