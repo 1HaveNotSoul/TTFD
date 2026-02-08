@@ -702,4 +702,272 @@ async def setup_slash_commands(bot, db):
         fake_ctx = FakeContext(interaction)
         await tickets_system.close_ticket(fake_ctx, bot)
     
-    print("✅ Slash команды зарегистрированы")
+    # ==================== АДМИНСКИЕ КОМАНДЫ ====================
+    
+    @bot.tree.command(name="updatecommands", description="Обновить список команд в канале (только админы)")
+    async def updatecommands_slash(interaction: discord.Interaction):
+        """Slash команда для обновления списка команд"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            # Импортируем функцию обновления
+            from bot import update_commands_list
+            await update_commands_list()
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("✅ готово"),
+                description=convert_to_font("список команд обновлён!"),
+                embed_type='success'
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        except Exception as e:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font(f"ошибка: {e}"),
+                embed_type='error'
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    @bot.tree.command(name="setupverification", description="Настроить систему верификации (только админы)")
+    async def setupverification_slash(interaction: discord.Interaction):
+        """Slash команда для настройки верификации"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            import verification_system
+            success = await verification_system.setup_verification(bot)
+            
+            if success:
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("✅ готово"),
+                    description=convert_to_font("система верификации настроена!"),
+                    embed_type='success'
+                )
+            else:
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("❌ ошибка"),
+                    description=convert_to_font("не удалось настроить верификацию"),
+                    embed_type='error'
+                )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        except Exception as e:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font(f"ошибка: {e}"),
+                embed_type='error'
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    @bot.tree.command(name="setuptickets", description="Настроить кнопку тикетов (только админы)")
+    async def setuptickets_slash(interaction: discord.Interaction):
+        """Slash команда для настройки тикетов"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        try:
+            import tickets_system
+            success = await tickets_system.setup_ticket_button(bot)
+            
+            if success:
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("✅ готово"),
+                    description=convert_to_font("кнопка тикетов настроена!"),
+                    embed_type='success'
+                )
+            else:
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("❌ ошибка"),
+                    description=convert_to_font("не удалось настроить кнопку"),
+                    embed_type='error'
+                )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        except Exception as e:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font(f"ошибка: {e}"),
+                embed_type='error'
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    @bot.tree.command(name="setuprankroles", description="Настроить роли для рангов (только админы)")
+    @app_commands.describe(
+        tier="Ранг (F/E/D/C/B/A/S)",
+        role="Роль для этого ранга"
+    )
+    @app_commands.choices(tier=[
+        app_commands.Choice(name="F", value="F"),
+        app_commands.Choice(name="E", value="E"),
+        app_commands.Choice(name="D", value="D"),
+        app_commands.Choice(name="C", value="C"),
+        app_commands.Choice(name="B", value="B"),
+        app_commands.Choice(name="A", value="A"),
+        app_commands.Choice(name="S", value="S")
+    ])
+    async def setuprankroles_slash(interaction: discord.Interaction, tier: str = None, role: discord.Role = None):
+        """Slash команда для настройки ролей рангов"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        import rank_roles
+        
+        # Если параметры не указаны - показываем текущие настройки
+        if not tier or not role:
+            config = rank_roles.get_rank_roles_config()
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("⚙️ настройка ролей рангов"),
+                description=convert_to_font("текущие настройки ролей для каждого ранга"),
+                embed_type='info'
+            )
+            
+            for rank_tier in ['F', 'E', 'D', 'C', 'B', 'A', 'S']:
+                role_data = config.get(rank_tier, {})
+                role_id = role_data.get('role_id') if isinstance(role_data, dict) else role_data
+                
+                if role_id:
+                    role_obj = interaction.guild.get_role(role_id)
+                    if role_obj:
+                        required_xp = role_data.get('required_xp', 0) if isinstance(role_data, dict) else 0
+                        embed.add_field(
+                            name=convert_to_font(f"ранг {rank_tier}"),
+                            value=f"{role_obj.mention} ({required_xp} xp)",
+                            inline=True
+                        )
+                    else:
+                        embed.add_field(
+                            name=convert_to_font(f"ранг {rank_tier}"),
+                            value=convert_to_font(f"роль не найдена (id: {role_id})"),
+                            inline=True
+                        )
+                else:
+                    embed.add_field(
+                        name=convert_to_font(f"ранг {rank_tier}"),
+                        value=convert_to_font("не настроено"),
+                        inline=True
+                    )
+            
+            embed.add_field(
+                name=convert_to_font("📝 как настроить"),
+                value=convert_to_font("/setuprankroles <tier> <@role>"),
+                inline=False
+            )
+            
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Устанавливаем роль
+        success = rank_roles.set_rank_role(tier, role.id)
+        
+        if success:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("✅ роль настроена!"),
+                embed_type='success'
+            )
+            embed.add_field(
+                name=convert_to_font(f"ранг {tier}"),
+                value=role.mention,
+                inline=True
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font("ошибка настройки роли"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+    
+    @bot.tree.command(name="syncrankroles", description="Синхронизировать роли всех пользователей (только админы)")
+    async def syncrankroles_slash(interaction: discord.Interaction):
+        """Slash команда для синхронизации ролей"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🔄 синхронизация..."),
+            description=convert_to_font("начинаю синхронизацию ролей..."),
+            embed_type='info'
+        )
+        await interaction.followup.send(embed=embed, ephemeral=True)
+        
+        try:
+            import rank_roles
+            stats = await rank_roles.sync_all_user_roles(bot, db)
+            
+            embed = BotTheme.create_embed(
+                title=convert_to_font("✅ синхронизация завершена!"),
+                embed_type='success'
+            )
+            embed.add_field(
+                name=convert_to_font("всего пользователей"),
+                value=convert_to_font(str(stats['total'])),
+                inline=True
+            )
+            embed.add_field(
+                name=convert_to_font("обновлено"),
+                value=convert_to_font(str(stats['updated'])),
+                inline=True
+            )
+            embed.add_field(
+                name=convert_to_font("пропущено"),
+                value=convert_to_font(str(stats['skipped'])),
+                inline=True
+            )
+            embed.add_field(
+                name=convert_to_font("ошибок"),
+                value=convert_to_font(str(stats['errors'])),
+                inline=True
+            )
+            
+            await interaction.edit_original_response(embed=embed)
+        except Exception as e:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font(f"ошибка синхронизации: {e}"),
+                embed_type='error'
+            )
+            await interaction.edit_original_response(embed=embed)
+    
+    print("✅ Slash команды зарегистрированы (27 команд)")
