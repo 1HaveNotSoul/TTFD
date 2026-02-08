@@ -277,6 +277,12 @@ async def on_ready():
         guild = discord.Object(id=config.GUILD_ID)
         print(f"🔍 DEBUG: GUILD_ID = {config.GUILD_ID}")
         
+        # ВАЖНО: Очищаем старые глобальные команды (они конфликтуют с guild командами)
+        print("🗑️ Очищаю старые глобальные команды...")
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+        print("✅ Глобальные команды очищены")
+        
         # Синхронизируем с guild для мгновенного появления
         synced = await bot.tree.sync(guild=guild)
         print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
