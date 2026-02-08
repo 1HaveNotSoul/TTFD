@@ -268,12 +268,24 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
+    # DEBUG: Проверяем сколько команд в bot.tree
+    print(f"🔍 DEBUG: Команд в bot.tree: {len(bot.tree.get_commands())}")
+    print(f"🔍 DEBUG: Список команд: {[cmd.name for cmd in bot.tree.get_commands()]}")
+    
     # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
     try:
         guild = discord.Object(id=config.GUILD_ID)
+        print(f"🔍 DEBUG: GUILD_ID = {config.GUILD_ID}")
+        
         # Синхронизируем с guild для мгновенного появления
         synced = await bot.tree.sync(guild=guild)
         print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
+        
+        if len(synced) == 0:
+            print("⚠️ WARNING: Синхронизировано 0 команд!")
+            print("🔄 Пробую global sync...")
+            synced_global = await bot.tree.sync()
+            print(f"✅ Global sync: {len(synced_global)} команд")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
         import traceback
