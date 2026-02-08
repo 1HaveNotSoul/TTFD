@@ -535,6 +535,9 @@ async def setup_slash_commands(bot, db):
         from datetime import datetime, timedelta
         import random
         
+        # Отложенный ответ (на случай если обработка займёт время)
+        await interaction.response.defer()
+        
         user_data = db.get_user(str(interaction.user.id))
         
         # Проверка кулдауна
@@ -552,7 +555,7 @@ async def setup_slash_commands(bot, db):
                     description=convert_to_font(f"следующий бросок через: {hours}ч {minutes}м"),
                     embed_type='error'
                 )
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed, ephemeral=True)
                 return
         
         result = random.randint(1, 6)
@@ -595,7 +598,7 @@ async def setup_slash_commands(bot, db):
         
         embed.set_footer(text=convert_to_font("следующий бросок через 1 час"))
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
     
     @bot.tree.command(name="coinflip", description="Подбросить монетку (1 раз в час)")
     @app_commands.describe(choice="Твой выбор: орёл или решка")
@@ -607,6 +610,9 @@ async def setup_slash_commands(bot, db):
         """Slash команда для подбрасывания монетки"""
         from datetime import datetime, timedelta
         import random
+        
+        # Отложенный ответ (на случай если обработка займёт время)
+        await interaction.response.defer()
         
         user_data = db.get_user(str(interaction.user.id))
         
@@ -625,7 +631,7 @@ async def setup_slash_commands(bot, db):
                     description=convert_to_font(f"следующее подбрасывание через: {hours}ч {minutes}м"),
                     embed_type='error'
                 )
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed, ephemeral=True)
                 return
         
         result = random.choice(['орёл', 'решка'])
@@ -672,7 +678,7 @@ async def setup_slash_commands(bot, db):
         
         embed.set_footer(text=convert_to_font("следующее подбрасывание через 1 час"))
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
     
     @bot.tree.command(name="ticket", description="Создать тикет поддержки")
     async def ticket_slash(interaction: discord.Interaction):
