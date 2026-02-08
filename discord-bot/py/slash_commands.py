@@ -308,7 +308,7 @@ async def setup_slash_commands(bot, db):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Отправляем ответ сразу (ephemeral)
+        # Отправляем ephemeral ответ (видно только пользователю)
         await interaction.response.send_message(
             convert_to_font(f"🗑️ удаляю {amount} сообщений..."),
             ephemeral=True
@@ -317,7 +317,7 @@ async def setup_slash_commands(bot, db):
         # Удаляем сообщения
         deleted = await interaction.channel.purge(limit=amount)
         
-        # Обновляем ответ
+        # Обновляем ephemeral ответ
         await interaction.edit_original_response(
             content=convert_to_font(f"✅ удалено сообщений: {len(deleted)}")
         )
@@ -380,8 +380,8 @@ async def setup_slash_commands(bot, db):
         
         await interaction.response.send_message(embed=embed)
     
-    @bot.tree.command(name="link", description="Актуальные ссылки")
-    async def link_slash(interaction: discord.Interaction):
+    @bot.tree.command(name="links", description="Актуальные ссылки")
+    async def links_slash(interaction: discord.Interaction):
         """Slash команда для ссылок"""
         embed = BotTheme.create_embed(
             title=convert_to_font("🔗 актуальные ссылки"),
@@ -399,5 +399,277 @@ async def setup_slash_commands(bot, db):
             inline=False
         )
         await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="buy", description="Купить предмет из магазина")
+    @app_commands.describe(item_id="ID предмета из магазина")
+    async def buy_slash(interaction: discord.Interaction, item_id: str):
+        """Slash команда для покупки"""
+        from shop_system import buy_item, find_item
+        
+        user_data = db.get_user(str(interaction.user.id))
+        result = buy_item(db, str(interaction.user.id), item_id)
+        
+        if result['success']:
+            item = result['item']
+            embed = BotTheme.create_embed(
+                title=convert_to_font(f"✅ куплено: {item['name']}"),
+                description=convert_to_font(f"{item['description']}"),
+                embed_type='success'
+            )
+            user_data = db.get_user(str(interaction.user.id))
+            embed.add_field(
+                name=convert_to_font("💰 баланс"),
+                value=convert_to_font(f"{user_data.get('coins', 0)} монет"),
+                inline=True
+            )
+            await interaction.response.send_message(embed=embed)
+        else:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка покупки"),
+                description=convert_to_font(result['error']),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+    
+    @bot.tree.command(name="pay", description="Перевести монеты другому пользователю")
+    @app_commands.describe(member="Кому перевести", amount="Сумма")
+    async def pay_slash(interaction: discord.Interaction, member: discord.Member, amount: int):
+        """Slash команда для перевода монет"""
+        if member == interaction.user:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font("нельзя перевести монеты самому себе!"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        if member.bot:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font("нельзя перевести монеты боту!"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        if amount <= 0:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font("сумма должна быть больше 0!"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        sender = db.get_user(str(interaction.user.id))
+        receiver = db.get_user(str(member.id))
+        
+        if sender.get('coins', 0) < amount:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ недостаточно монет"),
+                description=convert_to_font(f"у тебя: {sender.get('coins', 0)} монет"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Перевод
+        sender['coins'] = sender.get('coins', 0) - amount
+        receiver['coins'] = receiver.get('coins', 0) + amount
+        
+        db.save_user(str(interaction.user.id), sender)
+        db.save_user(str(member.id), receiver)
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("💸 перевод выполнен!"),
+            description=convert_to_font(f"{interaction.user.mention} → {member.mention}"),
+            embed_type='success'
+        )
+        embed.add_field(
+            name=convert_to_font("сумма"),
+            value=convert_to_font(f"{amount} монет"),
+            inline=True
+        )
+        embed.add_field(
+            name=convert_to_font("твой баланс"),
+            value=convert_to_font(f"{sender['coins']} монет"),
+            inline=True
+        )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="dice", description="Бросить кубик (1 раз в час)")
+    async def dice_slash(interaction: discord.Interaction):
+        """Slash команда для броска кубика"""
+        from datetime import datetime, timedelta
+        import random
+        
+        user_data = db.get_user(str(interaction.user.id))
+        
+        # Проверка кулдауна
+        if 'last_dice' in user_data and user_data['last_dice']:
+            last_dice = datetime.fromisoformat(user_data['last_dice'])
+            time_diff = (datetime.now() - last_dice).total_seconds()
+            
+            if time_diff < 3600:
+                time_left = 3600 - time_diff
+                hours = int(time_left // 3600)
+                minutes = int((time_left % 3600) // 60)
+                
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("⏰ слишком рано"),
+                    description=convert_to_font(f"следующий бросок через: {hours}ч {minutes}м"),
+                    embed_type='error'
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+        
+        result = random.randint(1, 6)
+        xp_reward = result * 5
+        
+        user_data['xp'] = user_data.get('xp', 0) + xp_reward
+        user_data['games_played'] = user_data.get('games_played', 0) + 1
+        
+        if result >= 5:
+            user_data['games_won'] = user_data.get('games_won', 0) + 1
+        
+        user_data['last_dice'] = datetime.now().isoformat()
+        db.save_user(str(interaction.user.id), user_data)
+        
+        dice_emoji = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🎲 бросок кубика"),
+            description=convert_to_font(f"выпало: {dice_emoji[result-1]} {result}"),
+            embed_type='info'
+        )
+        embed.add_field(
+            name=convert_to_font("💎 получено xp"),
+            value=convert_to_font(f"+{xp_reward}"),
+            inline=True
+        )
+        
+        if result >= 5:
+            embed.add_field(
+                name=convert_to_font("🎉"),
+                value=convert_to_font("отличный бросок!"),
+                inline=True
+            )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="coinflip", description="Подбросить монетку (1 раз в час)")
+    @app_commands.describe(choice="Твой выбор: орёл или решка")
+    @app_commands.choices(choice=[
+        app_commands.Choice(name="Орёл", value="орёл"),
+        app_commands.Choice(name="Решка", value="решка")
+    ])
+    async def coinflip_slash(interaction: discord.Interaction, choice: str):
+        """Slash команда для подбрасывания монетки"""
+        from datetime import datetime, timedelta
+        import random
+        
+        user_data = db.get_user(str(interaction.user.id))
+        
+        # Проверка кулдауна
+        if 'last_coinflip' in user_data and user_data['last_coinflip']:
+            last_coinflip = datetime.fromisoformat(user_data['last_coinflip'])
+            time_diff = (datetime.now() - last_coinflip).total_seconds()
+            
+            if time_diff < 3600:
+                time_left = 3600 - time_diff
+                hours = int(time_left // 3600)
+                minutes = int((time_left % 3600) // 60)
+                
+                embed = BotTheme.create_embed(
+                    title=convert_to_font("⏰ слишком рано"),
+                    description=convert_to_font(f"следующее подбрасывание через: {hours}ч {minutes}м"),
+                    embed_type='error'
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+        
+        result = random.choice(['орёл', 'решка'])
+        won = result == choice
+        
+        user_data['games_played'] = user_data.get('games_played', 0) + 1
+        
+        if won:
+            user_data['games_won'] = user_data.get('games_won', 0) + 1
+            xp_reward = 25
+        else:
+            xp_reward = 5
+        
+        user_data['xp'] = user_data.get('xp', 0) + xp_reward
+        user_data['last_coinflip'] = datetime.now().isoformat()
+        db.save_user(str(interaction.user.id), user_data)
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🪙 подбрасывание монетки"),
+            description=convert_to_font("🎉 ты выиграл!" if won else "😔 ты проиграл..."),
+            embed_type='success' if won else 'error'
+        )
+        embed.add_field(
+            name=convert_to_font("твой выбор"),
+            value=convert_to_font(choice.capitalize()),
+            inline=True
+        )
+        embed.add_field(
+            name=convert_to_font("результат"),
+            value=convert_to_font(result.capitalize()),
+            inline=True
+        )
+        embed.add_field(
+            name=convert_to_font("💎 получено xp"),
+            value=convert_to_font(f"+{xp_reward}"),
+            inline=False
+        )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="ticket", description="Создать тикет поддержки")
+    async def ticket_slash(interaction: discord.Interaction):
+        """Slash команда для создания тикета"""
+        import tickets_system
+        
+        # Создаём фейковый контекст для совместимости
+        class FakeContext:
+            def __init__(self, interaction):
+                self.author = interaction.user
+                self.guild = interaction.guild
+                self.channel = interaction.channel
+                self.interaction = interaction
+            
+            async def send(self, *args, **kwargs):
+                if hasattr(self, 'interaction') and not self.interaction.response.is_done():
+                    return await self.interaction.response.send_message(*args, **kwargs)
+                else:
+                    return await self.interaction.followup.send(*args, **kwargs)
+        
+        fake_ctx = FakeContext(interaction)
+        await tickets_system.create_ticket(fake_ctx, bot)
+    
+    @bot.tree.command(name="close", description="Закрыть тикет поддержки")
+    async def close_slash(interaction: discord.Interaction):
+        """Slash команда для закрытия тикета"""
+        import tickets_system
+        
+        # Создаём фейковый контекст
+        class FakeContext:
+            def __init__(self, interaction):
+                self.author = interaction.user
+                self.guild = interaction.guild
+                self.channel = interaction.channel
+                self.interaction = interaction
+            
+            async def send(self, *args, **kwargs):
+                if hasattr(self, 'interaction') and not self.interaction.response.is_done():
+                    return await self.interaction.response.send_message(*args, **kwargs)
+                else:
+                    return await self.interaction.followup.send(*args, **kwargs)
+        
+        fake_ctx = FakeContext(interaction)
+        await tickets_system.close_ticket(fake_ctx, bot)
     
     print("✅ Slash команды зарегистрированы")

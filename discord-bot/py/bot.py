@@ -65,7 +65,7 @@ intents.members = True
 intents.guilds = True
 intents.presences = True
 
-# Создание бота
+# Создание бота (префикс ! оставлен только для админских команд)
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 # Статистика бота
@@ -217,10 +217,15 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # Синхронизация slash команд с Discord
+    # Синхронизация slash команд с Discord (guild sync для мгновенного появления)
     try:
-        synced = await bot.tree.sync()
-        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord")
+        if config.GUILD_ID:
+            guild = discord.Object(id=config.GUILD_ID)
+            synced = await bot.tree.sync(guild=guild)
+            print(f"✅ Синхронизировано {len(synced)} slash команд с сервером (guild sync)")
+        else:
+            synced = await bot.tree.sync()
+            print(f"✅ Синхронизировано {len(synced)} slash команд глобально")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
     
@@ -334,7 +339,7 @@ async def update_bot_status():
     """Обновление статуса бота"""
     statuses = [
         discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.guilds)} серверов"),
-        discord.Activity(type=discord.ActivityType.playing, name="!help для помощи"),
+        discord.Activity(type=discord.ActivityType.playing, name="/help для помощи"),
         discord.Activity(type=discord.ActivityType.listening, name="ваши команды"),
     ]
     await bot.change_presence(activity=random.choice(statuses))
