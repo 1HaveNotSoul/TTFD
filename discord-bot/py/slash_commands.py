@@ -285,4 +285,119 @@ async def setup_slash_commands(bot, db):
         
         await interaction.response.send_message(embed=embed)
     
+    @bot.tree.command(name="clear", description="Очистить сообщения (только для администраторов)")
+    @app_commands.describe(amount="Количество сообщений для удаления (1-100)")
+    async def clear_slash(interaction: discord.Interaction, amount: int = 10):
+        """Slash команда для очистки сообщений"""
+        # Проверка прав администратора
+        if not interaction.user.guild_permissions.administrator:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ нет прав"),
+                description=convert_to_font("у тебя нет прав администратора"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        if amount < 1 or amount > 100:
+            embed = BotTheme.create_embed(
+                title=convert_to_font("❌ ошибка"),
+                description=convert_to_font("укажи число от 1 до 100"),
+                embed_type='error'
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Отправляем ответ сразу (ephemeral)
+        await interaction.response.send_message(
+            convert_to_font(f"🗑️ удаляю {amount} сообщений..."),
+            ephemeral=True
+        )
+        
+        # Удаляем сообщения
+        deleted = await interaction.channel.purge(limit=amount)
+        
+        # Обновляем ответ
+        await interaction.edit_original_response(
+            content=convert_to_font(f"✅ удалено сообщений: {len(deleted)}")
+        )
+    
+    @bot.tree.command(name="help", description="Список всех команд")
+    async def help_slash(interaction: discord.Interaction):
+        """Slash команда для помощи"""
+        embed = BotTheme.create_embed(
+            title=convert_to_font("📋 список команд"),
+            description=convert_to_font("все команды бота в одном месте!"),
+            embed_type='info'
+        )
+        embed.add_field(
+            name=convert_to_font("📍 канал команд"),
+            value=f"<#1466295322002067607>",
+            inline=False
+        )
+        embed.add_field(
+            name=convert_to_font("💡 как использовать"),
+            value=convert_to_font("перейди в канал выше чтобы увидеть все команды"),
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="ping", description="Проверка задержки бота")
+    async def ping_slash(interaction: discord.Interaction):
+        """Slash команда для пинга"""
+        latency = round(bot.latency * 1000)
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🏓 понг!"),
+            description=convert_to_font(f"задержка: {latency}ms"),
+            embed_type='info'
+        )
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="stats", description="Статистика бота")
+    async def stats_slash(interaction: discord.Interaction):
+        """Slash команда для статистики"""
+        from datetime import datetime
+        
+        if bot.stats['start_time']:
+            uptime = datetime.now() - bot.stats['start_time']
+            hours, remainder = divmod(int(uptime.total_seconds()), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            uptime_str = f"{hours}ч {minutes}м {seconds}с"
+        else:
+            uptime_str = "Неизвестно"
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("📊 статистика бота"),
+            embed_type='info'
+        )
+        embed.timestamp = datetime.now()
+        embed.add_field(name=convert_to_font("⏰ аптайм"), value=convert_to_font(uptime_str), inline=True)
+        embed.add_field(name=convert_to_font("🌐 серверов"), value=convert_to_font(str(len(bot.guilds))), inline=True)
+        embed.add_field(name=convert_to_font("👥 пользователей"), value=convert_to_font(str(len(bot.users))), inline=True)
+        embed.add_field(name=convert_to_font("📝 команд использовано"), value=convert_to_font(str(bot.stats['commands_used'])), inline=True)
+        embed.add_field(name=convert_to_font("💬 сообщений обработано"), value=convert_to_font(str(bot.stats['messages_seen'])), inline=True)
+        embed.add_field(name=convert_to_font("📡 задержка"), value=convert_to_font(f"{round(bot.latency * 1000)}ms"), inline=True)
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @bot.tree.command(name="link", description="Актуальные ссылки")
+    async def link_slash(interaction: discord.Interaction):
+        """Slash команда для ссылок"""
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🔗 актуальные ссылки"),
+            description=convert_to_font("все важные ссылки в одном месте!"),
+            embed_type='info'
+        )
+        embed.add_field(
+            name=convert_to_font("🌐 сайт"),
+            value="[перейти на сайт](https://bubbly-blessing-production-0c06.up.railway.app/)",
+            inline=False
+        )
+        embed.add_field(
+            name=convert_to_font("💬 discord"),
+            value="[сервер discord](https://discord.gg/your-invite)",
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
+    
     print("✅ Slash команды зарегистрированы")
