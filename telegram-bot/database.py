@@ -8,28 +8,15 @@ import os
 from datetime import datetime
 from config import DATABASE_FILE
 
-# 20 рангов TTFD
+# 7 рангов TTFD (синхронизировано с Discord ботом)
 RANKS = [
-    {"id": 1, "name": "Пустой взгляд", "color": "#95a5a6", "required_xp": 0, "reward_coins": 0},
-    {"id": 2, "name": "Потерянный", "color": "#7f8c8d", "required_xp": 500, "reward_coins": 50},
-    {"id": 3, "name": "Холодный", "color": "#5d6d7e", "required_xp": 1250, "reward_coins": 100},
-    {"id": 4, "name": "Без сна", "color": "#34495e", "required_xp": 2250, "reward_coins": 150},
-    {"id": 5, "name": "Ночной", "color": "#2c3e50", "required_xp": 3500, "reward_coins": 200},
-    {"id": 6, "name": "Тихий", "color": "#566573", "required_xp": 5000, "reward_coins": 300},
-    {"id": 7, "name": "Гулёныш", "color": "#616a6b", "required_xp": 6750, "reward_coins": 400},
-    {"id": 8, "name": "Отрешённый", "color": "#515a5a", "required_xp": 8750, "reward_coins": 500},
-    {"id": 9, "name": "Бледный", "color": "#424949", "required_xp": 11000, "reward_coins": 700},
-    {"id": 10, "name": "Полумёртвый", "color": "#2e4053", "required_xp": 13500, "reward_coins": 900},
-    {"id": 11, "name": "Гуль", "color": "#1c2833", "required_xp": 16250, "reward_coins": 1200},
-    {"id": 12, "name": "Безэмо", "color": "#17202a", "required_xp": 19250, "reward_coins": 1500},
-    {"id": 13, "name": "Пожиратель тишины", "color": "#641e16", "required_xp": 22500, "reward_coins": 2000},
-    {"id": 14, "name": "Сломанный", "color": "#512e5f", "required_xp": 26000, "reward_coins": 2500},
-    {"id": 15, "name": "Чёрное сердце", "color": "#1a1a1a", "required_xp": 29750, "reward_coins": 3000},
-    {"id": 16, "name": "Носитель тьмы", "color": "#0d0d0d", "required_xp": 33750, "reward_coins": 4000},
-    {"id": 17, "name": "Первый кошмар", "color": "#4a235a", "required_xp": 38000, "reward_coins": 5000},
-    {"id": 18, "name": "Глава ночи", "color": "#1b2631", "required_xp": 42500, "reward_coins": 7000},
-    {"id": 19, "name": "Король пустоты", "color": "#000000", "required_xp": 47250, "reward_coins": 10000},
-    {"id": 20, "name": "Абсолютный гуль", "color": "#8b0000", "required_xp": 52250, "reward_coins": 15000},
+    {"id": 1, "name": "F - Ранг", "color": "#95a5a6", "required_xp": 100, "reward_coins": 50},
+    {"id": 2, "name": "E - Ранг", "color": "#7f8c8d", "required_xp": 500, "reward_coins": 100},
+    {"id": 3, "name": "D - Ранг", "color": "#5d6d7e", "required_xp": 1500, "reward_coins": 200},
+    {"id": 4, "name": "C - Ранг", "color": "#34495e", "required_xp": 2800, "reward_coins": 400},
+    {"id": 5, "name": "B - Ранг", "color": "#2c3e50", "required_xp": 5000, "reward_coins": 800},
+    {"id": 6, "name": "A - Ранг", "color": "#566573", "required_xp": 15000, "reward_coins": 2000},
+    {"id": 7, "name": "S - Ранг", "color": "#8b0000", "required_xp": 50000, "reward_coins": 5000},
 ]
 
 class Database:
