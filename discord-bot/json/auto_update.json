@@ -48,6 +48,7 @@
     "docs: добавлена финальная сводка исправлений /getcode",
     "docs: инструкция по ручному деплою на Railway",
     "docs: команда /getcode готова, нужен деплой на Railway",
-    "fix: переименована команда unlink в unlinkgame (конфликт с discord_link_code)"
+    "fix: переименована команда unlink в unlinkgame (конфликт с discord_link_code)",
+    "docs: команда /getcode работает, ждём global sync"
   ]
 }
