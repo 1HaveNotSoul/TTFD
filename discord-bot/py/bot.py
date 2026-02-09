@@ -256,6 +256,17 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
+    # Регистрация команд привязки через код
+    print("🔄 Регистрация команд привязки через код...")
+    try:
+        import link_code_commands
+        await link_code_commands.setup_link_code_commands(bot, db)
+        print("✅ Команды привязки через код зарегистрированы")
+    except Exception as e:
+        print(f"❌ Ошибка регистрации команд привязки: {e}")
+        import traceback
+        traceback.print_exc()
+    
     # Настройка интеграции с игрой
     print("🎮 Настройка интеграции с TTFD Game...")
     try:
@@ -268,20 +279,14 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # DEBUG: Проверяем сколько команд в bot.tree
-    print(f"🔍 DEBUG: Команд в bot.tree: {len(bot.tree.get_commands())}")
-    print(f"🔍 DEBUG: Список команд: {[cmd.name for cmd in bot.tree.get_commands()]}")
-    
-    # Синхронизация ВСЕХ slash команд с Discord
+    # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
     try:
-        print(f"🔍 DEBUG: GUILD_ID = {config.GUILD_ID}")
-        
-        # Используем ТОЛЬКО global sync (guild sync даёт 403 ошибку)
-        print("🔄 Синхронизация команд глобально...")
-        synced = await bot.tree.sync()
-        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (global sync)")
-        print("⏱️ Команды появятся на сервере в течение 1 часа")
-        
+        guild = discord.Object(id=config.GUILD_ID)
+        # Очищаем кеш команд перед синхронизацией
+        bot.tree.clear_commands(guild=guild)
+        # Синхронизируем с guild для мгновенного появления
+        synced = await bot.tree.sync(guild=guild)
+        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
         import traceback
