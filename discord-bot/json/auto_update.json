@@ -35,6 +35,7 @@
     "feat: Добавлена интеграция link_code_commands в Discord бота",
     "docs: Добавлена финальная сводка интеграции linkcode",
     "docs: Добавлена инструкция проверки linkcode на Railway",
-    "docs: Финальная сводка - система linkcode готова"
+    "docs: Финальная сводка - система linkcode готова",
+    "feat: Исправлена система кодов - теперь Discord генерирует код (/getcode), Telegram использует (/code)"
   ]
 }
