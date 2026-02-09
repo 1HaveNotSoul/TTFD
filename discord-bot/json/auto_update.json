@@ -53,6 +53,7 @@
     "chore: обновлён auto_update.json",
     "chore: финальное обновление auto_update.json",
     "fix: добавлены команды /getcode, /checklink, /unlink в slash_commands.py",
-    "docs: финальная документация /getcode"
+    "docs: финальная документация /getcode",
+    "docs: инструкция как исправить /getcode (подождать или перепригласить бота)"
   ]
 }

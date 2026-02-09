@@ -1076,7 +1076,7 @@ async def setup_slash_commands(bot, db):
             'expires_at': (datetime.now() + timedelta(minutes=3)).isoformat(),
             'used': False
         }
-        db.save_data()
+        db.save_user(discord_id, user)
         
         # Отправляем код в ЛС
         try:
