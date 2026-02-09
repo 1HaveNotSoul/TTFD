@@ -1049,3 +1049,176 @@ async def setup_slash_commands(bot, db):
             await interaction.edit_original_response(embed=embed)
     
     print("✅ Slash команды зарегистрированы (27 команд)")
+    # ==================== КОМАНДЫ ПРИВЯЗКИ TELEGRAM ====================
+    
+    @bot.tree.command(name="getcode", description="Получить код для привязки Telegram аккаунта")
+    async def getcode_slash(interaction: discord.Interaction):
+        """Генерировать код для привязки Telegram"""
+        await interaction.response.defer(ephemeral=True)
+        
+        discord_id = str(interaction.user.id)
+        
+        # Генерируем код
+        import secrets
+        from datetime import datetime, timedelta
+        
+        alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+        code = ''.join(secrets.choice(alphabet) for _ in range(6))
+        
+        # Сохраняем код в БД
+        user = db.get_user(discord_id)
+        if 'link_code' not in user:
+            user['link_code'] = {}
+        
+        user['link_code'] = {
+            'code': code,
+            'created_at': datetime.now().isoformat(),
+            'expires_at': (datetime.now() + timedelta(minutes=3)).isoformat(),
+            'used': False
+        }
+        db.save_data()
+        
+        # Отправляем код в ЛС
+        try:
+            dm_embed = discord.Embed(
+                title="🔗 Код для привязки Telegram",
+                description=f"**Твой код:** `{code}`",
+                color=discord.Color.green()
+            )
+            dm_embed.add_field(
+                name="📝 Как использовать:",
+                value="1. Зайди в Telegram бот\n"
+                      f"2. Используй команду `/code {code}`\n"
+                      "3. Аккаунты автоматически привяжутся! 🎉",
+                inline=False
+            )
+            dm_embed.add_field(
+                name="⏰ Важно:",
+                value="Код действителен **3 минуты**",
+                inline=False
+            )
+            dm_embed.set_footer(text=f"Discord ID: {discord_id}")
+            
+            await interaction.user.send(embed=dm_embed)
+            
+            await interaction.followup.send(
+                "✅ **Код отправлен в личные сообщения!**\n\n"
+                "Проверь свои ЛС и используй код в Telegram боте.\n"
+                f"Команда: `/code {code}`\n\n"
+                "⏰ Код действителен 3 минуты",
+                ephemeral=True
+            )
+        
+        except discord.Forbidden:
+            embed = discord.Embed(
+                title="🔗 Код для привязки Telegram",
+                description=f"**Твой код:** `{code}`",
+                color=discord.Color.orange()
+            )
+            embed.add_field(
+                name="⚠️ Не удалось отправить в ЛС",
+                value="Включи личные сообщения от участников сервера",
+                inline=False
+            )
+            embed.add_field(
+                name="📝 Как использовать:",
+                value="1. Зайди в Telegram бот\n"
+                      f"2. Используй команду `/code {code}`\n"
+                      "3. Аккаунты автоматически привяжутся! 🎉",
+                inline=False
+            )
+            embed.add_field(
+                name="⏰ Важно:",
+                value="Код действителен **3 минуты**",
+                inline=False
+            )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    
+    @bot.tree.command(name="checklink", description="Проверить статус привязки Telegram")
+    async def checklink_slash(interaction: discord.Interaction):
+        """Проверить привязан ли Telegram аккаунт"""
+        await interaction.response.defer(ephemeral=True)
+        
+        discord_id = str(interaction.user.id)
+        telegram_id = db.get_telegram_link(discord_id)
+        
+        if not telegram_id:
+            embed = discord.Embed(
+                title="❌ Telegram не привязан",
+                description="Твой Discord не привязан к Telegram аккаунту",
+                color=discord.Color.red()
+            )
+            embed.add_field(
+                name="🔗 Как привязать?",
+                value="1. Используй команду `/getcode` здесь в Discord\n"
+                      "2. Получи код в личные сообщения\n"
+                      "3. Зайди в Telegram бот\n"
+                      "4. Используй команду `/code <КОД>`",
+                inline=False
+            )
+        else:
+            user_data = db.get_user(discord_id)
+            
+            embed = discord.Embed(
+                title="✅ Аккаунты привязаны!",
+                description="Твои аккаунты синхронизированы",
+                color=discord.Color.green()
+            )
+            embed.add_field(
+                name="📱 Telegram",
+                value=f"ID: `{telegram_id}`",
+                inline=True
+            )
+            embed.add_field(
+                name="💬 Discord",
+                value=f"ID: `{discord_id}`\n"
+                      f"Username: {interaction.user.name}",
+                inline=True
+            )
+            embed.add_field(
+                name="📊 Синхронизированные данные",
+                value=f"💰 Монеты: {user_data.get('coins', 0)}\n"
+                      f"✨ XP: {user_data.get('xp', 0)}\n"
+                      f"⭐ Ранг: #{user_data.get('rank_id', 0)}",
+                inline=False
+            )
+        
+        await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    
+    @bot.tree.command(name="unlink", description="Отвязать Telegram аккаунт")
+    async def unlink_slash(interaction: discord.Interaction):
+        """Отвязать Telegram аккаунт от Discord"""
+        await interaction.response.defer(ephemeral=True)
+        
+        discord_id = str(interaction.user.id)
+        telegram_id = db.get_telegram_link(discord_id)
+        
+        if not telegram_id:
+            await interaction.followup.send(
+                "❌ **Telegram не привязан**\n\n"
+                "У тебя нет привязанного Telegram аккаунта.",
+                ephemeral=True
+            )
+            return
+        
+        db.unlink_telegram(discord_id)
+        
+        embed = discord.Embed(
+            title="✅ Telegram отвязан",
+            description=f"Telegram ID `{telegram_id}` успешно отвязан от твоего Discord",
+            color=discord.Color.green()
+        )
+        embed.add_field(
+            name="🔗 Чтобы привязать снова:",
+            value="1. Используй `/getcode` здесь\n"
+                  "2. Используй `/code <КОД>` в Telegram боте",
+            inline=False
+        )
+        
+        await interaction.followup.send(embed=embed, ephemeral=True)
+    
+    
+    print(f"✅ Slash команды зарегистрированы ({len(bot.tree.get_commands())} команд)")

@@ -50,6 +50,7 @@
     "docs: команда /getcode готова, нужен деплой на Railway",
     "fix: переименована команда unlink в unlinkgame (конфликт с discord_link_code)",
     "docs: команда /getcode работает, ждём global sync",
-    "chore: обновлён auto_update.json"
+    "chore: обновлён auto_update.json",
+    "chore: финальное обновление auto_update.json"
   ]
 }
