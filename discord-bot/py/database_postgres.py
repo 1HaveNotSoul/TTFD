@@ -364,6 +364,116 @@ class PostgresDatabase:
         conn.commit()
         cur.close()
         conn.close()
+    
+    # ==================== МЕТОДЫ ПРИВЯЗКИ TELEGRAM ====================
+    
+    def get_telegram_link(self, discord_id):
+        """Получить привязанный Telegram ID"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT telegram_id FROM users WHERE id = %s", (str(discord_id),))
+        result = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        return result['telegram_id'] if result and result.get('telegram_id') else None
+    
+    def link_telegram(self, discord_id, telegram_id):
+        """Привязать Telegram аккаунт к Discord"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        # Проверяем что пользователь существует
+        user = self.get_user(discord_id)
+        if not user:
+            cur.close()
+            conn.close()
+            return False
+        
+        # Добавляем колонку telegram_id если её нет
+        try:
+            cur.execute("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS telegram_id TEXT
+            """)
+        except:
+            pass
+        
+        # Привязываем
+        cur.execute("""
+            UPDATE users 
+            SET telegram_id = %s
+            WHERE id = %s
+        """, (str(telegram_id), str(discord_id)))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return True
+    
+    def unlink_telegram(self, discord_id):
+        """Отвязать Telegram аккаунт"""
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            UPDATE users 
+            SET telegram_id = NULL
+            WHERE id = %s
+        """, (str(discord_id),))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return True
+    
+    def get_link_code(self, discord_id):
+        """Получить код привязки из game_stats"""
+        user = self.get_user(discord_id)
+        if not user:
+            return None
+        
+        game_stats = user.get('game_stats', {})
+        if isinstance(game_stats, str):
+            game_stats = json.loads(game_stats)
+        
+        return game_stats.get('link_code')
+    
+    def verify_link_code(self, code):
+        """Проверить код привязки и вернуть Discord ID"""
+        from datetime import datetime
+        
+        conn = self.get_connection()
+        cur = conn.cursor()
+        
+        # Ищем пользователя с таким кодом
+        cur.execute("SELECT id, game_stats FROM users")
+        users = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        
+        for user in users:
+            game_stats = user.get('game_stats', {})
+            if isinstance(game_stats, str):
+                game_stats = json.loads(game_stats)
+            
+            link_code = game_stats.get('link_code')
+            if not link_code:
+                continue
+            
+            # Проверяем код
+            if link_code.get('code') == code and not link_code.get('used'):
+                # Проверяем срок действия
+                expires_at = datetime.fromisoformat(link_code['expires_at'])
+                if datetime.now() < expires_at:
+                    return user['id']
+        
+        return None
 
 # Создаём экземпляр
 try:

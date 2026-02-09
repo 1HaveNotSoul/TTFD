@@ -1061,21 +1061,28 @@ async def setup_slash_commands(bot, db):
         # Генерируем код
         import secrets
         from datetime import datetime, timedelta
+        import json
         
         alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
         code = ''.join(secrets.choice(alphabet) for _ in range(6))
         
-        # Сохраняем код в БД
+        # Сохраняем код в БД (используем game_stats для хранения)
         user = db.get_user(discord_id)
-        if 'link_code' not in user:
-            user['link_code'] = {}
         
-        user['link_code'] = {
+        # Получаем game_stats
+        game_stats = user.get('game_stats', {})
+        if isinstance(game_stats, str):
+            game_stats = json.loads(game_stats)
+        
+        # Добавляем код привязки
+        game_stats['link_code'] = {
             'code': code,
             'created_at': datetime.now().isoformat(),
             'expires_at': (datetime.now() + timedelta(minutes=3)).isoformat(),
             'used': False
         }
+        
+        user['game_stats'] = json.dumps(game_stats)
         db.save_user(discord_id, user)
         
         # Отправляем код в ЛС
