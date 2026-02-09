@@ -24,8 +24,8 @@ from handlers.buttons import button_handler
 from handlers.messages import message_handler
 from handlers.admin import admin_command, broadcast_command
 
-# Импорты для системы кодов привязки
-from handlers.link_code import linkcode_command, linkcode_callback, mycodes_command
+# Импорты для системы кодов привязки (Discord → Telegram)
+from handlers.discord_code import code_command, checklink_command, unlink_command
 
 # Импорты для тикет-системы
 from handlers.tickets import (
@@ -174,9 +174,10 @@ def main():
     app.add_handler(CommandHandler("ticket", ticket_command))
     app.add_handler(CommandHandler("mytickets", mytickets_command))
     
-    # Команды привязки через код
-    app.add_handler(CommandHandler("linkcode", linkcode_command))
-    app.add_handler(CommandHandler("mycodes", mycodes_command))
+    # Команды привязки через код (Discord → Telegram)
+    app.add_handler(CommandHandler("code", code_command))
+    app.add_handler(CommandHandler("checklink", checklink_command))
+    app.add_handler(CommandHandler("unlink", unlink_command))
     
     # Админ команды
     app.add_handler(CommandHandler("admin", admin_command))
@@ -185,10 +186,7 @@ def main():
     # ========================================================================
     # Обработчики кнопок и сообщений
     # ========================================================================
-    # Callback для генерации нового кода
-    app.add_handler(CallbackQueryHandler(linkcode_callback, pattern="^linkcode_new$"))
-    
-    # Общий обработчик кнопок (должен быть после специфичных)
+    # Общий обработчик кнопок
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
     

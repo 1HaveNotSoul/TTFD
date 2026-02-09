@@ -412,6 +412,25 @@ class Database:
         # Сортируем по дате создания (новые первые)
         all_accounts.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         return all_accounts
+    
+    def get_telegram_link(self, discord_id):
+        """Получить привязанный Telegram ID"""
+        user = self.get_user(discord_id)
+        return user.get('telegram_id')
+    
+    def link_telegram(self, discord_id, telegram_id):
+        """Привязать Telegram ID"""
+        user = self.get_user(discord_id)
+        user['telegram_id'] = str(telegram_id)
+        self.save_data()
+        return True
+    
+    def unlink_telegram(self, discord_id):
+        """Отвязать Telegram ID"""
+        user = self.get_user(discord_id)
+        user['telegram_id'] = None
+        self.save_data()
+        return True
 
 # Глобальный экземпляр базы данных
 db = Database()

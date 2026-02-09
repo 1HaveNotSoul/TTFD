@@ -198,6 +198,33 @@ class Database:
         user['discord_id'] = str(discord_id)
         self.save_data()
         return True
+    
+    def get_discord_link(self, telegram_id):
+        """Получить привязанный Discord ID"""
+        user = self.get_user(telegram_id)
+        return user.get('discord_id')
+    
+    def unlink_discord(self, telegram_id):
+        """Отвязать Discord ID"""
+        user = self.get_user(telegram_id)
+        user['discord_id'] = None
+        self.save_data()
+        return True
+    
+    def get_telegram_link(self, discord_id):
+        """Получить Telegram ID по Discord ID"""
+        discord_id = str(discord_id)
+        for telegram_id, user in self.data['users'].items():
+            if user.get('discord_id') == discord_id:
+                return telegram_id
+        return None
+    
+    def unlink_telegram(self, discord_id):
+        """Отвязать Telegram по Discord ID"""
+        telegram_id = self.get_telegram_link(discord_id)
+        if telegram_id:
+            return self.unlink_discord(telegram_id)
+        return False
 
 # Глобальный экземпляр БД
 db = Database()

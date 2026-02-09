@@ -256,12 +256,12 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # Регистрация команд привязки через код
+    # Регистрация команд привязки через код (Discord → Telegram)
     print("🔄 Регистрация команд привязки через код...")
     try:
-        import link_code_commands
-        await link_code_commands.setup_link_code_commands(bot, db)
-        print("✅ Команды привязки через код зарегистрированы")
+        import discord_link_code
+        await discord_link_code.setup_discord_link_commands(bot, db)
+        print("✅ Команды привязки через код зарегистрированы (/getcode, /checklink, /unlink)")
     except Exception as e:
         print(f"❌ Ошибка регистрации команд привязки: {e}")
         import traceback

@@ -34,6 +34,7 @@
     "feat: Интегрирована система кодов привязки Discord-Telegram - команды /linkcode и /link зарегистрированы, таблица link_codes создана",
     "feat: Добавлена интеграция link_code_commands в Discord бота",
     "docs: Добавлена финальная сводка интеграции linkcode",
-    "docs: Добавлена инструкция проверки linkcode на Railway"
+    "docs: Добавлена инструкция проверки linkcode на Railway",
+    "docs: Финальная сводка - система linkcode готова"
   ]
 }
