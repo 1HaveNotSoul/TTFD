@@ -1108,13 +1108,8 @@ async def setup_slash_commands(bot, db):
             
             await interaction.user.send(embed=dm_embed)
             
-            await interaction.followup.send(
-                "✅ **Код отправлен в личные сообщения!**\n\n"
-                "Проверь свои ЛС и используй код в Telegram боте.\n"
-                f"Команда: `/code {code}`\n\n"
-                "⏰ Код действителен 3 минуты",
-                ephemeral=True
-            )
+            # Удаляем ephemeral ответ - код уже в ЛС
+            await interaction.delete_original_response()
         
         except discord.Forbidden:
             embed = discord.Embed(
