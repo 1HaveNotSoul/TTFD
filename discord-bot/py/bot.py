@@ -282,10 +282,18 @@ async def on_ready():
     # Синхронизация ВСЕХ slash команд с Discord (ВАЖНО: в самом конце после всех регистраций!)
     print("🔄 Синхронизация slash команд с Discord...")
     try:
-        guild = discord.Object(id=config.GUILD_ID)
-        # Синхронизируем с guild для мгновенного появления
-        synced = await bot.tree.sync(guild=guild)
-        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
+        # Используем GLOBAL sync для всех команд (работает везде, но обновляется до 1 часа)
+        synced = await bot.tree.sync()
+        print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (global sync)")
+        print("⏰ Команды появятся в течение 1 часа")
+        
+        # Также синхронизируем с guild для мгновенного появления на сервере
+        try:
+            guild = discord.Object(id=config.GUILD_ID)
+            synced_guild = await bot.tree.sync(guild=guild)
+            print(f"✅ Синхронизировано {len(synced_guild)} slash команд с guild (мгновенно)")
+        except Exception as guild_error:
+            print(f"⚠️ Guild sync не удался (команды всё равно появятся через global sync): {guild_error}")
     except Exception as e:
         print(f"❌ Ошибка синхронизации команд: {e}")
         import traceback

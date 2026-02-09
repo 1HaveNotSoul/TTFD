@@ -6,10 +6,8 @@
 
 import discord
 from discord import app_commands
-import os
 from datetime import datetime, timedelta
 import secrets
-import string
 import logging
 
 logger = logging.getLogger(__name__)
