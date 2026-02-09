@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Команда /code <КОД> - привязать Discord через код из Discord бота
+    УПРОЩЁННАЯ ВЕРСИЯ - читает коды из Discord JSON БД
     
     Использование: /code ABC123
     """
@@ -60,31 +61,39 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     try:
-        # Подключаемся к PostgreSQL
-        database_url = os.getenv('DATABASE_URL')
+        # Читаем коды из Discord БД (JSON файл)
+        # Путь к Discord БД (относительно telegram-bot папки)
+        discord_db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'discord-bot', 'json', 'user_data.json')
         
-        if not database_url:
+        if not os.path.exists(discord_db_path):
             text = """
-❌ **База данных недоступна**
+❌ **Discord БД недоступна**
 
-Система кодов требует подключения к PostgreSQL.
+Не удалось найти базу данных Discord бота.
 Обратись к администратору.
 """
             await update.message.reply_text(text, parse_mode='Markdown')
             return
         
-        conn = await asyncpg.connect(database_url)
+        # Читаем Discord БД
+        import json
+        with open(discord_db_path, 'r', encoding='utf-8') as f:
+            discord_data = json.load(f)
         
-        try:
-            # Проверяем код в БД
-            code_data = await conn.fetchrow("""
-                SELECT code, discord_id, used, expires_at, created_at
-                FROM link_codes
-                WHERE code = $1 AND platform = 'discord'
-            """, code)
-            
-            if not code_data:
-                text = """
+        # Ищем код в пользователях Discord
+        discord_id = None
+        code_data = None
+        
+        for user_id, user_data in discord_data.get('users', {}).items():
+            if 'link_code' in user_data:
+                link_code = user_data['link_code']
+                if link_code.get('code') == code:
+                    discord_id = user_id
+                    code_data = link_code
+                    break
+        
+        if not code_data:
+            text = """
 ❌ **Код не найден**
 
 Возможные причины:
@@ -94,39 +103,39 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 Получи новый код в Discord боте: `/getcode`
 """
-                await update.message.reply_text(text, parse_mode='Markdown')
-                return
-            
-            # Проверяем истёк ли код
-            if code_data['expires_at'] < datetime.now():
-                text = """
+            await update.message.reply_text(text, parse_mode='Markdown')
+            return
+        
+        # Проверяем истёк ли код
+        from datetime import datetime
+        expires_at = datetime.fromisoformat(code_data['expires_at'])
+        if expires_at < datetime.now():
+            text = """
 ❌ **Код истёк**
 
 Коды действительны только 3 минуты.
 
 Получи новый код в Discord боте: `/getcode`
 """
-                await update.message.reply_text(text, parse_mode='Markdown')
-                return
-            
-            # Проверяем использован ли код
-            if code_data['used']:
-                text = """
+            await update.message.reply_text(text, parse_mode='Markdown')
+            return
+        
+        # Проверяем использован ли код
+        if code_data.get('used'):
+            text = """
 ❌ **Код уже использован**
 
 Каждый код можно использовать только один раз.
 
 Получи новый код в Discord боте: `/getcode`
 """
-                await update.message.reply_text(text, parse_mode='Markdown')
-                return
-            
-            discord_id = code_data['discord_id']
-            
-            # Проверяем не привязан ли уже этот Telegram к другому Discord
-            existing_link = db.get_discord_link(telegram_id)
-            if existing_link and existing_link != discord_id:
-                text = f"""
+            await update.message.reply_text(text, parse_mode='Markdown')
+            return
+        
+        # Проверяем не привязан ли уже этот Telegram к другому Discord
+        existing_link = db.get_discord_link(telegram_id)
+        if existing_link and existing_link != discord_id:
+            text = f"""
 ⚠️ **Telegram уже привязан**
 
 Твой Telegram уже привязан к Discord ID: `{existing_link}`
@@ -134,25 +143,24 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Хочешь перепривязать к новому Discord?
 Используй `/unlink` сначала.
 """
-                await update.message.reply_text(text, parse_mode='Markdown')
-                return
-            
-            # Помечаем код как использованный
-            await conn.execute("""
-                UPDATE link_codes
-                SET used = TRUE,
-                    used_at = $1,
-                    telegram_id = $2
-                WHERE code = $3
-            """, datetime.now(), telegram_id, code)
-            
-            # Сохраняем привязку в локальной БД
-            db.link_discord(telegram_id, discord_id)
-            
-            # Получаем данные пользователя
-            user_data = db.get_user(telegram_id)
-            
-            text = f"""
+            await update.message.reply_text(text, parse_mode='Markdown')
+            return
+        
+        # Помечаем код как использованный в Discord БД
+        code_data['used'] = True
+        code_data['used_at'] = datetime.now().isoformat()
+        code_data['telegram_id'] = telegram_id
+        
+        with open(discord_db_path, 'w', encoding='utf-8') as f:
+            json.dump(discord_data, f, indent=2, ensure_ascii=False)
+        
+        # Сохраняем привязку в локальной БД
+        db.link_discord(telegram_id, discord_id)
+        
+        # Получаем данные пользователя
+        user_data = db.get_user(telegram_id)
+        
+        text = f"""
 ✅ **Аккаунты привязаны!**
 
 **Discord ID:** `{discord_id}`
@@ -167,12 +175,9 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Теперь твой баланс синхронизирован между Telegram и Discord!
 Зарабатывай монеты на любой платформе - они будут везде одинаковые.
 """
-            
-            await update.message.reply_text(text, parse_mode='Markdown')
-            logger.info(f"✅ Привязка успешна: Telegram {telegram_id} ↔ Discord {discord_id} (код: {code})")
         
-        finally:
-            await conn.close()
+        await update.message.reply_text(text, parse_mode='Markdown')
+        logger.info(f"✅ Привязка успешна: Telegram {telegram_id} ↔ Discord {discord_id} (код: {code})")
     
     except Exception as e:
         text = f"""

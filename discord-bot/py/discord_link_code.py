@@ -1,12 +1,12 @@
 """
 Команда /getcode для Discord бота
 Генерирует код для привязки Telegram аккаунта
+УПРОЩЁННАЯ ВЕРСИЯ - без asyncpg, работает с существующей БД
 """
 
 import discord
 from discord import app_commands
 import os
-import asyncpg
 from datetime import datetime, timedelta
 import secrets
 import string
@@ -43,111 +43,84 @@ async def setup_discord_link_commands(bot, db):
         
         discord_id = str(interaction.user.id)
         
-        try:
-            # Подключаемся к PostgreSQL
-            database_url = os.getenv('DATABASE_URL')
-            
-            if not database_url:
-                await interaction.followup.send(
-                    "❌ **База данных недоступна**\n\n"
-                    "Система кодов требует подключения к PostgreSQL.\n"
-                    "Обратись к администратору.",
-                    ephemeral=True
-                )
-                return
-            
-            conn = await asyncpg.connect(database_url)
-            
-            try:
-                # Генерируем уникальный код
-                code = generate_code(6)
-                
-                # Проверяем что код уникальный
-                while await conn.fetchval("SELECT 1 FROM link_codes WHERE code = $1", code):
-                    code = generate_code(6)
-                
-                # Время истечения (3 минуты)
-                expires_at = datetime.now() + timedelta(minutes=3)
-                
-                # Сохраняем код в БД
-                await conn.execute("""
-                    INSERT INTO link_codes (code, discord_id, platform, used, created_at, expires_at)
-                    VALUES ($1, $2, 'discord', FALSE, $3, $4)
-                """, code, discord_id, datetime.now(), expires_at)
-                
-                # Отправляем код в ЛС
-                try:
-                    dm_embed = discord.Embed(
-                        title="🔗 Код для привязки Telegram",
-                        description=f"**Твой код:** `{code}`",
-                        color=discord.Color.green()
-                    )
-                    dm_embed.add_field(
-                        name="📝 Как использовать:",
-                        value="1. Зайди в Telegram бот\n"
-                              f"2. Используй команду `/code {code}`\n"
-                              "3. Аккаунты автоматически привяжутся! 🎉",
-                        inline=False
-                    )
-                    dm_embed.add_field(
-                        name="⏰ Важно:",
-                        value="Код действителен **3 минуты**",
-                        inline=False
-                    )
-                    dm_embed.set_footer(text=f"Discord ID: {discord_id}")
-                    
-                    await interaction.user.send(embed=dm_embed)
-                    
-                    # Подтверждение в канале
-                    await interaction.followup.send(
-                        "✅ **Код отправлен в личные сообщения!**\n\n"
-                        "Проверь свои ЛС и используй код в Telegram боте.\n"
-                        f"Команда: `/code {code}`\n\n"
-                        "⏰ Код действителен 3 минуты",
-                        ephemeral=True
-                    )
-                    
-                    logger.info(f"✅ Код {code} сгенерирован для Discord {discord_id}")
-                
-                except discord.Forbidden:
-                    # Не удалось отправить в ЛС - показываем код в канале
-                    embed = discord.Embed(
-                        title="🔗 Код для привязки Telegram",
-                        description=f"**Твой код:** `{code}`",
-                        color=discord.Color.orange()
-                    )
-                    embed.add_field(
-                        name="⚠️ Не удалось отправить в ЛС",
-                        value="Включи личные сообщения от участников сервера",
-                        inline=False
-                    )
-                    embed.add_field(
-                        name="📝 Как использовать:",
-                        value="1. Зайди в Telegram бот\n"
-                              f"2. Используй команду `/code {code}`\n"
-                              "3. Аккаунты автоматически привяжутся! 🎉",
-                        inline=False
-                    )
-                    embed.add_field(
-                        name="⏰ Важно:",
-                        value="Код действителен **3 минуты**",
-                        inline=False
-                    )
-                    
-                    await interaction.followup.send(embed=embed, ephemeral=True)
-                    logger.warning(f"⚠️ Не удалось отправить код {code} в ЛС Discord {discord_id}")
-            
-            finally:
-                await conn.close()
+        # Генерируем код
+        code = generate_code(6)
         
-        except Exception as e:
+        # Сохраняем код в локальной БД Discord (временно, пока не настроим PostgreSQL)
+        # Используем существующую систему хранения
+        user = db.get_user(discord_id)
+        if 'link_code' not in user:
+            user['link_code'] = {}
+        
+        user['link_code'] = {
+            'code': code,
+            'created_at': datetime.now().isoformat(),
+            'expires_at': (datetime.now() + timedelta(minutes=3)).isoformat(),
+            'used': False
+        }
+        db.save_data()
+        
+        # Отправляем код в ЛС
+        try:
+            dm_embed = discord.Embed(
+                title="🔗 Код для привязки Telegram",
+                description=f"**Твой код:** `{code}`",
+                color=discord.Color.green()
+            )
+            dm_embed.add_field(
+                name="📝 Как использовать:",
+                value="1. Зайди в Telegram бот\n"
+                      f"2. Используй команду `/code {code}`\n"
+                      "3. Аккаунты автоматически привяжутся! 🎉",
+                inline=False
+            )
+            dm_embed.add_field(
+                name="⏰ Важно:",
+                value="Код действителен **3 минуты**",
+                inline=False
+            )
+            dm_embed.set_footer(text=f"Discord ID: {discord_id}")
+            
+            await interaction.user.send(embed=dm_embed)
+            
+            # Подтверждение в канале
             await interaction.followup.send(
-                f"❌ **Ошибка генерации кода**\n\n{str(e)}",
+                "✅ **Код отправлен в личные сообщения!**\n\n"
+                "Проверь свои ЛС и используй код в Telegram боте.\n"
+                f"Команда: `/code {code}`\n\n"
+                "⏰ Код действителен 3 минуты",
                 ephemeral=True
             )
-            logger.error(f"❌ Ошибка генерации кода: {e}")
-            import traceback
-            traceback.print_exc()
+            
+            logger.info(f"✅ Код {code} сгенерирован для Discord {discord_id}")
+        
+        except discord.Forbidden:
+            # Не удалось отправить в ЛС - показываем код в канале
+            embed = discord.Embed(
+                title="🔗 Код для привязки Telegram",
+                description=f"**Твой код:** `{code}`",
+                color=discord.Color.orange()
+            )
+            embed.add_field(
+                name="⚠️ Не удалось отправить в ЛС",
+                value="Включи личные сообщения от участников сервера",
+                inline=False
+            )
+            embed.add_field(
+                name="📝 Как использовать:",
+                value="1. Зайди в Telegram бот\n"
+                      f"2. Используй команду `/code {code}`\n"
+                      "3. Аккаунты автоматически привяжутся! 🎉",
+                inline=False
+            )
+            embed.add_field(
+                name="⏰ Важно:",
+                value="Код действителен **3 минуты**",
+                inline=False
+            )
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            logger.warning(f"⚠️ Не удалось отправить код {code} в ЛС Discord {discord_id}")
     
     
     @bot.tree.command(name="checklink", description="Проверить статус привязки Telegram")
@@ -241,4 +214,4 @@ async def setup_discord_link_commands(bot, db):
         await interaction.followup.send(embed=embed, ephemeral=True)
         logger.info(f"✅ Отвязка: Discord {discord_id} ↔ Telegram {telegram_id}")
     
-    logger.info("✅ Discord link code команды настроены")
+    logger.info("✅ Discord link code команды настроены (упрощённая версия)")
