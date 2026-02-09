@@ -89,8 +89,36 @@ async def send_update_notification(bot, changes):
 **Список изменений:**
 {changes_text}"""
         
-        # Отправляем сообщение
-        await channel.send(message_text)
+        # Проверяем длину сообщения (Discord лимит: 2000 символов)
+        if len(message_text) > 2000:
+            # Если слишком длинное - разбиваем на части
+            header = f"""**Обновление: {version}**
+{date_str} МСК
+
+**Список изменений:**
+"""
+            
+            # Отправляем заголовок
+            await channel.send(header)
+            
+            # Отправляем изменения частями
+            current_message = ""
+            for change in changes:
+                change_line = f"· {change}\n"
+                
+                if len(current_message) + len(change_line) > 1900:  # Оставляем запас
+                    # Отправляем текущую часть
+                    await channel.send(current_message)
+                    current_message = change_line
+                else:
+                    current_message += change_line
+            
+            # Отправляем последнюю часть
+            if current_message:
+                await channel.send(current_message)
+        else:
+            # Отправляем одним сообщением
+            await channel.send(message_text)
         
         print(f"✅ Уведомление об обновлении {version} отправлено в #{channel.name}")
         return True
