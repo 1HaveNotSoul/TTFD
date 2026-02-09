@@ -52,6 +52,7 @@
     "docs: команда /getcode работает, ждём global sync",
     "chore: обновлён auto_update.json",
     "chore: финальное обновление auto_update.json",
-    "fix: добавлены команды /getcode, /checklink, /unlink в slash_commands.py"
+    "fix: добавлены команды /getcode, /checklink, /unlink в slash_commands.py",
+    "docs: финальная документация /getcode"
   ]
 }
