@@ -398,7 +398,7 @@ def setup_game_commands(bot, db, game_integration):
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
     
-    @bot.tree.command(name="unlink", description="Отвязать игровой аккаунт")
+    @bot.tree.command(name="unlinkgame", description="Отвязать игровой аккаунт")
     async def unlink_game(interaction: discord.Interaction):
         """Отвязать игровой аккаунт"""
         
