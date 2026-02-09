@@ -23,6 +23,7 @@
     "fix: update Python version to 3.11.9 for Railway compatibility",
     "fix: update_game_stats TypeError - remove duplicate telegram_id",
     "add v3.0 architecture and sync system",
-    "синхронизация рангов с Discord ботом (7 рангов F-S)"
+    "синхронизация рангов с Discord ботом (7 рангов F-S)",
+    "добавлена автоматическая синхронизация баланса между Telegram и Discord"
   ]
 }
