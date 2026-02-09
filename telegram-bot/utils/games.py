@@ -280,4 +280,11 @@ def update_game_stats(telegram_id, won=False, coins_won=0):
     
     user['total_coins_won'] = user.get('total_coins_won', 0) + coins_won
     
-    db.update_user(telegram_id, **user)
+    # Обновляем только нужные поля
+    db.update_user(
+        telegram_id,
+        games_played=user['games_played'],
+        games_won=user.get('games_won', 0),
+        total_coins_won=user['total_coins_won']
+    )
+
