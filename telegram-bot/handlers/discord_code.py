@@ -61,36 +61,55 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     try:
-        # Читаем коды из Discord БД (JSON файл)
-        # Путь к Discord БД (относительно telegram-bot папки)
-        discord_db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'discord-bot', 'json', 'user_data.json')
+        # Подключаемся к PostgreSQL БД Discord бота
+        database_url = os.getenv('DATABASE_URL')
         
-        if not os.path.exists(discord_db_path):
+        if not database_url:
             text = """
 ❌ **Discord БД недоступна**
 
-Не удалось найти базу данных Discord бота.
+DATABASE_URL не настроен.
 Обратись к администратору.
 """
             await update.message.reply_text(text, parse_mode='Markdown')
             return
         
-        # Читаем Discord БД
-        import json
-        with open(discord_db_path, 'r', encoding='utf-8') as f:
-            discord_data = json.load(f)
+        # Исправляем URL для psycopg2
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
         
-        # Ищем код в пользователях Discord
+        # Подключаемся к БД
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        import json
+        
+        conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+        cur = conn.cursor()
+        
+        # Ищем код в game_stats пользователей
+        cur.execute("SELECT id, game_stats FROM users")
+        users = cur.fetchall()
+        
         discord_id = None
         code_data = None
         
-        for user_id, user_data in discord_data.get('users', {}).items():
-            if 'link_code' in user_data:
-                link_code = user_data['link_code']
-                if link_code.get('code') == code:
-                    discord_id = user_id
-                    code_data = link_code
-                    break
+        for user in users:
+            game_stats = user.get('game_stats', {})
+            if isinstance(game_stats, str):
+                game_stats = json.loads(game_stats)
+            
+            link_code = game_stats.get('link_code')
+            if not link_code:
+                continue
+            
+            # Проверяем код
+            if link_code.get('code') == code:
+                discord_id = user['id']
+                code_data = link_code
+                break
+        
+        cur.close()
+        conn.close()
         
         if not code_data:
             text = """
@@ -146,13 +165,41 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(text, parse_mode='Markdown')
             return
         
-        # Помечаем код как использованный в Discord БД
-        code_data['used'] = True
-        code_data['used_at'] = datetime.now().isoformat()
-        code_data['telegram_id'] = telegram_id
+        # Помечаем код как использованный в PostgreSQL БД
+        conn = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         
-        with open(discord_db_path, 'w', encoding='utf-8') as f:
-            json.dump(discord_data, f, indent=2, ensure_ascii=False)
+        # Обновляем game_stats
+        cur.execute("SELECT game_stats FROM users WHERE id = %s", (discord_id,))
+        result = cur.fetchone()
+        
+        if result:
+            game_stats = result['game_stats']
+            if isinstance(game_stats, str):
+                game_stats = json.loads(game_stats)
+            
+            # Помечаем код как использованный
+            if 'link_code' in game_stats:
+                game_stats['link_code']['used'] = True
+                game_stats['link_code']['used_at'] = datetime.now().isoformat()
+                game_stats['link_code']['telegram_id'] = telegram_id
+            
+            # Сохраняем обратно
+            cur.execute(
+                "UPDATE users SET game_stats = %s WHERE id = %s",
+                (json.dumps(game_stats), discord_id)
+            )
+            
+            # Добавляем telegram_id в users таблицу
+            cur.execute(
+                "UPDATE users SET telegram_id = %s WHERE id = %s",
+                (telegram_id, discord_id)
+            )
+            
+            conn.commit()
+        
+        cur.close()
+        conn.close()
         
         # Сохраняем привязку в локальной БД
         db.link_discord(telegram_id, discord_id)
