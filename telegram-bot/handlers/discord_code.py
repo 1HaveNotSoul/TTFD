@@ -227,14 +227,8 @@ DATABASE_URL не настроен.
         logger.info(f"✅ Привязка успешна: Telegram {telegram_id} ↔ Discord {discord_id} (код: {code})")
     
     except Exception as e:
-        text = f"""
-❌ **Ошибка привязки**
-
-{str(e)}
-
-Попробуй позже или обратись к администратору.
-"""
-        await update.message.reply_text(text, parse_mode='Markdown')
+        text = f"❌ Ошибка привязки\n\n{str(e)}\n\nПопробуй позже или обратись к администратору."
+        await update.message.reply_text(text)
         logger.error(f"❌ Ошибка привязки через код: {e}")
         import traceback
         traceback.print_exc()
