@@ -21,6 +21,8 @@
     "fix: исправлена ошибка fromisoformat в /work и /daily для PostgreSQL",
     "add Telegram bot v2.1 with tickets and games system",
     "fix: update Python version to 3.11.9 for Railway compatibility",
-    "fix: update_game_stats TypeError - remove duplicate telegram_id"
+    "fix: update_game_stats TypeError - remove duplicate telegram_id",
+    "add v3.0 architecture and sync system",
+    "синхронизация рангов с Discord ботом (7 рангов F-S)"
   ]
 }
