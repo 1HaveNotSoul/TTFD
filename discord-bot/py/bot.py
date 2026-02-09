@@ -279,11 +279,10 @@ async def on_ready():
         import traceback
         traceback.print_exc()
     
-    # Синхронизация ВСЕХ slash команд с Discord (guild sync для мгновенного появления)
+    # Синхронизация ВСЕХ slash команд с Discord (ВАЖНО: в самом конце после всех регистраций!)
+    print("🔄 Синхронизация slash команд с Discord...")
     try:
         guild = discord.Object(id=config.GUILD_ID)
-        # Очищаем кеш команд перед синхронизацией
-        bot.tree.clear_commands(guild=guild)
         # Синхронизируем с guild для мгновенного появления
         synced = await bot.tree.sync(guild=guild)
         print(f"✅ Синхронизировано {len(synced)} slash команд с Discord (guild sync)")
