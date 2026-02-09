@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════════
+💡 ДЛЯ POWERSHELL - Правильные команды
+═══════════════════════════════════════════════════════════════
+
+Ты используешь PowerShell, а не CMD!
+
+В PowerShell команда "set" НЕ работает.
+Нужно использовать "$env:"
+
+
+ПРАВИЛЬНЫЕ КОМАНДЫ ДЛЯ POWERSHELL:
+═══════════════════════════════════════════════════════════════
+
+cd C:\Users\brawl\OneDrive\Desktop\папки\TTFD\shared
+
+$env:DATABASE_URL="postgresql://postgres:RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf@turntable.proxy.rlwy.net:26630/railway"
+
+python migrate_to_unified.py
+
+
+КОПИРУЙ ПО ОДНОЙ КОМАНДЕ:
+═══════════════════════════════════════════════════════════════
+
+1. Перейти в папку:
+   cd C:\Users\brawl\OneDrive\Desktop\папки\TTFD\shared
+
+2. Установить DATABASE_URL:
+   $env:DATABASE_URL="postgresql://postgres:RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf@turntable.proxy.rlwy.net:26630/railway"
+
+3. Запустить миграцию:
+   python migrate_to_unified.py
+
+
+ВАЖНО:
+═══════════════════════════════════════════════════════════════
+
+✅ PowerShell: $env:DATABASE_URL="..."
+❌ CMD: set DATABASE_URL=...
+
+Ты в PowerShell, поэтому используй $env:
+
+
+═══════════════════════════════════════════════════════════════

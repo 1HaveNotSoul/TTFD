@@ -1,0 +1,59 @@
+═══════════════════════════════════════════════════════════════
+🎯 СЕЙЧАС СДЕЛАЙ ЭТО
+═══════════════════════════════════════════════════════════════
+
+
+ПРОБЛЕМА:
+───────────────────────────────────────────────────────────────
+
+Ты использовал ВНУТРЕННИЙ адрес Railway:
+postgres.railway.internal
+
+Он не работает с твоего компьютера!
+
+
+РЕШЕНИЕ:
+───────────────────────────────────────────────────────────────
+
+1. Открой Railway: https://railway.app
+
+2. Проект Postgres → Settings → Networking
+
+3. Включи "Public Networking" (если не включено)
+
+4. Скопируй:
+   - Public Domain: containers-us-west-xxx.railway.app
+   - TCP Proxy Port: 7432
+
+5. Собери URL:
+   postgresql://postgres:RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf@DOMAIN:PORT/railway
+
+   Замени DOMAIN и PORT на свои значения
+
+   Пример:
+   postgresql://postgres:RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf@containers-us-west-123.railway.app:7432/railway
+
+
+6. Запусти снова:
+
+   cd C:\Users\brawl\OneDrive\Desktop\папки\TTFD\shared
+   
+   set DATABASE_URL=твой_публичный_url
+   
+   python apply_migration.py
+
+
+═══════════════════════════════════════════════════════════════
+💡 ПОДСКАЗКА
+═══════════════════════════════════════════════════════════════
+
+Правильный URL содержит:
+✅ containers-us-west-xxx.railway.app
+✅ Порт 7432
+
+Неправильный URL содержит:
+❌ postgres.railway.internal
+❌ Порт 5432
+
+
+═══════════════════════════════════════════════════════════════

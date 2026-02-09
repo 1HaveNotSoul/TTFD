@@ -1,2 +1,11 @@
 python-telegram-bot==20.7
 python-dotenv==1.0.0
+asyncpg==0.29.0
+redis==5.0.1
+pydantic==2.5.0
+
+# Job Scheduler
+apscheduler==3.10.4
+
+# AI (опционально)
+openai==1.6.1

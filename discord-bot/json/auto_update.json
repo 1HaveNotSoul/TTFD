@@ -15,6 +15,12 @@
     "dEBUG: Добавлена диагностика slash команд - проверка bot.tree и global sync",
     "fIX: Исправлен GUILD_ID и добавлена очистка глобальных команд",
     "fIX: Использовать global sync вместо guild sync (избежание 403 ошибки)",
-    "fIX: Исправлена ошибка в /dice и /coinflip - добавлен defer для предотвращения timeout"
+    "fIX: Исправлена ошибка в /dice и /coinflip - добавлен defer для предотвращения timeout",
+    "fIX: dice and coinflip error handling",
+    "fIX: Исправлена ошибка fromisoformat - поддержка datetime объектов из PostgreSQL",
+    "fix: исправлена ошибка fromisoformat в /work и /daily для PostgreSQL",
+    "add Telegram bot v2.1 with tickets and games system",
+    "fix: update Python version to 3.11.9 for Railway compatibility",
+    "fix: update_game_stats TypeError - remove duplicate telegram_id"
   ]
 }

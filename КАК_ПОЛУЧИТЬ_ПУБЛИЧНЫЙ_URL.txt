@@ -1,0 +1,71 @@
+═══════════════════════════════════════════════════════════════
+🔑 КАК ПОЛУЧИТЬ ПУБЛИЧНЫЙ DATABASE_URL
+═══════════════════════════════════════════════════════════════
+
+
+ВАРИАНТ 1: Через Settings → Networking
+═══════════════════════════════════════════════════════════════
+
+1. Railway → Проект Postgres
+2. Вкладка "Settings"
+3. Раздел "Networking"
+4. Если нет публичного доступа - нажми "Enable Public Networking"
+5. Скопируй:
+   - Public Domain: containers-us-west-xxx.railway.app
+   - TCP Proxy Port: 7432
+
+6. Собери URL вручную:
+   postgresql://postgres:ПАРОЛЬ@DOMAIN:PORT/railway
+
+   Где:
+   - ПАРОЛЬ = твой пароль (RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf)
+   - DOMAIN = Public Domain
+   - PORT = TCP Proxy Port
+
+   Пример:
+   postgresql://postgres:RVLOGKNYKxNJfcoLiMNJxBgdhCCPspxf@containers-us-west-123.railway.app:7432/railway
+
+
+ВАРИАНТ 2: Через Variables (если есть PUBLIC_URL)
+═══════════════════════════════════════════════════════════════
+
+1. Railway → Проект Postgres
+2. Вкладка "Variables"
+3. Найди переменную с публичным адресом:
+   - Может называться DATABASE_PUBLIC_URL
+   - Или DATABASE_URL (если там containers-us-west)
+4. Скопируй её значение
+
+
+ВАРИАНТ 3: Через Connect
+═══════════════════════════════════════════════════════════════
+
+1. Railway → Проект Postgres
+2. Вкладка "Connect"
+3. Выбери "Public Network"
+4. Скопируй "Postgres Connection URL"
+
+
+КАК ПРОВЕРИТЬ ЧТО URL ПРАВИЛЬНЫЙ:
+═══════════════════════════════════════════════════════════════
+
+✅ ПРАВИЛЬНЫЙ URL содержит:
+   - containers-us-west-xxx.railway.app
+   - Порт 7432 (или другой, но НЕ 5432)
+
+❌ НЕПРАВИЛЬНЫЙ URL содержит:
+   - postgres.railway.internal
+   - Порт 5432
+
+
+ПРИМЕРЫ:
+═══════════════════════════════════════════════════════════════
+
+✅ ПРАВИЛЬНО:
+postgresql://postgres:пароль@containers-us-west-123.railway.app:7432/railway
+
+❌ НЕПРАВИЛЬНО:
+postgresql://postgres:пароль@postgres.railway.internal:5432/railway
+
+
+═══════════════════════════════════════════════════════════════
