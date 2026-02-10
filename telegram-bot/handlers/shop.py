@@ -14,19 +14,19 @@ PRODUCTS = {
     'optimizer': {
         'name': 'TTFD Optimizer',
         'description': '🚀 Оптимизация Windows\n✅ Очистка реестра\n✅ Ускорение системы\n✅ Диагностика',
-        'price': 150,  # Stars (≈ 299₽)
+        'price': 20,  # Stars
         'download_url': 'https://drive.google.com/file/d/1E2f4j8xv4lLeMIqz-1qTWiwaYrfrKSdP/view'
     },
     'cleaner': {
         'name': 'TTFD Cleaner',
         'description': '🧹 Глубокая очистка Windows\n✅ Удаление мусора\n✅ Очистка браузеров\n✅ Автозадачи',
-        'price': 100,  # Stars (≈ 199₽)
+        'price': 20,  # Stars
         'download_url': 'https://drive.google.com/file/d/1Cxu2yoNw9E2OG3jdyi8KVtPTtvF0zstw/view'
     },
     'bundle': {
         'name': 'TTFD Bundle',
-        'description': '🎁 Optimizer + Cleaner\n✅ Скидка 20%\n✅ Приоритетная поддержка\n✅ Обе программы',
-        'price': 200,  # Stars (≈ 399₽)
+        'description': '🎁 Optimizer + Cleaner\n✅ Обе программы\n✅ Выгодная цена',
+        'price': 30,  # Stars
         'download_url': 'both'
     }
 }
