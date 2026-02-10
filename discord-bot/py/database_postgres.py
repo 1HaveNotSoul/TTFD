@@ -98,8 +98,20 @@ class PostgresDatabase:
                 achievements JSONB DEFAULT '[]'::jsonb,
                 inventory JSONB DEFAULT '[]'::jsonb,
                 active_boosts JSONB DEFAULT '[]'::jsonb,
-                game_stats JSONB DEFAULT '{}'::jsonb
+                game_stats JSONB DEFAULT '{}'::jsonb,
+                telegram_id TEXT
             )
+        """)
+        
+        # Добавляем колонку telegram_id если её нет (для существующих БД)
+        cur.execute("""
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS telegram_id TEXT
+        """)
+        
+        # Создаём индекс для быстрого поиска по telegram_id
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id)
         """)
         
         # Таблица голосовой активности
