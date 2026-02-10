@@ -176,7 +176,7 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
         message += f"📥 <b>Ссылка на скачивание:</b>\n{product['download_url']}\n\n"
     
     message += f"⏰ Ссылка действительна 7 дней\n"
-    message += f"💬 Нужна помощь? Используй /ticket"
+    message += f"💬 Вопросы? Напиши @bxdsun"
     
     await update.message.reply_text(message, parse_mode='HTML')
     

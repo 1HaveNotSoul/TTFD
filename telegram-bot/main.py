@@ -117,7 +117,7 @@ async def help_command(update: Update, context):
 • TTFD Bundle - 30⭐
 
 <b>Поддержка:</b>
-Если возникли вопросы, напиши @your_support
+Если возникли вопросы, напиши @bxdsun
 """
     
     await update.message.reply_text(help_text, parse_mode='HTML')
