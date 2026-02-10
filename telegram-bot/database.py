@@ -225,6 +225,40 @@ class Database:
         if telegram_id:
             return self.unlink_discord(telegram_id)
         return False
+    
+    # ========================================================================
+    # Методы для магазина и покупок
+    # ========================================================================
+    
+    def save_purchase(self, telegram_id, purchase_data):
+        """Сохранить покупку"""
+        telegram_id = str(telegram_id)
+        user = self.get_user(telegram_id)
+        
+        if 'purchases' not in user:
+            user['purchases'] = []
+        
+        user['purchases'].append(purchase_data)
+        self.save_data()
+        return True
+    
+    def get_user_purchases(self, telegram_id):
+        """Получить все покупки пользователя"""
+        telegram_id = str(telegram_id)
+        user = self.get_user(telegram_id)
+        return user.get('purchases', [])
+    
+    def get_purchase_by_token(self, download_token):
+        """Найти покупку по токену скачивания"""
+        for telegram_id, user in self.data['users'].items():
+            purchases = user.get('purchases', [])
+            for purchase in purchases:
+                if purchase.get('download_token') == download_token:
+                    return {
+                        'telegram_id': telegram_id,
+                        'purchase': purchase
+                    }
+        return None
 
 # Глобальный экземпляр БД
 db = Database()

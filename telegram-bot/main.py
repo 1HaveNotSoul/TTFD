@@ -9,7 +9,7 @@ import asyncio
 from telegram import Update
 from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler, 
-    MessageHandler, filters, ConversationHandler
+    MessageHandler, filters, ConversationHandler, PreCheckoutQueryHandler
 )
 
 # Импорты модулей
@@ -26,6 +26,12 @@ from handlers.admin import admin_command, broadcast_command
 
 # Импорты для системы кодов привязки (Discord → Telegram)
 from handlers.discord_code import code_command, checklink_command, unlink_command
+
+# Импорты для магазина
+from handlers.shop import (
+    shop_command, shop_buy_handler, shop_purchases_handler, shop_menu_handler,
+    precheckout_callback, successful_payment_callback
+)
 
 # Импорты для тикет-системы
 from handlers.tickets import (
@@ -179,6 +185,9 @@ def main():
     app.add_handler(CommandHandler("checklink", checklink_command))
     app.add_handler(CommandHandler("unlink", unlink_command))
     
+    # Команды магазина
+    app.add_handler(CommandHandler("shop", shop_command))
+    
     # Админ команды
     app.add_handler(CommandHandler("admin", admin_command))
     app.add_handler(CommandHandler("broadcast", broadcast_command))
@@ -186,6 +195,15 @@ def main():
     # ========================================================================
     # Обработчики кнопок и сообщений
     # ========================================================================
+    # Обработчики магазина (кнопки)
+    app.add_handler(CallbackQueryHandler(shop_buy_handler, pattern="^shop_buy_"))
+    app.add_handler(CallbackQueryHandler(shop_purchases_handler, pattern="^shop_purchases$"))
+    app.add_handler(CallbackQueryHandler(shop_menu_handler, pattern="^shop_menu$"))
+    
+    # Обработчики платежей
+    app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
+    
     # Общий обработчик кнопок
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))

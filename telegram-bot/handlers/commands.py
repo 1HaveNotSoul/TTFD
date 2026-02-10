@@ -20,6 +20,42 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         first_name=user.first_name or 'Unknown'
     )
     
+    # Проверяем deep link (например: /start buy_optimizer)
+    if context.args:
+        deep_link = context.args[0]
+        
+        # Обработка покупки через deep link
+        if deep_link.startswith('buy_'):
+            product_id = deep_link.replace('buy_', '')
+            
+            # Импортируем здесь чтобы избежать циклических импортов
+            from handlers.shop import PRODUCTS
+            
+            if product_id in PRODUCTS:
+                product = PRODUCTS[product_id]
+                
+                keyboard = [[
+                    InlineKeyboardButton(
+                        f"💳 Купить {product['name']} ({product['price']}⭐)",
+                        callback_data=f"shop_buy_{product_id}"
+                    )
+                ], [
+                    InlineKeyboardButton("🛍️ Посмотреть все товары", callback_data="shop_menu")
+                ]]
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                message = f"🛍️ <b>{product['name']}</b>\n\n"
+                message += f"{product['description']}\n\n"
+                message += f"💰 Цена: <b>{product['price']} ⭐ Stars</b>"
+                
+                await update.message.reply_text(
+                    message,
+                    parse_mode='HTML',
+                    reply_markup=reply_markup
+                )
+                return
+    
     keyboard = [
         [InlineKeyboardButton("👤 Профиль", callback_data="profile")],
         [InlineKeyboardButton("📊 Статистика", callback_data="stats")],
@@ -27,7 +63,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🏆 Таблица лидеров", callback_data="leaderboard")],
         [InlineKeyboardButton("🎮 Игры", callback_data="game_menu")],
         [InlineKeyboardButton("🎫 Тикеты", callback_data="tickets_menu")],
-        [InlineKeyboardButton("🛒 Магазин", callback_data="shop")],
+        [InlineKeyboardButton("🛒 Магазин", callback_data="shop_menu")],
     ]
     
     # Админ-панель для админов
@@ -45,7 +81,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 • Отслеживать твой прогресс и ранг
 • Получать ежедневные награды
 • Создавать тикеты поддержки
-• Покупать предметы в магазине
+• Покупать программы в магазине
 
 Выбери действие из меню ниже:
 """

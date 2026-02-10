@@ -87,9 +87,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from handlers.tickets import ticket_admin_assign
         await ticket_admin_assign(update, context)
     
-    # Магазин
-    elif data == "shop":
-        await show_shop(query, telegram_id)
+    # Магазин - перенаправляем в handlers/shop.py
+    elif data == "shop" or data == "shop_menu":
+        from handlers.shop import shop_menu_handler
+        await shop_menu_handler(update, context)
     
     # Админ-панель
     elif data == "admin":
