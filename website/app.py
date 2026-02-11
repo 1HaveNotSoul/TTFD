@@ -150,6 +150,31 @@ def api_update_profile():
     result = db.update_profile(current_user['id'], **data)
     return jsonify(result)
 
+@app.route('/api/user/<user_id>')
+def api_user(user_id):
+    """API: данные пользователя по Discord ID"""
+    try:
+        user = db.get_user(user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
+        
+        rank = db.get_rank_info(user['rank_id'])
+        
+        # Следующий ранг
+        next_rank = None
+        if user['rank_id'] < len(RANKS):
+            next_rank = RANKS[user['rank_id']]
+        
+        return jsonify({
+            'success': True,
+            'user': user,
+            'rank': rank,
+            'next_rank': next_rank
+        })
+    except Exception as e:
+        print(f"❌ Ошибка в api_user: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/upload_avatar', methods=['POST'])
 def api_upload_avatar():
     """API для загрузки аватарки"""

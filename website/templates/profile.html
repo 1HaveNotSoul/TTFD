@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="profile-container">
-    <div class="profile-panel">
+    <div class="profile-panel" {% if user.discord_id %}data-discord-id="{{ user.discord_id }}"{% endif %}>
         <div class="panel-header">
             <div class="profile-header-content">
                 <img src="{{ user.avatar }}" alt="Avatar" class="profile-avatar">
@@ -31,48 +31,30 @@
         <div class="tab-content">
             <!-- Статистика -->
             <div class="tab-pane active" id="stats">
-                
-                <div class="stat-row">
-                    <span class="stat-name">Всего игр</span>
-                    <span class="stat-value">127</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-name">Побед</span>
-                    <span class="stat-value">89</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-name">Поражений</span>
-                    <span class="stat-value">38</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-name">Винрейт</span>
-                    <span class="stat-value">70%</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-name">Время в игре</span>
-                    <span class="stat-value">48ч 32м</span>
-                </div>
+                {% if user.discord_id %}
+                    <div id="discord-stats">
+                        <div class="loading">Загрузка статистики из Discord...</div>
+                    </div>
+                {% else %}
+                    <div class="no-discord">
+                        <p>🎮 Привяжи Discord, чтобы увидеть статистику</p>
+                        <a href="/settings" class="btn btn-primary">Перейти в настройки</a>
+                    </div>
+                {% endif %}
             </div>
 
             <!-- Достижения -->
             <div class="tab-pane" id="achievements">
-                <div class="achievements-grid">
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🎖️</div>
-                        <div class="achievement-name">Ранг</div>
-                        <div class="achievement-desc">{{ user.rank }}</div>
+                {% if user.discord_id %}
+                    <div id="discord-achievements">
+                        <div class="loading">Загрузка достижений из Discord...</div>
                     </div>
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🎤</div>
-                        <div class="achievement-name">Самая долгая сессия</div>
-                        <div class="achievement-desc">3ч 45м</div>
+                {% else %}
+                    <div class="no-discord">
+                        <p>🏆 Привяжи Discord, чтобы увидеть достижения</p>
+                        <a href="/settings" class="btn btn-primary">Перейти в настройки</a>
                     </div>
-                    <div class="achievement-card">
-                        <div class="achievement-icon">💬</div>
-                        <div class="achievement-name">Сообщений отправлено</div>
-                        <div class="achievement-desc">1,234</div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>
