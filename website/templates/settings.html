@@ -41,43 +41,14 @@
 
             <!-- Внешний вид -->
             <div class="tab-pane" id="appearance">
-                <div class="media-uploads">
-                    <div class="form-group">
-                        <label>Аватарка</label>
-                        <div class="avatar-upload">
-                            <img src="{{ user.avatar }}" alt="Avatar" class="avatar-preview">
-                            <input type="file" id="avatar_file" accept="image/*" hidden>
-                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('avatar_file').click()">
-                                Загрузить
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Фоновая музыка</label>
-                        <div class="music-upload">
-                            <div class="music-preview" id="musicPreview">
-                                <span class="music-placeholder">🎵 Не выбрано</span>
-                            </div>
-                            <input type="file" id="music_file" accept=".mp3,audio/mpeg" hidden>
-                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('music_file').click()">
-                                Загрузить MP3
-                            </button>
-                        </div>
-                        
-                        <div class="music-url-section">
-                            <label>Или укажи ссылку на музыку</label>
-                            <input type="text" id="music_url" placeholder="Ссылка на YouTube, SoundCloud, VK или MP3" class="text-input">
-                            <button type="button" class="btn btn-primary" onclick="loadMusicFromUrl()" style="width: 100%; margin-top: 0.5rem;">
-                                Загрузить по ссылке
-                            </button>
-                            <small style="display: block; margin-top: 0.5rem; color: var(--text-light);">
-                                ✅ YouTube - работает (автоматическая обложка)<br>
-                                ✅ SoundCloud - работает через виджет<br>
-                                ✅ VK - работает через прокси сервер<br>
-                                ✅ Прямые MP3 ссылки - работают
-                            </small>
-                        </div>
+                <div class="form-group">
+                    <label>Аватарка</label>
+                    <div class="avatar-upload">
+                        <img src="{{ user.avatar }}" alt="Avatar" class="avatar-preview" id="avatarPreview">
+                        <input type="file" id="avatar_file" accept="image/*" hidden>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('avatar_file').click()">
+                            Загрузить
+                        </button>
                     </div>
                 </div>
             </div>

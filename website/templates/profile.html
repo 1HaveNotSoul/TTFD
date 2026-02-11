@@ -17,65 +17,20 @@
                     <p class="profile-rank">{{ user.rank }}</p>
                 </div>
                 
-                <!-- Музыкальный плеер -->
-                <div class="music-player" id="musicPlayer">
-                    <div class="music-cover" id="musicCover"></div>
-                    <div class="music-controls">
-                        <div class="music-progress-horizontal">
-                            <div class="music-progress-fill" id="musicProgressBar"></div>
-                            <div class="music-progress-thumb" id="musicProgressThumb"></div>
-                        </div>
-                        <div class="music-info" id="musicInfo">Музыка не загружена</div>
-                        <div class="volume-control-horizontal">
-                            <span class="volume-icon" id="volumeIcon">🔊</span>
-                            <div class="volume-track-horizontal">
-                                <div class="volume-fill-horizontal" id="volumeFill"></div>
-                                <div class="volume-thumb-horizontal" id="volumeThumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
 
         <!-- Табы -->
         <div class="tabs">
-            <button class="tab active" data-tab="overview">Обзор</button>
-            <button class="tab" data-tab="stats">Статистика</button>
+            <button class="tab active" data-tab="stats">Статистика</button>
             <button class="tab" data-tab="achievements">Достижения</button>
-            <button class="tab" data-tab="activity">Активность</button>
         </div>
 
         <!-- Контент табов -->
         <div class="tab-content">
-            <!-- Обзор -->
-            <div class="tab-pane active" id="overview">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-value">{{ user.level }}</div>
-                        <div class="stat-label">Уровень</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">⭐</div>
-                        <div class="stat-value">{{ user.points }}</div>
-                        <div class="stat-label">Очки</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🏆</div>
-                        <div class="stat-value">15</div>
-                        <div class="stat-label">Достижения</div>
-                    </div>
-                </div>
-
-                <div class="bio-section">
-                    <h3>О себе</h3>
-                    <p>{{ user.bio }}</p>
-                </div>
-            </div>
-
             <!-- Статистика -->
-            <div class="tab-pane" id="stats">
+            <div class="tab-pane active" id="stats">
                 
                 <div class="stat-row">
                     <span class="stat-name">Всего игр</span>
@@ -101,72 +56,21 @@
 
             <!-- Достижения -->
             <div class="tab-pane" id="achievements">
-                
                 <div class="achievements-grid">
                     <div class="achievement-card">
-                        <div class="achievement-icon">🎮</div>
-                        <div class="achievement-name">Первая игра</div>
-                        <div class="achievement-desc">Сыграй первую игру</div>
+                        <div class="achievement-icon">🎖️</div>
+                        <div class="achievement-name">Ранг</div>
+                        <div class="achievement-desc">{{ user.rank }}</div>
                     </div>
                     <div class="achievement-card">
-                        <div class="achievement-icon">⭐</div>
-                        <div class="achievement-name">Новичок</div>
-                        <div class="achievement-desc">Достигни 10 уровня</div>
+                        <div class="achievement-icon">🎤</div>
+                        <div class="achievement-name">Самая долгая сессия</div>
+                        <div class="achievement-desc">3ч 45м</div>
                     </div>
                     <div class="achievement-card">
-                        <div class="achievement-icon">💎</div>
-                        <div class="achievement-name">Коллекционер</div>
-                        <div class="achievement-desc">Собери 5 достижений</div>
-                    </div>
-                    <div class="achievement-card">
-                        <div class="achievement-icon">🔥</div>
-                        <div class="achievement-name">Победная серия</div>
-                        <div class="achievement-desc">Выиграй 5 игр подряд</div>
-                    </div>
-                    <div class="achievement-card locked">
-                        <div class="achievement-icon">🔒</div>
-                        <div class="achievement-name">Заблокировано</div>
-                        <div class="achievement-desc">???</div>
-                    </div>
-                    <div class="achievement-card locked">
-                        <div class="achievement-icon">🔒</div>
-                        <div class="achievement-name">Заблокировано</div>
-                        <div class="achievement-desc">???</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Активность -->
-            <div class="tab-pane" id="activity">
-                
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon">🎮</div>
-                        <div class="activity-content">
-                            <div class="activity-title">Сыграл в TTFD</div>
-                            <div class="activity-time">2 часа назад</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">🏆</div>
-                        <div class="activity-content">
-                            <div class="activity-title">Получено достижение "Победная серия"</div>
-                            <div class="activity-time">5 часов назад</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">⭐</div>
-                        <div class="activity-content">
-                            <div class="activity-title">Достигнут 42 уровень</div>
-                            <div class="activity-time">1 день назад</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">💎</div>
-                        <div class="activity-content">
-                            <div class="activity-title">Получено 500 очков</div>
-                            <div class="activity-time">2 дня назад</div>
-                        </div>
+                        <div class="achievement-icon">💬</div>
+                        <div class="achievement-name">Сообщений отправлено</div>
+                        <div class="achievement-desc">1,234</div>
                     </div>
                 </div>
             </div>

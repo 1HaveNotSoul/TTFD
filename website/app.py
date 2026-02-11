@@ -87,11 +87,6 @@ def customize():
         return redirect(url_for('login'))
     return render_template('customize.html', user=current_user)
 
-@app.route('/music_player')
-def music_player():
-    """Скрытый плеер для непрерывного воспроизведения музыки"""
-    return render_template('music_player.html')
-
 @app.route('/shop')
 def shop():
     """Интернет-магазин TTFD"""
@@ -155,6 +150,50 @@ def api_update_profile():
     result = db.update_profile(current_user['id'], **data)
     return jsonify(result)
 
+@app.route('/api/upload_avatar', methods=['POST'])
+def api_upload_avatar():
+    """API для загрузки аватарки"""
+    current_user = get_current_user()
+    if not current_user:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    try:
+        if 'avatar' not in request.files:
+            return jsonify({'success': False, 'error': 'Файл не найден'})
+        
+        file = request.files['avatar']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'Файл не выбран'})
+        
+        # Проверка типа файла
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        
+        if file_ext not in allowed_extensions:
+            return jsonify({'success': False, 'error': 'Неподдерживаемый формат файла'})
+        
+        # Сохранение файла
+        import uuid
+        filename = f"{uuid.uuid4()}.{file_ext}"
+        upload_folder = os.path.join(app.root_path, 'static', 'uploads', 'avatars')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+        
+        # Обновление аватара в БД
+        avatar_url = f"/static/uploads/avatars/{filename}"
+        result = db.update_profile(current_user['id'], avatar=avatar_url)
+        
+        if result['success']:
+            return jsonify({'success': True, 'avatar_url': avatar_url})
+        else:
+            return jsonify({'success': False, 'error': 'Ошибка обновления профиля'})
+            
+    except Exception as e:
+        print(f"Ошибка загрузки аватарки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/api/send_notification', methods=['POST'])
 def api_send_notification():
     """API для отправки email уведомлений"""
@@ -177,55 +216,6 @@ def api_send_notification():
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/api/proxy_audio', methods=['GET'])
-def api_proxy_audio():
-    """API прокси для VK аудио (обход CORS)"""
-    import requests
-    from flask import Response, stream_with_context
-    
-    try:
-        audio_url = request.args.get('url')
-        
-        if not audio_url:
-            return jsonify({'error': 'URL не указан'}), 400
-        
-        # Проверяем что это VK ссылка
-        if 'vk.com' not in audio_url and 'userapi.com' not in audio_url:
-            return jsonify({'error': 'Поддерживаются только VK ссылки'}), 400
-        
-        # Делаем запрос к VK с правильными заголовками
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://vk.com/',
-            'Origin': 'https://vk.com'
-        }
-        
-        # Получаем аудио поток
-        response = requests.get(audio_url, headers=headers, stream=True)
-        
-        if response.status_code != 200:
-            return jsonify({'error': 'Не удалось загрузить аудио'}), response.status_code
-        
-        # Возвращаем аудио с правильными CORS заголовками
-        def generate():
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    yield chunk
-        
-        return Response(
-            stream_with_context(generate()),
-            content_type=response.headers.get('content-type', 'audio/mpeg'),
-            headers={
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
-                'Cache-Control': 'no-cache'
-            }
-        )
-        
-    except Exception as e:
-        print(f"Ошибка прокси: {e}")
-        return jsonify({'error': str(e)}), 500
 
 def send_email(to_email, subject, message):
     """Функция отправки email"""

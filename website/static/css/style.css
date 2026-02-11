@@ -630,54 +630,6 @@ button:hover {
 }
 
 /* ============================================
-   ГЛОБАЛЬНЫЙ МУЗЫКАЛЬНЫЙ ПЛЕЕР
-   ============================================ */
-
-.global-music-player {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    cursor: pointer;
-}
-
-.global-music-cover {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-}
-
-.global-music-cover:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.global-music-cover.playing {
-    animation: rotate 10s linear infinite;
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ============================================
    АДАПТИВНОСТЬ
    ============================================ */
 
@@ -701,15 +653,5 @@ button:hover {
     
     .theme-selector {
         grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .global-music-player {
-        bottom: 15px;
-        right: 15px;
-    }
-    
-    .global-music-cover {
-        width: 60px;
-        height: 60px;
     }
 }
