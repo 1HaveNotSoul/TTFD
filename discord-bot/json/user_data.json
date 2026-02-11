@@ -1,0 +1,241 @@
+{
+  "users": {
+    "739566637400981506": {
+      "id": "739566637400981506",
+      "username": "Unknown",
+      "xp": 320,
+      "coins": 1868,
+      "clicks": 0,
+      "tasks_completed": 0,
+      "rank_id": 1,
+      "created_at": "2026-01-31T00:32:04.266989",
+      "last_active": "2026-02-03T00:45:46.205339",
+      "last_daily": null,
+      "achievements": [],
+      "daily_tasks": [
+        {
+          "id": 1,
+          "name": "Сделай 100 кликов",
+          "target": 100,
+          "progress": 0,
+          "reward_xp": 50,
+          "reward_coins": 25,
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Сделай 500 кликов",
+          "target": 500,
+          "progress": 0,
+          "reward_xp": 200,
+          "reward_coins": 100,
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Сделай 1000 кликов",
+          "target": 1000,
+          "progress": 0,
+          "reward_xp": 500,
+          "reward_coins": 250,
+          "completed": false
+        },
+        {
+          "id": 4,
+          "name": "Будь активен 5 минут",
+          "target": 300,
+          "progress": 0,
+          "reward_xp": 100,
+          "reward_coins": 50,
+          "completed": false
+        }
+      ],
+      "daily_streak": 2,
+      "last_daily_date": "2026-02-03",
+      "games_played": 10,
+      "games_won": 6,
+      "last_dice": "2026-02-03T00:23:46.521835",
+      "last_coinflip": "2026-02-03T00:25:01.043046",
+      "last_work": "2026-02-02T11:08:30.772162",
+      "game_stats": {
+        "total_coins_earned": 1750,
+        "total_kills": 16759,
+        "total_waves": 293,
+        "last_sync": "2026-02-04T03:30:34.519950"
+      }
+    },
+    "979427916742008832": {
+      "id": "979427916742008832",
+      "username": "Unknown",
+      "xp": 75,
+      "coins": 0,
+      "clicks": 0,
+      "tasks_completed": 0,
+      "rank_id": 1,
+      "created_at": "2026-02-02T08:24:19.628540",
+      "last_active": "2026-02-02T08:24:29.064486",
+      "last_daily": null,
+      "daily_streak": 0,
+      "last_daily_date": null,
+      "achievements": [],
+      "daily_tasks": [
+        {
+          "id": 1,
+          "name": "Сделай 100 кликов",
+          "target": 100,
+          "progress": 0,
+          "reward_xp": 50,
+          "reward_coins": 25,
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Сделай 500 кликов",
+          "target": 500,
+          "progress": 0,
+          "reward_xp": 200,
+          "reward_coins": 100,
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Сделай 1000 кликов",
+          "target": 1000,
+          "progress": 0,
+          "reward_xp": 500,
+          "reward_coins": 250,
+          "completed": false
+        },
+        {
+          "id": 4,
+          "name": "Будь активен 5 минут",
+          "target": 300,
+          "progress": 0,
+          "reward_xp": 100,
+          "reward_coins": 50,
+          "completed": false
+        }
+      ],
+      "games_played": 5,
+      "games_won": 1
+    },
+    "1075697198630699078": {
+      "id": "1075697198630699078",
+      "username": "Unknown",
+      "xp": 110,
+      "coins": 0,
+      "clicks": 0,
+      "tasks_completed": 0,
+      "rank_id": 1,
+      "created_at": "2026-02-02T09:27:31.976176",
+      "last_active": "2026-02-02T09:34:12.014789",
+      "last_daily": null,
+      "daily_streak": 1,
+      "last_daily_date": "2026-02-02",
+      "achievements": [],
+      "daily_tasks": [
+        {
+          "id": 1,
+          "name": "Сделай 100 кликов",
+          "target": 100,
+          "progress": 0,
+          "reward_xp": 50,
+          "reward_coins": 25,
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Сделай 500 кликов",
+          "target": 500,
+          "progress": 0,
+          "reward_xp": 200,
+          "reward_coins": 100,
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Сделай 1000 кликов",
+          "target": 1000,
+          "progress": 0,
+          "reward_xp": 500,
+          "reward_coins": 250,
+          "completed": false
+        },
+        {
+          "id": 4,
+          "name": "Будь активен 5 минут",
+          "target": 300,
+          "progress": 0,
+          "reward_xp": 100,
+          "reward_coins": 50,
+          "completed": false
+        }
+      ],
+      "games_played": 2,
+      "games_won": 2,
+      "last_dice": "2026-02-02T09:27:40.472231",
+      "last_coinflip": "2026-02-02T09:34:12.014776"
+    },
+    "637745264660054038": {
+      "id": "637745264660054038",
+      "username": "Unknown",
+      "xp": 35,
+      "coins": 0,
+      "clicks": 0,
+      "tasks_completed": 0,
+      "rank_id": 1,
+      "created_at": "2026-02-03T01:19:45.286765",
+      "last_active": "2026-02-03T01:20:20.032486",
+      "last_daily": null,
+      "daily_streak": 0,
+      "last_daily_date": null,
+      "achievements": [],
+      "daily_tasks": [
+        {
+          "id": 1,
+          "name": "Сделай 100 кликов",
+          "target": 100,
+          "progress": 0,
+          "reward_xp": 50,
+          "reward_coins": 25,
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Сделай 500 кликов",
+          "target": 500,
+          "progress": 0,
+          "reward_xp": 200,
+          "reward_coins": 100,
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Сделай 1000 кликов",
+          "target": 1000,
+          "progress": 0,
+          "reward_xp": 500,
+          "reward_coins": 250,
+          "completed": false
+        },
+        {
+          "id": 4,
+          "name": "Будь активен 5 минут",
+          "target": 300,
+          "progress": 0,
+          "reward_xp": 100,
+          "reward_coins": 50,
+          "completed": false
+        }
+      ],
+      "games_played": 2,
+      "games_won": 1,
+      "last_dice": "2026-02-03T01:19:45.287784",
+      "last_coinflip": "2026-02-03T01:20:20.032479"
+    }
+  },
+  "global_stats": {
+    "total_clicks": 0,
+    "total_tasks_completed": 0
+  }
+}
