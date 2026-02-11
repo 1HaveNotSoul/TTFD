@@ -1,0 +1,342 @@
+{
+  "roles": [
+    {
+      "id": "night_wanderer",
+      "name": "Ночной странник",
+      "description": "первый шаг во тьму",
+      "price": 3000,
+      "role_id": null,
+      "emoji": "🌑",
+      "category": "roles",
+      "perks": ["Особый цвет ника", "Доступ к #ночные-разговоры"]
+    },
+    {
+      "id": "bloody_trail",
+      "name": "Кровавый след",
+      "description": "оставляешь след за собой",
+      "price": 5000,
+      "role_id": null,
+      "emoji": "🔴",
+      "category": "roles",
+      "perks": ["Яркий красный цвет", "Приоритет в войсе", "Эксклюзивные эмодзи"]
+    },
+    {
+      "id": "dark_crystal",
+      "name": "Тёмный кристалл",
+      "description": "редкий и ценный",
+      "price": 10000,
+      "role_id": null,
+      "emoji": "💎",
+      "category": "roles",
+      "perks": ["Уникальный цвет", "Создание временных каналов", "Доступ к #vip-lounge", "+10% монет от !work"]
+    },
+    {
+      "id": "darkness_eater",
+      "name": "Пожиратель тьмы",
+      "description": "поглощаешь саму тьму",
+      "price": 15000,
+      "role_id": null,
+      "emoji": "🔥",
+      "category": "roles",
+      "perks": ["Яркий выделяющийся цвет", "Смена ника раз в неделю", "+15% монет от !work", "Приоритет в музыке"]
+    },
+    {
+      "id": "void_king",
+      "name": "Король пустоты",
+      "description": "правитель бездны",
+      "price": 25000,
+      "role_id": null,
+      "emoji": "👑",
+      "category": "roles",
+      "perks": ["Чёрный цвет (редкий)", "Создание приватных каналов", "+25% монет и XP", "Особый значок"]
+    },
+    {
+      "id": "absolute_ghoul",
+      "name": "Абсолютный гуль",
+      "description": "высшая форма существования",
+      "price": 50000,
+      "role_id": null,
+      "emoji": "💀",
+      "category": "roles",
+      "perks": ["Уникальный светящийся цвет", "+50% монет и XP", "Создание событий", "Анимированная иконка"]
+    },
+    {
+      "id": "server_legend",
+      "name": "Легенда сервера",
+      "description": "недостижимая вершина",
+      "price": 100000,
+      "role_id": null,
+      "emoji": "⭐",
+      "category": "roles",
+      "perks": ["ВСЕ привилегии", "+100% монет и XP", "Персональный канал", "Кастомные команды", "Статус Легенда"]
+    }
+  ],
+  "boosts": [
+    {
+      "id": "xp_boost_30m",
+      "name": "Малый буст XP",
+      "description": "x1.5 xp на 30 минут",
+      "price": 300,
+      "duration": 1800,
+      "multiplier": 1.5,
+      "emoji": "⚡",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "xp_boost_1h",
+      "name": "Буст XP (1 час)",
+      "description": "x2 xp на 1 час",
+      "price": 500,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "⚡",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "xp_boost_12h",
+      "name": "Мега буст XP",
+      "description": "x2 xp на 12 часов",
+      "price": 2000,
+      "duration": 43200,
+      "multiplier": 2,
+      "emoji": "🚀",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "xp_boost_24h",
+      "name": "Буст XP (24 часа)",
+      "description": "x2 xp на 24 часа",
+      "price": 3000,
+      "duration": 86400,
+      "multiplier": 2,
+      "emoji": "🚀",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "coins_boost_30m",
+      "name": "Буст монет (30 мин)",
+      "description": "x1.5 монет на 30 минут",
+      "price": 400,
+      "duration": 1800,
+      "multiplier": 1.5,
+      "emoji": "💰",
+      "category": "boosts",
+      "boost_type": "coins"
+    },
+    {
+      "id": "coins_boost_1h",
+      "name": "Буст монет (1 час)",
+      "description": "x2 монеты на 1 час",
+      "price": 600,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "💰",
+      "category": "boosts",
+      "boost_type": "coins"
+    },
+    {
+      "id": "luck_boost_1h",
+      "name": "Буст удачи",
+      "description": "+20% шанс выигрыша в играх",
+      "price": 800,
+      "duration": 3600,
+      "multiplier": 1.2,
+      "emoji": "🍀",
+      "category": "boosts",
+      "boost_type": "luck"
+    },
+    {
+      "id": "universal_boost_1h",
+      "name": "Универсальный буст",
+      "description": "x2 xp + x2 монеты + удача на 1 час",
+      "price": 1500,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "🌟",
+      "category": "boosts",
+      "boost_type": "universal"
+    }
+  ],
+  "cosmetics": [
+    {
+      "id": "profile_bg_black",
+      "name": "Чёрная бездна",
+      "description": "чёрный фон профиля",
+      "price": 1000,
+      "emoji": "🌑",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "#0d0d0d"
+    },
+    {
+      "id": "profile_bg_blood",
+      "name": "Кровавая луна",
+      "description": "кроваво-красный фон",
+      "price": 1500,
+      "emoji": "🔴",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "#8b0000"
+    },
+    {
+      "id": "profile_bg_night",
+      "name": "Ночной город",
+      "description": "тёмно-красный фон",
+      "price": 2000,
+      "emoji": "🌃",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "#1a0000"
+    },
+    {
+      "id": "profile_bg_gradient",
+      "name": "Чёрно-красный градиент",
+      "description": "градиент от чёрного к красному",
+      "price": 2500,
+      "emoji": "🎨",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "gradient"
+    },
+    {
+      "id": "profile_bg_stars",
+      "name": "Звёздная пустота",
+      "description": "чёрный с красными звёздами",
+      "price": 3000,
+      "emoji": "💫",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "stars"
+    },
+    {
+      "id": "badge_king",
+      "name": "Значок Король",
+      "description": "корона в профиле",
+      "price": 2000,
+      "emoji": "👑",
+      "category": "cosmetics",
+      "cosmetic_type": "badge",
+      "value": "👑"
+    },
+    {
+      "id": "badge_fire",
+      "name": "Значок Огонь",
+      "description": "пламя в профиле",
+      "price": 1500,
+      "emoji": "🔥",
+      "category": "cosmetics",
+      "cosmetic_type": "badge",
+      "value": "🔥"
+    },
+    {
+      "id": "badge_skull",
+      "name": "Значок Гуль",
+      "description": "череп в профиле",
+      "price": 2500,
+      "emoji": "💀",
+      "category": "cosmetics",
+      "cosmetic_type": "badge",
+      "value": "💀"
+    },
+    {
+      "id": "custom_nickname",
+      "name": "Смена ника",
+      "description": "изменить свой ник на сервере",
+      "price": 1000,
+      "emoji": "✏️",
+      "category": "cosmetics",
+      "cosmetic_type": "nickname"
+    },
+    {
+      "id": "custom_status",
+      "name": "Кастомный статус",
+      "description": "особый статус под ником",
+      "price": 3000,
+      "emoji": "🎭",
+      "category": "cosmetics",
+      "cosmetic_type": "status"
+    }
+  ],
+  "special": [
+    {
+      "id": "daily_reset",
+      "name": "Сброс !daily",
+      "description": "сбросить кулдаун !daily",
+      "price": 800,
+      "emoji": "🔄",
+      "category": "special",
+      "special_type": "daily_reset"
+    },
+    {
+      "id": "work_reset",
+      "name": "Сброс !work",
+      "description": "сбросить кулдаун !work",
+      "price": 500,
+      "emoji": "🔄",
+      "category": "special",
+      "special_type": "work_reset"
+    },
+    {
+      "id": "rank_boost_small",
+      "name": "Малый буст ранга",
+      "description": "+500 xp мгновенно",
+      "price": 1000,
+      "emoji": "📈",
+      "category": "special",
+      "special_type": "xp_instant",
+      "value": 500
+    },
+    {
+      "id": "rank_boost",
+      "name": "Буст ранга",
+      "description": "+1000 xp мгновенно",
+      "price": 2000,
+      "emoji": "📈",
+      "category": "special",
+      "special_type": "xp_instant",
+      "value": 1000
+    },
+    {
+      "id": "rank_boost_mega",
+      "name": "Мега буст ранга",
+      "description": "+3000 xp мгновенно",
+      "price": 5000,
+      "emoji": "📈",
+      "category": "special",
+      "special_type": "xp_instant",
+      "value": 3000
+    },
+    {
+      "id": "coin_bag",
+      "name": "Мешок монет",
+      "description": "+5000 монет мгновенно",
+      "price": 3000,
+      "emoji": "💰",
+      "category": "special",
+      "special_type": "coins_instant",
+      "value": 5000
+    },
+    {
+      "id": "lottery_ticket",
+      "name": "Лотерейный билет",
+      "description": "шанс выиграть 10000 монет",
+      "price": 1000,
+      "emoji": "🎰",
+      "category": "special",
+      "special_type": "lottery"
+    },
+    {
+      "id": "mystery_box",
+      "name": "Мистический ящик",
+      "description": "случайный предмет из магазина",
+      "price": 2500,
+      "emoji": "🎁",
+      "category": "special",
+      "special_type": "mystery"
+    }
+  ]
+}

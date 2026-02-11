@@ -1,0 +1,79 @@
+{
+  "boosts": [
+    {
+      "id": "xp_boost_1h",
+      "name": "Буст XP (1 час)",
+      "description": "x2 xp на 1 час",
+      "price": 500,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "⚡",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "xp_boost_24h",
+      "name": "Буст XP (24 часа)",
+      "description": "x2 xp на 24 часа",
+      "price": 3000,
+      "duration": 86400,
+      "multiplier": 2,
+      "emoji": "🚀",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "coins_boost_1h",
+      "name": "Буст монет (1 час)",
+      "description": "x2 монеты на 1 час",
+      "price": 600,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "💰",
+      "category": "boosts",
+      "boost_type": "coins"
+    },
+    {
+      "id": "luck_boost_1h",
+      "name": "Буст удачи (1 час)",
+      "description": "больше шанс выигрыша в играх",
+      "price": 800,
+      "duration": 3600,
+      "multiplier": 1.5,
+      "emoji": "🍀",
+      "category": "boosts",
+      "boost_type": "luck"
+    }
+  ],
+  "cosmetics": [
+    {
+      "id": "custom_nickname",
+      "name": "Смена ника",
+      "description": "изменить свой ник на сервере",
+      "price": 2000,
+      "emoji": "✏️",
+      "category": "cosmetics",
+      "cosmetic_type": "nickname"
+    }
+  ],
+  "special": [
+    {
+      "id": "daily_reset",
+      "name": "Сброс daily",
+      "description": "сбросить кулдаун !daily",
+      "price": 200,
+      "emoji": "🔄",
+      "category": "special",
+      "special_type": "daily_reset"
+    },
+    {
+      "id": "rank_boost",
+      "name": "Ускорение ранга",
+      "description": "следующий уровень",
+      "price": 2000,
+      "emoji": "📈",
+      "category": "special",
+      "special_type": "rank_up"
+    }
+  ]
+}

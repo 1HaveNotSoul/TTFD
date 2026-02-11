@@ -1,0 +1,139 @@
+{
+  "roles": [
+    {
+      "id": "vip_role",
+      "name": "VIP роль",
+      "description": "особая роль с крутым цветом",
+      "price": 5000,
+      "role_id": null,
+      "emoji": "👑",
+      "category": "roles"
+    },
+    {
+      "id": "premium_role",
+      "name": "Premium роль",
+      "description": "премиум роль с привилегиями",
+      "price": 10000,
+      "role_id": null,
+      "emoji": "💎",
+      "category": "roles"
+    },
+    {
+      "id": "legend_role",
+      "name": "Legend роль",
+      "description": "легендарная роль для избранных",
+      "price": 25000,
+      "role_id": null,
+      "emoji": "🔥",
+      "category": "roles"
+    }
+  ],
+  "boosts": [
+    {
+      "id": "xp_boost_1h",
+      "name": "Буст XP (1 час)",
+      "description": "x2 xp на 1 час",
+      "price": 500,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "⚡",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "xp_boost_24h",
+      "name": "Буст XP (24 часа)",
+      "description": "x2 xp на 24 часа",
+      "price": 3000,
+      "duration": 86400,
+      "multiplier": 2,
+      "emoji": "🚀",
+      "category": "boosts",
+      "boost_type": "xp"
+    },
+    {
+      "id": "coins_boost_1h",
+      "name": "Буст монет (1 час)",
+      "description": "x2 монеты на 1 час",
+      "price": 600,
+      "duration": 3600,
+      "multiplier": 2,
+      "emoji": "💰",
+      "category": "boosts",
+      "boost_type": "coins"
+    },
+    {
+      "id": "luck_boost_1h",
+      "name": "Буст удачи (1 час)",
+      "description": "больше шанс выигрыша в играх",
+      "price": 800,
+      "duration": 3600,
+      "multiplier": 1.5,
+      "emoji": "🍀",
+      "category": "boosts",
+      "boost_type": "luck"
+    }
+  ],
+  "cosmetics": [
+    {
+      "id": "profile_bg_dark",
+      "name": "Тёмный фон профиля",
+      "description": "чёрный фон для профиля",
+      "price": 1500,
+      "emoji": "🌑",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "#0d0d0d"
+    },
+    {
+      "id": "profile_bg_red",
+      "name": "Красный фон профиля",
+      "description": "кроваво-красный фон",
+      "price": 1500,
+      "emoji": "🔴",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "#8b0000"
+    },
+    {
+      "id": "profile_bg_gradient",
+      "name": "Градиентный фон",
+      "description": "чёрно-красный градиент",
+      "price": 2500,
+      "emoji": "🎨",
+      "category": "cosmetics",
+      "cosmetic_type": "background",
+      "value": "gradient"
+    },
+    {
+      "id": "custom_nickname",
+      "name": "Смена ника",
+      "description": "изменить свой ник на сервере",
+      "price": 2000,
+      "emoji": "✏️",
+      "category": "cosmetics",
+      "cosmetic_type": "nickname"
+    }
+  ],
+  "special": [
+    {
+      "id": "daily_reset",
+      "name": "Сброс daily",
+      "description": "сбросить кулдаун !daily",
+      "price": 1000,
+      "emoji": "🔄",
+      "category": "special",
+      "special_type": "daily_reset"
+    },
+    {
+      "id": "rank_boost",
+      "name": "Ускорение ранга",
+      "description": "+1000 xp мгновенно",
+      "price": 2000,
+      "emoji": "📈",
+      "category": "special",
+      "special_type": "xp_instant",
+      "value": 1000
+    }
+  ]
+}
