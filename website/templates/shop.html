@@ -5,322 +5,148 @@
 {% block extra_css %}
 <style>
 .shop-container {
-    max-width: 1200px;
-    margin: 2rem auto;
+    max-width: 800px;
+    margin: 4rem auto;
     padding: 0 1rem;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.shop-hero {
+.shop-content {
     background: transparent;
     border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 3rem 2rem;
+    border-radius: 20px;
+    padding: 4rem 3rem;
     text-align: center;
-    margin-bottom: 3rem;
+    width: 100%;
 }
 
-.shop-hero h1 {
-    font-size: 2.5rem;
+.shop-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.shop-title {
+    font-size: 3rem;
     margin-bottom: 1rem;
-    background: var(--gradient);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.shop-hero p {
+.shop-description {
     color: var(--text-light);
-    font-size: 1.1rem;
-}
-
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
+    font-size: 1.2rem;
     margin-bottom: 3rem;
-}
-
-.product-card {
-    background: transparent;
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-}
-
-.product-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-5px);
-}
-
-.product-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: var(--primary);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.product-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.product-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: #ffffff;
-}
-
-.product-description {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
     line-height: 1.6;
 }
 
-.product-features {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0;
-}
-
-.product-features li {
-    padding: 0.5rem 0;
-    color: var(--text-light);
-    font-size: 0.9rem;
-}
-
-.product-features li:before {
-    content: "✓ ";
-    color: var(--primary);
-    font-weight: bold;
-    margin-right: 0.5rem;
-}
-
-.product-price {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin: 1rem 0;
-}
-
-.product-price small {
-    font-size: 1rem;
-    color: var(--text-light);
-    font-weight: 400;
-}
-
-.buy-button {
-    width: 100%;
-    padding: 1rem;
-    background: transparent;
-    color: var(--primary);
-    border: 2px solid var(--primary);
+.telegram-button {
+    display: inline-block;
+    padding: 1.5rem 3rem;
+    background: linear-gradient(135deg, #0088cc, #229ED9);
+    color: white;
+    border: none;
     border-radius: var(--btn-radius);
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    font-family: var(--font-base);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
 }
 
-.buy-button:hover {
-    transform: translateY(calc(-1 * var(--btn-hover-lift))) scale(var(--btn-hover-scale));
-    box-shadow: var(--btn-glow);
+.telegram-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 136, 204, 0.5);
 }
 
-.buy-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.telegram-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
 }
 
-.coming-soon {
-    opacity: 0.6;
-    pointer-events: none;
+.features-list {
+    margin-top: 3rem;
+    text-align: left;
+    display: inline-block;
 }
 
-.coming-soon .product-icon {
-    filter: grayscale(100%);
+.features-list li {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
 }
 
-.coming-soon-overlay {
+.features-list li:before {
+    content: "✓";
+    color: var(--primary);
+    font-weight: bold;
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #ffffff;
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .shop-content {
+        padding: 3rem 2rem;
+    }
+    
+    .shop-title {
+        font-size: 2rem;
+    }
+    
+    .shop-description {
+        font-size: 1rem;
+    }
+    
+    .telegram-button {
+        padding: 1.2rem 2rem;
+        font-size: 1.1rem;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="shop-container">
-    <div class="shop-hero">
-        <h1>🛍️ TTFD Shop</h1>
-        <p>Премиум подписки и эксклюзивные товары</p>
-    </div>
-
-    <div class="products-grid">
-        <!-- Windows Optimizer -->
-        <div class="product-card">
-            <div class="product-badge">Популярно</div>
-            <div class="product-icon">⚡</div>
-            <h3 class="product-title">Windows Optimizer</h3>
-            <p class="product-description">
-                BAT файлы для оптимизации Windows
-            </p>
-            <ul class="product-features">
-                <li>Очистка системы</li>
-                <li>Оптимизация реестра</li>
-                <li>Ускорение загрузки</li>
-                <li>Удаление мусора</li>
-                <li>Безопасные скрипты</li>
-            </ul>
-            <div class="product-price">
-                10₽
-            </div>
-            <button class="buy-button" onclick="buyProduct('bat_optimizer')">
-                Купить и скачать
-            </button>
-        </div>
-
-        <!-- TTFD-Cleaner -->
-        <div class="product-card">
-            <div class="product-badge">Новинка</div>
-            <div class="product-icon">🧹</div>
-            <h3 class="product-title">TTFD-Cleaner</h3>
-            <p class="product-description">
-                Мощный инструмент для очистки и оптимизации Windows
-            </p>
-            <ul class="product-features">
-                <li>Очистка системы и реестра</li>
-                <li>Управление автозагрузкой</li>
-                <li>Очистка браузеров</li>
-                <li>Удаление временных файлов</li>
-                <li>Современный интерфейс</li>
-            </ul>
-            <div class="product-price">
-                20₽
-            </div>
-            <button class="buy-button" onclick="buyProduct('ttfd_cleaner')">
-                Купить и скачать
-            </button>
-        </div>
-
-        <!-- Coming Soon 3 -->
-        <div class="product-card coming-soon">
-            <div class="coming-soon-overlay">Скоро</div>
-            <div class="product-icon">⭐</div>
-            <h3 class="product-title">VIP Status</h3>
-            <p class="product-description">
-                Эксклюзивный VIP статус с уникальными привилегиями
-            </p>
-            <ul class="product-features">
-                <li>Золотой значок</li>
-                <li>Приоритет в очереди</li>
-                <li>Эксклюзивный контент</li>
-            </ul>
-            <div class="product-price">
-                £19.99 <small>/месяц</small>
-            </div>
-            <button class="buy-button" disabled>
-                В разработке
-            </button>
-        </div>
+    <div class="shop-content">
+        <div class="shop-icon">🛍️</div>
+        <h1 class="shop-title">TTFD Shop</h1>
+        <p class="shop-description">
+            Покупай программы для оптимизации Windows через наш Telegram бот
+        </p>
+        
+        <a href="https://t.me/ttfd_bot" class="telegram-button" target="_blank" rel="noopener">
+            <span class="telegram-icon">📱</span>
+            Открыть магазин в Telegram
+        </a>
+        
+        <ul class="features-list">
+            <li>TTFD Optimizer - 20⭐ Stars (≈40₽)</li>
+            <li>TTFD Cleaner - 20⭐ Stars (≈40₽)</li>
+            <li>TTFD Bundle - 30⭐ Stars (≈60₽)</li>
+            <li>Оплата через Telegram Stars</li>
+            <li>Мгновенная выдача ссылок</li>
+        </ul>
     </div>
 </div>
-
-<!-- Toast container -->
-<div id="shopToast" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('shopToast');
-    const colors = {
-        success: 'background: #22C55E; color: white;',
-        error: 'background: #EF4444; color: white;',
-        info: 'background: var(--primary); color: white;'
-    };
-    
-    const div = document.createElement('div');
-    div.style.cssText = `
-        ${colors[type]}
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-    `;
-    div.textContent = message;
-    
-    toast.appendChild(div);
-    
-    setTimeout(() => {
-        div.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => div.remove(), 300);
-    }, 3000);
-}
-
-function buyProduct(productId) {
-    if (productId === 'bat_optimizer') {
-        // Перенаправляем на FunPay для оплаты
-        showToast('🛒 Перенаправление на страницу оплаты...', 'info');
-        setTimeout(() => {
-            window.open('https://funpay.com/lots/offer?id=YOUR_OFFER_ID_BAT', '_blank');
-        }, 1000);
-    } else if (productId === 'ttfd_cleaner') {
-        // Перенаправляем на FunPay для оплаты
-        showToast('🛒 Перенаправление на страницу оплаты...', 'info');
-        setTimeout(() => {
-            window.open('https://funpay.com/lots/offer?id=YOUR_OFFER_ID_CLEANER', '_blank');
-        }, 1000);
-    } else {
-        showToast('Этот товар пока недоступен', 'info');
-    }
-}
-
-// Animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-</script>
 {% endblock %}
