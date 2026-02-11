@@ -1,0 +1,80 @@
+═══════════════════════════════════════════════════════════════
+🌐 TTFD WEBSITE - БЫСТРЫЙ СТАРТ НА RAILWAY
+═══════════════════════════════════════════════════════════════
+
+📋 ЧТО НУЖНО СДЕЛАТЬ:
+
+1. СОЗДАТЬ ПРОЕКТ НА RAILWAY
+   • Открой railway.app
+   • New Project → Deploy from GitHub repo
+   • Выбери: 1HaveNotSoul/TTFD
+
+2. НАСТРОИТЬ ROOT DIRECTORY
+   • Settings → Root Directory
+   • Установи: website
+   • Сохрани
+
+3. НАСТРОИТЬ DISCORD OAUTH
+   • Открой discord.com/developers/applications
+   • Создай новое приложение (или используй существующее)
+   • OAuth2 → Add Redirect URL:
+     https://your-domain.railway.app/auth/discord/callback
+   • Скопируй Client ID и Client Secret
+
+4. ДОБАВИТЬ ENVIRONMENT VARIABLES
+   Добавь в Railway → Variables:
+   
+   SECRET_KEY=your-secret-key-change-this-32-chars
+   DISCORD_CLIENT_ID=твой-client-id
+   DISCORD_CLIENT_SECRET=твой-client-secret
+   DISCORD_REDIRECT_URI=https://your-domain.railway.app/auth/discord/callback
+   PORT=10000
+
+5. ПОЛУЧИТЬ ДОМЕН
+   • Settings → Domains → Generate Domain
+   • Скопируй домен (например: ttfd.railway.app)
+   • Обнови DISCORD_REDIRECT_URI с новым доменом
+   • Обнови Redirect URL в Discord Developer Portal
+
+6. ДЕПЛОЙ
+   • Нажми Deploy
+   • Дождись завершения (1-2 минуты)
+   • Проверь логи
+
+═══════════════════════════════════════════════════════════════
+✅ ПРОВЕРКА:
+═══════════════════════════════════════════════════════════════
+
+1. Открой https://your-domain.railway.app
+2. Нажми "Войти через Discord"
+3. Авторизуйся
+4. Должен быть редирект обратно на сайт
+5. Ты должен быть авторизован
+
+═══════════════════════════════════════════════════════════════
+📊 ТЕКУЩАЯ СТРУКТУРА:
+═══════════════════════════════════════════════════════════════
+
+TTFD/
+├── discord-bot/          ✅ Задеплоен на Railway
+│   └── Root Directory: discord-bot
+│
+└── website/              ⏳ Нужно задеплоить
+    └── Root Directory: website
+
+═══════════════════════════════════════════════════════════════
+💡 ВАЖНО:
+═══════════════════════════════════════════════════════════════
+
+• Используй РАЗНЫЕ проекты на Railway для бота и сайта
+• Бот: Root Directory = discord-bot
+• Сайт: Root Directory = website
+• Оба используют один GitHub репозиторий
+
+═══════════════════════════════════════════════════════════════
+📚 ДОКУМЕНТАЦИЯ:
+═══════════════════════════════════════════════════════════════
+
+Полная инструкция: ДЕПЛОЙ_САЙТА_RAILWAY.md
+
+═══════════════════════════════════════════════════════════════

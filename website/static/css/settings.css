@@ -1,0 +1,369 @@
+/* Страница настроек */
+
+.settings-container {
+    max-width: 600px;
+    margin: 1.2rem auto;
+    padding: 0 1rem;
+}
+
+.settings-panel {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    margin-bottom: 1rem;
+}
+
+.panel-header h2 {
+    margin: 0 0 0.7rem 0;
+    color: var(--primary);
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+/* Табы */
+.tabs {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 0.4rem 0.6rem;
+    border: none;
+    background: var(--bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    font-family: var(--font-base);
+    white-space: nowrap;
+}
+
+.tab:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Контент табов */
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.3rem;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.tab-pane h3 {
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+/* Форма */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+.text-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+textarea.text-input {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Аватарка */
+.media-uploads {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+}
+
+/* Музыка */
+.music-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.music-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.music-placeholder {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+.music-preview audio {
+    width: 100%;
+    height: 30px;
+}
+
+.music-url-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+/* Расширенные настройки */
+.advanced-settings {
+    margin-top: 1rem;
+}
+
+.advanced-toggle {
+    width: 100%;
+    padding: 0.7rem;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: var(--btn-radius);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+    font-family: var(--font-base);
+}
+
+.advanced-toggle:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.advanced-toggle span {
+    display: inline-block;
+    transition: transform 0.3s;
+    margin-right: 0.5rem;
+}
+
+.advanced-toggle.active span {
+    transform: rotate(90deg);
+}
+
+.advanced-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.advanced-content.open {
+    max-height: 500px;
+    margin-top: 1rem;
+}
+
+/* Темы */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+}
+
+.theme-card {
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    background: var(--bg);
+}
+
+.theme-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.theme-card.active {
+    border-color: var(--primary);
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.theme-preview {
+    width: 100%;
+    height: 60px;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.theme-card span {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #ffffff;
+}
+
+/* Toggle switches */
+.toggle-item {
+    margin-bottom: 1.2rem;
+}
+
+.toggle-label {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    display: block;
+    padding: 0.6rem;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: var(--btn-radius);
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    color: #ffffff;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+.toggle-slider:hover {
+    transform: translateY(-2px);
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--btn-glow);
+}
+
+/* Кнопки действий */
+.panel-actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.panel-actions .btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Сообщения */
+.message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: none;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.message.success {
+    background: #10b981;
+    color: white;
+}
+
+.message.error {
+    background: #ef4444;
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 0 0.5rem;
+    }
+    
+    .media-uploads {
+        grid-template-columns: 1fr;
+    }
+}

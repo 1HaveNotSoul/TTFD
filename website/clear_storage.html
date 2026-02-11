@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Очистка localStorage</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0b0f19;
+            color: #fff;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: #1a1f2e;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 { margin-bottom: 1rem; }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .success {
+            color: #4ade80;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Очистка localStorage</h1>
+        <p>Эта страница удалит все сохранённые настройки темы</p>
+        <button onclick="clearStorage()">Очистить localStorage</button>
+        <button onclick="location.href='/'">Вернуться на главную</button>
+        <div class="success" id="success">✅ localStorage очищен! Можете вернуться на главную.</div>
+    </div>
+
+    <script>
+        function clearStorage() {
+            // Удаляем все ключи связанные с темой
+            localStorage.removeItem('userTheme');
+            localStorage.removeItem('isPremium');
+            
+            // Показываем сообщение
+            document.getElementById('success').style.display = 'block';
+            
+            console.log('✅ localStorage очищен');
+        }
+    </script>
+</body>
+</html>

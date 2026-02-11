@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки - TTFD{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/settings.css">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-panel">
+        <div class="panel-header">
+            <h2>⚙️ Настройки</h2>
+        </div>
+
+        <!-- Табы -->
+        <div class="tabs">
+            <button class="tab active" data-tab="profile">Профиль</button>
+            <button class="tab" data-tab="appearance">Внешний вид</button>
+            <button class="tab" data-tab="privacy">Приватность</button>
+            <button class="tab" data-tab="notifications">Уведомления</button>
+            <button class="tab" data-tab="advanced">Расширенные</button>
+        </div>
+
+        <!-- Контент табов -->
+        <div class="tab-content">
+            <!-- Профиль -->
+            <div class="tab-pane active" id="profile">
+                <h3>👤 Основная информация</h3>
+                
+                <div class="form-group">
+                    <label>Отображаемое имя</label>
+                    <input type="text" id="display_name" value="{{ user.username }}" class="text-input">
+                </div>
+                
+                <div class="form-group">
+                    <label>О себе</label>
+                    <textarea id="bio" placeholder="Расскажи о себе..." rows="4" class="text-input">{{ user.bio }}</textarea>
+                </div>
+            </div>
+
+            <!-- Внешний вид -->
+            <div class="tab-pane" id="appearance">
+                <div class="form-group">
+                    <label>Аватарка</label>
+                    <div class="avatar-upload">
+                        <img src="{{ user.avatar }}" alt="Avatar" class="avatar-preview" id="avatarPreview">
+                        <input type="file" id="avatar_file" accept="image/*" hidden>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('avatar_file').click()">
+                            Загрузить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Приватность -->
+            <div class="tab-pane" id="privacy">
+                <h3>🔒 Приватность</h3>
+                
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="profile_public" checked>
+                        <span class="toggle-slider" data-on="Публичный профиль" data-off="Приватный профиль">Публичный профиль</span>
+                    </label>
+                    <small>Другие пользователи могут видеть твой профиль</small>
+                </div>
+                
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="show_stats" checked>
+                        <span class="toggle-slider" data-on="Статистика видна" data-off="Статистика скрыта">Статистика видна</span>
+                    </label>
+                    <small>Отображать очки и достижения</small>
+                </div>
+            </div>
+
+            <!-- Уведомления -->
+            <div class="tab-pane" id="notifications">
+                <h3>🔔 Уведомления</h3>
+                
+                <div class="toggle-item">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="sound_notifications" checked>
+                        <span class="toggle-slider" data-on="Звук включен" data-off="Звук выключен">Звук включен</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Расширенные настройки -->
+            <div class="tab-pane" id="advanced">
+                <div class="form-group">
+                    <label>Email для уведомлений</label>
+                    <input type="email" id="user_email" placeholder="your@email.com" class="text-input">
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="sendTestNotification()" style="width: 100%;">
+                        📧 Отправить тестовое уведомление
+                    </button>
+                </div>
+                
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                
+                <h3 style="color: #ef4444; margin-bottom: 1rem;">⚠️ Опасная зона</h3>
+                
+                <div class="form-group">
+                    <button class="btn btn-danger" onclick="logoutAccount()" style="width: 100%; background: #ef4444; border-color: #ef4444;">
+                        🚪 Выйти из аккаунта
+                    </button>
+                    <small style="display: block; margin-top: 0.5rem; color: var(--text-light);">
+                        Вы будете перенаправлены на главную страницу
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="panel-actions">
+            <button class="btn btn-secondary" onclick="resetSettings()">Сбросить</button>
+            <button class="btn btn-primary" onclick="saveSettings()">Сохранить изменения</button>
+        </div>
+    </div>
+</div>
+
+<div id="message" class="message"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/settings.js"></script>
+{% endblock %}

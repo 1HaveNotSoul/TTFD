@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}TTFD Shop{% endblock %}
+
+{% block extra_css %}
+<style>
+.shop-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shop-content {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 4rem 3rem;
+    text-align: center;
+    width: 100%;
+}
+
+.shop-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.shop-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shop-description {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+}
+
+.telegram-button {
+    display: inline-block;
+    padding: 1.5rem 3rem;
+    background: linear-gradient(135deg, #0088cc, #229ED9);
+    color: white;
+    border: none;
+    border-radius: var(--btn-radius);
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+}
+
+.telegram-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 136, 204, 0.5);
+}
+
+.telegram-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.features-list {
+    margin-top: 3rem;
+    text-align: left;
+    display: inline-block;
+}
+
+.features-list li {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.features-list li:before {
+    content: "✓";
+    color: var(--primary);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .shop-content {
+        padding: 3rem 2rem;
+    }
+    
+    .shop-title {
+        font-size: 2rem;
+    }
+    
+    .shop-description {
+        font-size: 1rem;
+    }
+    
+    .telegram-button {
+        padding: 1.2rem 2rem;
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+    <div class="shop-content">
+        <div class="shop-icon">🛍️</div>
+        <h1 class="shop-title">TTFD Shop</h1>
+        <p class="shop-description">
+            Покупай программы для оптимизации Windows через наш Telegram бот
+        </p>
+        
+        <a href="https://t.me/TTFDHelperbot" class="telegram-button" target="_blank" rel="noopener">
+            <span class="telegram-icon">📱</span>
+            Открыть магазин в Telegram
+        </a>
+        
+        <ul class="features-list">
+            <li>TTFD Optimizer - 20⭐ Stars (≈40₽)</li>
+            <li>TTFD Cleaner - 20⭐ Stars (≈40₽)</li>
+            <li>TTFD Bundle - 30⭐ Stars (≈60₽)</li>
+            <li>Оплата через Telegram Stars</li>
+            <li>Мгновенная выдача ссылок</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

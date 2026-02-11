@@ -1,0 +1,265 @@
+═══════════════════════════════════════════════════════════
+🎤 СИСТЕМА ОТСЛЕЖИВАНИЯ ВОЙС КАНАЛОВ
+═══════════════════════════════════════════════════════════
+
+📅 Дата: 02.02.2026
+⚠️ Статус: ТРЕБУЕТ РУЧНОЙ ИНТЕГРАЦИИ
+
+═══════════════════════════════════════════════════════════
+
+✅ ЧТО СОЗДАНО:
+
+1. ✅ Модуль py/voice_tracking.py
+   ├─ Отслеживание времени в войс каналах
+   ├─ Сохранение сессий пользователей
+   ├─ Статистика по каналам
+   └─ Поиск самой длительной сессии
+
+2. ⏳ Требуется интеграция в bot.py
+   └─ Добавить обработчик on_voice_state_update
+
+═══════════════════════════════════════════════════════════
+
+🔧 КАК ИНТЕГРИРОВАТЬ:
+
+ШАГ 1: ДОБАВИТЬ ИМПОРТ В BOT.PY
+Открой py/bot.py, найди секцию импортов (в начале файла), добавь:
+
+```python
+import voice_tracking
+```
+
+ШАГ 2: ДОБАВИТЬ ОБРАБОТЧИК СОБЫТИЙ
+Найди секцию "# ==================== События бота ====================" 
+Добавь после @bot.event async def on_ready():
+
+```python
+@bot.event
+async def on_voice_state_update(member, before, after):
+    """Обработка изменения голосового состояния"""
+    await voice_tracking.on_voice_state_update(member, before, after)
+```
+
+ШАГ 3: ОБНОВИТЬ КОМАНДУ !TOP
+Найди @bot.command(name='top'), замени на:
+
+```python
+@bot.command(name='top')
+async def top(ctx, category: str = 'xp'):
+    """Таблица лидеров (xp/voice)"""
+    
+    if category.lower() == 'voice':
+        # Топ по времени в войсе
+        top_users = voice_tracking.get_top_users(10)
+        top_channels = voice_tracking.get_top_channels(5)
+        longest = voice_tracking.get_longest_session()
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🎤 топ по войс активности"),
+            embed_type='info'
+        )
+        
+        # Топ пользователей
+        users_text = []
+        medals = ["🥇", "🥈", "🥉"]
+        for idx, user_data in enumerate(top_users, 1):
+            medal = medals[idx-1] if idx <= 3 else f"{idx}."
+            time_str = voice_tracking.format_time(user_data['total_time'])
+            users_text.append(
+                f"{medal} {convert_to_font(user_data['username'])} - {convert_to_font(time_str)}"
+            )
+        
+        if users_text:
+            embed.add_field(
+                name=convert_to_font("👥 топ пользователей"),
+                value='\n'.join(users_text),
+                inline=False
+            )
+        
+        # Топ каналов
+        channels_text = []
+        for idx, channel_data in enumerate(top_channels, 1):
+            time_str = voice_tracking.format_time(channel_data['total_time'])
+            channels_text.append(
+                f"{idx}. {convert_to_font(channel_data['channel_name'])} - {convert_to_font(time_str)}"
+            )
+        
+        if channels_text:
+            embed.add_field(
+                name=convert_to_font("🔊 топ каналов"),
+                value='\n'.join(channels_text),
+                inline=False
+            )
+        
+        # Самая длительная сессия
+        if longest:
+            time_str = voice_tracking.format_time(longest['duration'])
+            embed.add_field(
+                name=convert_to_font("⏱️ рекорд сессии"),
+                value=convert_to_font(f"{longest['username']} - {time_str}"),
+                inline=False
+            )
+        
+        await ctx.send(embed=embed)
+    
+    else:
+        # Топ по XP (старая логика)
+        users = db.get_all_users()
+        sorted_users = sorted(users.items(), key=lambda x: x[1].get('xp', 0), reverse=True)[:10]
+        
+        embed = BotTheme.create_embed(
+            title=convert_to_font("🏆 топ-10 игроков"),
+            embed_type='info'
+        )
+        
+        medals = ["🥇", "🥈", "🥉"]
+        
+        for idx, (user_id, user_data) in enumerate(sorted_users, 1):
+            try:
+                member = await bot.fetch_user(int(user_id))
+                rank_info = db.get_rank_info(user_data['rank_id'])
+                medal = medals[idx-1] if idx <= 3 else f"{idx}."
+                
+                embed.add_field(
+                    name=convert_to_font(f"{medal} {member.name}"),
+                    value=convert_to_font(f"ранг: {rank_info['name']} | xp: {user_data['xp']}"),
+                    inline=False
+                )
+            except:
+                continue
+        
+        embed.set_footer(text=convert_to_font("используй !top voice для войс статистики"))
+        
+        await ctx.send(embed=embed)
+```
+
+ШАГ 4: ОБНОВИТЬ СПИСОК КОМАНД
+Открой py/commands_manager.py, найди !top, измени на:
+
+```python
+('!top [xp/voice]', 'таблица лидеров'),
+```
+
+ШАГ 5: ПЕРЕЗАПУСТИТЬ БОТА
+└─ CTRL+C → ЗАПУСК.bat
+
+═══════════════════════════════════════════════════════════
+
+📊 КАК ЭТО РАБОТАЕТ:
+
+ОТСЛЕЖИВАНИЕ:
+┌─────────────────────────────────────────────────────────┐
+│ СОБЫТИЕ                │ ДЕЙСТВИЕ                        │
+├────────────────────────┼─────────────────────────────────┤
+│ Пользователь зашёл     │ Сохраняем время входа           │
+│ Пользователь вышел     │ Вычисляем длительность сессии   │
+│ Переключился между     │ Завершаем старую, начинаем      │
+│ каналами               │ новую сессию                    │
+└─────────────────────────────────────────────────────────┘
+
+ДАННЫЕ СОХРАНЯЮТСЯ В:
+json/voice_data.json
+{
+  "users": {
+    "user_id": {
+      "total_time": 3600,  // секунды
+      "sessions": [...],
+      "username": "User"
+    }
+  },
+  "channels": {
+    "channel_id": {
+      "total_time": 7200,
+      "sessions": [...],
+      "channel_name": "General"
+    }
+  }
+}
+
+═══════════════════════════════════════════════════════════
+
+🎮 ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ:
+
+!TOP (БЕЗ ПАРАМЕТРА):
+┌─────────────────────────────────────────────────────────┐
+│ 🏆 топ-10 игроков                                       │
+│                                                         │
+│ 🥇 User1                                                │
+│ ранг: ᴩᴀнᴦ S II | xp: 52500                             │
+│                                                         │
+│ 🥈 User2                                                │
+│ ранг: ᴩᴀнᴦ S I | xp: 48000                              │
+│                                                         │
+│ 🥉 User3                                                │
+│ ранг: ᴩᴀнᴦ A III | xp: 43000                            │
+│                                                         │
+│ используй !top voice для войс статистики                │
+└─────────────────────────────────────────────────────────┘
+
+!TOP VOICE:
+┌─────────────────────────────────────────────────────────┐
+│ 🎤 топ по войс активности                               │
+│                                                         │
+│ 👥 топ пользователей                                    │
+│ 🥇 User1 - 15ч 30м 45с                                  │
+│ 🥈 User2 - 12ч 15м 20с                                  │
+│ 🥉 User3 - 10ч 45м 10с                                  │
+│ 4. User4 - 8ч 20м 5с                                    │
+│ 5. User5 - 6ч 10м 30с                                   │
+│                                                         │
+│ 🔊 топ каналов                                          │
+│ 1. General - 50ч 30м 15с                                │
+│ 2. Gaming - 35ч 20м 40с                                 │
+│ 3. Music - 25ч 15м 30с                                  │
+│                                                         │
+│ ⏱️ рекорд сессии                                        │
+│ User1 - 8ч 45м 20с                                      │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+
+⚠️ ВАЖНО:
+
+1. Система начнёт отслеживать ТОЛЬКО ПОСЛЕ интеграции
+2. Старые данные НЕ будут учтены
+3. Данные сохраняются в json/voice_data.json
+4. Бот должен быть онлайн для отслеживания
+5. Если бот оффлайн - время НЕ засчитывается
+
+═══════════════════════════════════════════════════════════
+
+📁 ФАЙЛЫ:
+
+СОЗДАННЫЕ:
+├─ py/voice_tracking.py ✅
+└─ json/voice_data.json (создаётся автоматически)
+
+ТРЕБУЮТ ИЗМЕНЕНИЙ:
+├─ py/bot.py (добавить импорт и обработчик)
+└─ py/commands_manager.py (обновить !top)
+
+═══════════════════════════════════════════════════════════
+
+✅ ЧЕКЛИСТ ИНТЕГРАЦИИ:
+
+□ Добавлен импорт voice_tracking в bot.py
+□ Добавлен обработчик on_voice_state_update
+□ Обновлена команда !top
+□ Обновлён список команд
+□ Бот перезапущен
+□ Протестирована команда !top
+□ Протестирована команда !top voice
+□ Зашёл в войс канал (тест отслеживания)
+□ Вышел из войс канала (тест сохранения)
+
+═══════════════════════════════════════════════════════════
+
+🎉 ГОТОВО!
+
+Система отслеживания войс каналов создана!
+Требуется ручная интеграция в bot.py
+
+═══════════════════════════════════════════════════════════
+
+Дата: 02.02.2026
+Автор: Kiro AI Assistant

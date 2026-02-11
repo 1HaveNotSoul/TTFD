@@ -1,0 +1,8 @@
+# TTFD-Cleaner Python Requirements
+# Python 3.11+
+
+# GUI (встроено в Python)
+# tkinter - встроен в стандартную установку Python
+
+# Никаких внешних зависимостей!
+# Проект использует только стандартную библиотеку Python

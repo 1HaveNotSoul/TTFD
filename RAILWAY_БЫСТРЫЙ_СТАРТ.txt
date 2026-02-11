@@ -1,0 +1,190 @@
+═══════════════════════════════════════════════════════════════
+   🚂 RAILWAY.APP - БЫСТРЫЙ СТАРТ
+═══════════════════════════════════════════════════════════════
+
+Краткая инструкция по деплою TTFD на Railway.app
+
+═══════════════════════════════════════════════════════════════
+   📋 ПОДГОТОВКА (5 минут)
+═══════════════════════════════════════════════════════════════
+
+1. ЗАПУШИТЬ КОД НА GITHUB
+   cd TTFD
+   git add .
+   git commit -m "feat: добавлена конфигурация для Railway"
+   git push
+
+2. ПОЛУЧИТЬ DISCORD ДАННЫЕ
+   Discord Portal: https://discord.com/developers/applications
+   
+   ✅ Bot Token (Bot → Reset Token)
+   ✅ Client ID (OAuth2 → General)
+   ✅ Client Secret (OAuth2 → General)
+   ✅ Guild ID (Discord → Правый клик на сервере → Copy ID)
+
+═══════════════════════════════════════════════════════════════
+   🎫 РЕГИСТРАЦИЯ (2 минуты)
+═══════════════════════════════════════════════════════════════
+
+1. Откройте: https://railway.app
+2. Login → Login with GitHub
+3. Авторизуйте Railway
+4. Проверьте кредиты: $5.00 available
+
+═══════════════════════════════════════════════════════════════
+   📦 СОЗДАНИЕ ПРОЕКТА (1 минута)
+═══════════════════════════════════════════════════════════════
+
+1. Dashboard → New Project
+2. Deploy from GitHub repo
+3. Выберите: 1HaveNotSoul/TTFD
+4. НЕ деплойте пока!
+
+═══════════════════════════════════════════════════════════════
+   🗄️ POSTGRESQL (2 минуты)
+═══════════════════════════════════════════════════════════════
+
+1. В проекте: + New → Database → Add PostgreSQL
+2. Кликните на PostgreSQL
+3. Variables → Скопируйте DATABASE_URL
+4. Сохраните URL (нужен для Website и Bot)
+
+═══════════════════════════════════════════════════════════════
+   🌐 WEBSITE (10 минут)
+═══════════════════════════════════════════════════════════════
+
+1. ДОБАВИТЬ СЕРВИС
+   + New → GitHub Repo → 1HaveNotSoul/TTFD
+   ОСТАНОВИТЕ деплой!
+
+2. НАСТРОИТЬ ROOT DIRECTORY
+   Settings → Root Directory → website
+
+3. ДОБАВИТЬ ПЕРЕМЕННЫЕ
+   Variables → + New Variable
+   
+   SECRET_KEY = <сгенерируйте: python -c "import secrets; print(secrets.token_hex(32))">
+   PORT = 10000
+   DISCORD_CLIENT_ID = <ваш Client ID>
+   DISCORD_CLIENT_SECRET = <ваш Client Secret>
+   DISCORD_REDIRECT_URI = https://временный-url.up.railway.app/auth/discord/callback
+   DATABASE_URL = <Reference из PostgreSQL>
+
+4. СГЕНЕРИРОВАТЬ ДОМЕН
+   Settings → Networking → Generate Domain
+   Скопируйте URL
+
+5. ОБНОВИТЬ REDIRECT URI
+   Variables → DISCORD_REDIRECT_URI → https://ваш-домен.up.railway.app/auth/discord/callback
+   Discord Portal → OAuth2 → Redirects → Добавьте URL
+
+6. ДЕПЛОЙ
+   Deployments → Deploy
+   Ждите 3-5 минут
+
+═══════════════════════════════════════════════════════════════
+   🤖 DISCORD BOT (5 минут)
+═══════════════════════════════════════════════════════════════
+
+1. ДОБАВИТЬ СЕРВИС
+   + New → GitHub Repo → 1HaveNotSoul/TTFD
+   ОСТАНОВИТЕ деплой!
+
+2. НАСТРОИТЬ ROOT DIRECTORY
+   Settings → Root Directory → discord-bot
+
+3. ОТКЛЮЧИТЬ ДОМЕН
+   Settings → Networking → Удалите домен (если есть)
+
+4. ДОБАВИТЬ ПЕРЕМЕННЫЕ
+   Variables → + New Variable
+   
+   DISCORD_TOKEN = <ваш Bot Token>
+   GUILD_ID = <ваш Server ID>
+   DATABASE_URL = <Reference из PostgreSQL>
+
+5. ДЕПЛОЙ
+   Deployments → Deploy
+   Ждите 2-3 минуты
+
+═══════════════════════════════════════════════════════════════
+   ✅ ПРОВЕРКА (5 минут)
+═══════════════════════════════════════════════════════════════
+
+WEBSITE:
+   1. Откройте URL сайта
+   2. Попробуйте войти через Discord
+   3. Проверьте профиль
+
+DISCORD BOT:
+   1. Проверьте что бот онлайн (зелёный)
+   2. Команды: !ping, !profile, !help
+
+ЛОГИ:
+   Railway → Сервис → Deployments → View Logs
+
+═══════════════════════════════════════════════════════════════
+   💰 МОНИТОРИНГ КРЕДИТОВ
+═══════════════════════════════════════════════════════════════
+
+Account Settings → Usage
+
+Примерное потребление:
+   PostgreSQL:  ~$1.00/месяц
+   Website:     ~$1.50/месяц
+   Discord Bot: ~$1.50/месяц
+   ────────────────────────
+   Итого:       ~$4.00/месяц
+
+Остаток: ~$1.00/месяц
+
+═══════════════════════════════════════════════════════════════
+   🔄 АВТООБНОВЛЕНИЕ
+═══════════════════════════════════════════════════════════════
+
+Railway автоматически деплоит при push:
+
+   git add .
+   git commit -m "feat: новая функция"
+   git push
+
+Railway задеплоит автоматически!
+
+═══════════════════════════════════════════════════════════════
+   🐛 ЧАСТЫЕ ПРОБЛЕМЫ
+═══════════════════════════════════════════════════════════════
+
+WEBSITE НЕ ЗАПУСКАЕТСЯ:
+   ✅ Проверьте Root Directory: website
+   ✅ Проверьте логи
+   ✅ Проверьте переменные
+
+OAUTH НЕ РАБОТАЕТ:
+   ✅ Проверьте DISCORD_REDIRECT_URI
+   ✅ Добавьте URL в Discord Portal
+
+BOT OFFLINE:
+   ✅ Проверьте Root Directory: discord-bot
+   ✅ Проверьте DISCORD_TOKEN
+   ✅ Проверьте Privileged Intents
+
+DATABASE ОШИБКИ:
+   ✅ Используйте DATABASE_URL (не PRIVATE)
+   ✅ Используйте Reference
+
+═══════════════════════════════════════════════════════════════
+   📚 ДОКУМЕНТАЦИЯ
+═══════════════════════════════════════════════════════════════
+
+Полная инструкция: ДЕПЛОЙ_RAILWAY.md
+Railway Docs: https://docs.railway.app
+Railway Discord: https://discord.gg/railway
+
+═══════════════════════════════════════════════════════════════
+
+ОБЩЕЕ ВРЕМЯ: ~30 минут
+СТОИМОСТЬ: $0 (в рамках $5 кредитов)
+
+Готово! Начинай с регистрации на Railway.app! 🚀
+
+═══════════════════════════════════════════════════════════════
